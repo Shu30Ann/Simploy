@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simploy · Build Checklist</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #FAFAF9;
+    color: #2C2C2A;
+    padding-bottom: 80px;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    border-bottom: 0.5px solid #E8E6E0;
+    padding: 14px 20px;
+  }
+
+  .header-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .brand-name { font-weight: 500; color: #D4537E; }
+  .brand-sep  { color: #D3D1C7; }
+  .brand-sub  { color: #888780; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #888780;
+  }
+
+  .pct-pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #FBEAF0;
+    color: #993556;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .pct-pill.done { background: #EAF3DE; color: #3B6D11; }
+
+  .overall-track {
+    height: 3px;
+    background: #F1EFE8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .overall-fill {
+    height: 100%;
+    background: #D4537E;
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Body ── */
+  .body {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #2C2C2A;
+    margin-bottom: 4px;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: #888780;
+    margin-bottom: 20px;
+  }
+
+  /* ── Section card ── */
+  .section-card {
+    background: #fff;
+    border: 0.5px solid #E8E6E0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid #E8E6E0;
+    user-select: none;
+    transition: background 0.2s;
+  }
+
+  .section-head.no-border { border-bottom: none; }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #2C2C2A;
+  }
+
+  .section-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .s-bar-track {
+    width: 50px;
+    height: 3px;
+    background: #F1EFE8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .s-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  .s-count {
+    font-size: 11px;
+    font-weight: 500;
+    min-width: 26px;
+    text-align: right;
+  }
+
+  .chevron {
+    font-size: 13px;
+    color: #B4B2A9;
+    transition: transform 0.2s;
+    line-height: 1;
+    display: inline-block;
+  }
+
+  .chevron.up { transform: rotate(-90deg); }
+
+  /* ── Items ── */
+  .items-wrap { display: block; }
+  .items-wrap.hidden { display: none; }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid #F5F3EE;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .item:last-child { border-bottom: none; }
+  .item:hover { filter: brightness(0.985); }
+
+  .cb {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 5px;
+    border: 1.5px solid #D3D1C7;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 11px;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .item-body { flex: 1; min-width: 0; }
+
+  .item-top {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #2C2C2A;
+    transition: color 0.15s;
+  }
+
+  .item-name.done {
+    color: #B4B2A9;
+    text-decoration: line-through;
+    text-decoration-color: #D3D1C7;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 20px;
+  }
+
+  .HIGH { background: #FBEAF0; color: #993556; }
+  .MED  { background: #FAEEDA; color: #854F0B; }
+  .LOW  { background: #EAF3DE; color: #3B6D11; }
+
+  .item-note {
+    font-size: 11px;
+    color: #888780;
+    line-height: 1.5;
+    margin: 0 0 1px;
+  }
+
+  .item-route {
+    font-size: 10px;
+    font-family: ui-monospace, "Cascadia Code", monospace;
+    transition: color 0.15s;
+  }
+
+  /* ── Completion banner ── */
+  .banner {
+    display: none;
+    margin-top: 16px;
+    padding: 20px 16px;
+    text-align: center;
+    background: #EAF3DE;
+    border: 0.5px solid #C0DD97;
+    border-radius: 12px;
+  }
+
+  .banner.show { display: block; }
+  .banner-title { font-size: 16px; font-weight: 500; color: #3B6D11; margin-bottom: 4px; }
+  .banner-sub   { font-size: 13px; color: #639922; }
+
+  .footer-note {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 11px;
+    color: #C4C2BC;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="brand">
+        <span class="brand-name">Simploy</span>
+        <span class="brand-sep">·</span>
+        <span class="brand-sub">build checklist</span>
+      </div>
+      <div class="header-right">
+        <span id="hd-count">0 / 19 pages</span>
+        <span class="pct-pill" id="hd-pct">0%</span>
+      </div>
+    </div>
+    <div class="overall-track">
+      <div class="overall-fill" id="overall-fill"></div>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+  <p class="page-title">Pages to build</p>
+  <p class="page-sub">19 pages total · check off as you ship</p>
+  <div id="root"></div>
+  <div class="banner" id="banner">
+    <p class="banner-title">All 19 pages shipped</p>
+    <p class="banner-sub">Go win that $5,000 💰</p>
+  </div>
+  <p class="footer-note">Progress saves automatically via localStorage</p>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "public", label: "Public & auth",
+    accent: "#D4537E", bg: "#FBEAF0", tc: "#72243E",
+    items: [
+      { id: "landing", label: "Landing page",            route: "/",       p: "HIGH", note: "Hero, how it works, solutions, pricing, about" },
+      { id: "login",   label: "Login",                   route: "/login",  p: "HIGH", note: "Email + Google OAuth, portal switch logic" },
+      { id: "signup",  label: "Signup + role selection", route: "/signup", p: "HIGH", note: "Role choice (employee vs employer) gates onboarding" },
+    ]
+  },
+  {
+    id: "onboarding", label: "Onboarding wizards",
+    accent: "#7F77DD", bg: "#EEEDFE", tc: "#3C3489",
+    items: [
+      { id: "ob-emp", label: "Employee onboarding", route: "/onboarding/employee", p: "HIGH", note: "Profile → skills → career goals → certs (4 steps)" },
+      { id: "ob-er",  label: "Employer onboarding", route: "/onboarding/employer", p: "HIGH", note: "Company → departments → open roles → hiring plan" },
+    ]
+  },
+  {
+    id: "employee", label: "Employee portal — layer 1",
+    accent: "#1D9E75", bg: "#E1F5EE", tc: "#085041",
+    items: [
+      { id: "emp-dash", label: "Employee dashboard", route: "/employee/dashboard",   p: "HIGH", note: "Job matches, skill gap panel, talent graph viz" },
+      { id: "emp-jobs", label: "Jobs marketplace",   route: "/employee/jobs",         p: "HIGH", note: "Search, filters, internal / external toggle" },
+      { id: "emp-apps", label: "My applications",    route: "/employee/applications", p: "MED",  note: "Status tracker, interview dates, next steps" },
+      { id: "emp-skls", label: "Skills center",      route: "/employee/skills",       p: "MED",  note: "Inventory, learning paths, certifications" },
+      { id: "emp-anlt", label: "Career analytics",   route: "/employee/analytics",    p: "LOW",  note: "Profile views, match trends, skill demand heatmap" },
+    ]
+  },
+  {
+    id: "employer", label: "Employer portal — layer 1",
+    accent: "#378ADD", bg: "#E6F1FB", tc: "#0C447C",
+    items: [
+      { id: "er-dash", label: "Employer dashboard",        route: "/employer/dashboard",   p: "HIGH", note: "Job postings table, top matches, marketplace insights" },
+      { id: "er-jobs", label: "Job postings manager",      route: "/employer/jobs",         p: "HIGH", note: "Create, edit, pause and close postings" },
+      { id: "er-apps", label: "Applications inbox",        route: "/employer/applications", p: "MED",  note: "All inbound apps, filter by role / status / match" },
+      { id: "er-pipe", label: "Hiring pipeline (kanban)",  route: "/employer/pipeline",     p: "MED",  note: "Applied → shortlisted → interview → offered → hired" },
+    ]
+  },
+  {
+    id: "simulator", label: "Workforce gap simulator — layer 2",
+    accent: "#BA7517", bg: "#FAEEDA", tc: "#633806",
+    items: [
+      { id: "sim-ov",  label: "Workforce overview",   route: "/employer/analytics/overview",  p: "MED",  note: "Headcount, department breakdown, skills distribution" },
+      { id: "sim-eng", label: "Gap simulator engine", route: "/employer/analytics/simulator", p: "HIGH", note: "What-if sliders, supply/demand chart, risk panel" },
+      { id: "sim-rep", label: "Saved reports",        route: "/employer/analytics/reports",   p: "LOW",  note: "Saved scenarios, exportable PDF summaries" },
+    ]
+  },
+  {
+    id: "layer3", label: "Action engine — layer 3",
+    accent: "#D85A30", bg: "#FAECE7", tc: "#712B13",
+    items: [
+      { id: "act-res", label: "Simulation results + action engine", route: "/employer/simulator/results", p: "HIGH", note: "Hire / upskill / redeploy / automate recommendation cards" },
+    ]
+  },
+  {
+    id: "shared", label: "Shared",
+    accent: "#888780", bg: "#F1EFE8", tc: "#444441",
+    items: [
+      { id: "settings", label: "Settings & switch portal", route: "/settings", p: "LOW", note: "Account, notifications, switch between portals" },
+    ]
+  }
+];
+
+const TOTAL = DATA.reduce((s, sec) => s + sec.items.length, 0);
+
+/* ── State ── */
+let checked = {};
+let collapsed = {};
+
+function load() {
+  try {
+    const raw = localStorage.getItem("simploy-checklist-v1");
+    if (raw) checked = JSON.parse(raw);
+  } catch {}
+}
+
+function save() {
+  try { localStorage.setItem("simploy-checklist-v1", JSON.stringify(checked)); } catch {}
+}
+
+/* ── Render ── */
+function hexAlpha(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function buildHTML() {
+  return DATA.map(sec => {
+    const done = sec.items.filter(i => checked[i.id]).length;
+    const pct  = Math.round(done / sec.items.length * 100);
+    const headBg = done === sec.items.length ? sec.bg : "#FAFAF9";
+    const isCollapsed = collapsed[sec.id];
+
+    const itemsHTML = sec.items.map(item => {
+      const isDone = !!checked[item.id];
+      const rowBg  = isDone ? hexAlpha(sec.bg, 0.35) : "transparent";
+      const rc     = isDone ? "#B4B2A9" : sec.accent;
+      return `
+        <div class="item" id="item-${item.id}" onclick="toggle('${item.id}','${sec.id}')" style="background:${rowBg}">
+          <div class="cb" id="cb-${item.id}" style="${isDone ? `background:${sec.accent};border-color:${sec.accent}` : ""}">${isDone ? "✓" : ""}</div>
+          <div class="item-body">
+            <div class="item-top">
+              <span class="item-name ${isDone ? "done" : ""}" id="name-${item.id}">${item.label}</span>
+              <span class="badge ${item.p}">${item.p}</span>
+            </div>
+            <p class="item-note">${item.note}</p>
+            <span class="item-route" id="route-${item.id}" style="color:${rc}">${item.route}</span>
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="section-card">
+        <div class="section-head ${isCollapsed ? "no-border" : ""}" id="sh-${sec.id}"
+          style="background:${headBg}" onclick="toggleSec('${sec.id}')">
+          <div class="dot" style="background:${sec.accent}"></div>
+          <span class="section-name">${sec.label}</span>
+          <div class="section-right">
+            <div class="s-bar-track">
+              <div class="s-bar-fill" id="sf-${sec.id}" style="width:${pct}%;background:${sec.accent}"></div>
+            </div>
+            <span class="s-count" id="sc-${sec.id}" style="color:${sec.tc}">${done}/${sec.items.length}</span>
+            <span class="chevron ${isCollapsed ? "up" : ""}" id="cv-${sec.id}">▾</span>
+          </div>
+        </div>
+        <div class="items-wrap ${isCollapsed ? "hidden" : ""}" id="iw-${sec.id}">
+          ${itemsHTML}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function updateHeader() {
+  const done = Object.values(checked).filter(Boolean).length;
+  const pct  = Math.round(done / TOTAL * 100);
+  document.getElementById("hd-count").textContent = `${done} / ${TOTAL} pages`;
+  const pill = document.getElementById("hd-pct");
+  pill.textContent = `${pct}%`;
+  pill.classList.toggle("done", pct === 100);
+  document.getElementById("overall-fill").style.width = `${pct}%`;
+  document.getElementById("banner").classList.toggle("show", pct === 100);
+}
+
+/* ── Interactions ── */
+function toggle(itemId, secId) {
+  checked[itemId] = !checked[itemId];
+  save();
+
+  const sec  = DATA.find(s => s.id === secId);
+  const isDone = checked[itemId];
+
+  // Update item row
+  const row   = document.getElementById(`item-${itemId}`);
+  const cb    = document.getElementById(`cb-${itemId}`);
+  const name  = document.getElementById(`name-${itemId}`);
+  const route = document.getElementById(`route-${itemId}`);
+
+  row.style.background  = isDone ? hexAlpha(sec.bg, 0.35) : "transparent";
+  cb.style.background   = isDone ? sec.accent : "#fff";
+  cb.style.borderColor  = isDone ? sec.accent : "#D3D1C7";
+  cb.textContent        = isDone ? "✓" : "";
+  name.classList.toggle("done", isDone);
+  route.style.color     = isDone ? "#B4B2A9" : sec.accent;
+
+  // Update section bar + count
+  const done = sec.items.filter(i => checked[i.id]).length;
+  const pct  = Math.round(done / sec.items.length * 100);
+  document.getElementById(`sf-${secId}`).style.width = `${pct}%`;
+  document.getElementById(`sc-${secId}`).textContent = `${done}/${sec.items.length}`;
+  const headEl = document.getElementById(`sh-${secId}`);
+  headEl.style.background = done === sec.items.length ? sec.bg : "#FAFAF9";
+
+  updateHeader();
+}
+
+function toggleSec(secId) {
+  collapsed[secId] = !collapsed[secId];
+  const isNowCollapsed = collapsed[secId];
+  document.getElementById(`iw-${secId}`).classList.toggle("hidden", isNowCollapsed);
+  document.getElementById(`cv-${secId}`).classList.toggle("up", isNowCollapsed);
+  document.getElementById(`sh-${secId}`).classList.toggle("no-border", isNowCollapsed);
+}
+
+/* ── Init ── */
+load();
+document.getElementById("root").innerHTML = buildHTML();
+updateHeader();
+</script>
+</body>
+</html>
