@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand */
+  --pink:          #E8197A;
+  --pink-hover:    #C91569;
+  --pink-light:    #FFE8F2;
+  --pink-lighter:  #FFF5FA;
+  --pink-border:   #FFD0E8;
+
+  --teal:          #06B6D4;
+  --teal-hover:    #0891B2;
+  --teal-light:    #E0F9FF;
+  --teal-border:   #BAF3FF;
+
+  --purple-light:  #F5F0FF;
+  --purple-border: #DDD0F8;
+
+  /* Text */
+  --text-primary:   #1A1033;
+  --text-secondary: #6B7280;
+  --text-muted:     #9CA3AF;
+
+  /* Backgrounds */
+  --bg-page:         #FDFCFF;
+  --bg-card:         #FFFFFF;
+  --bg-pink-soft:    #FFF0F8;
+  --bg-purple-soft:  #F5F0FF;
+  --bg-teal-soft:    #F0FDFF;
+  --bg-dark:         #1A1033;
+
+  /* Borders */
+  --border:          #F0EBF8;
+  --border-strong:   #E2D9F3;
+
+  /* Shadows */
+  --shadow-card:  0 4px 24px rgba(232, 25, 122, 0.08);
+  --shadow-hero:  0 8px 48px rgba(232, 25, 122, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
