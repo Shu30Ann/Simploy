@@ -53,6 +53,55 @@
   --success-text:       #15803D;
   --divider-color:      #F0EBF8;
   --google-border:      #E5E7EB;
+
+  /* Simulator */
+  --sim-sidebar-bg:    #FAFAF9;
+  --sim-sidebar-w:     220px;
+  --sim-right-w:       268px;
+
+  --chart-supply:      #D3D3D8;
+  --chart-demand:      #E8197A;
+  --chart-net:         #7F77DD;
+
+  --slider-attrition:  #E8197A;
+  --slider-ai:         #7F77DD;
+  --slider-budget:     #F59E0B;
+  --slider-growth:     #06B6D4;
+
+  --risk-critical:     #E8197A;
+  --risk-at-risk:      #F59E0B;
+  --risk-stable:       #06B6D4;
+  --risk-growing:      #10B981;
+}
+
+/* Simulator slider thumb */
+input[type="range"].sim-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  outline: none;
+}
+input[type="range"].sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--thumb-color, #E8197A);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+input[type="range"].sim-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--thumb-color, #E8197A);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  border: none;
 }
 
 html {
