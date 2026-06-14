@@ -147,6 +147,9 @@ export default function EmployeeDashboardPage() {
               <a href="#insights" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Analytics
               </a>
+              <a href="/employer/action-engine" className="rounded-full bg-[#1A1033] px-4 py-2 text-white hover:bg-[#111827]">
+                Action Engine
+              </a>
             </nav>
           </div>
 
