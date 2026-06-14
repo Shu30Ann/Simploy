@@ -1,8 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -10,12 +8,10 @@ import GoogleAuthButton from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 
-const schema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  email?: string;
+  password?: string;
+};
 
 const inputBase =
   "w-full px-4 py-3 rounded-xl border text-sm transition-all duration-150 focus:outline-none focus:ring-2";
@@ -42,10 +38,10 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>();
 
   const onSubmit = async () => {
-    await new Promise((res) => setTimeout(res, 1200));
+    await new Promise((res) => setTimeout(res, 400));
     router.push("/employee/dashboard");
   };
 
