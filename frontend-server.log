@@ -1,0 +1,33 @@
+
+> frontend@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+ ✓ Ready in 1669ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 3.5s (1556 modules)
+ GET /employee/dashboard 200 in 3672ms
+ GET /login 200 in 3678ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.1s (1642 modules)
+ GET / 200 in 2367ms
+ ✓ Compiled /favicon.ico in 440ms (873 modules)
+ GET /favicon.ico 200 in 583ms
+ GET /employee/dashboard 200 in 196ms
+ GET /employee/dashboard 200 in 50ms
+ GET /employee/dashboard 200 in 57ms
+ GET /favicon.ico 200 in 28ms
+ ✓ Compiled in 574ms (1632 modules)
+ GET /employee/dashboard 200 in 69ms
+ ✓ Compiled in 588ms (1604 modules)
+ ✓ Compiled in 398ms (1604 modules)
+ ✓ Compiled in 293ms (1604 modules)
+ ✓ Compiled in 389ms (1604 modules)
+ GET /employee/dashboard 200 in 83ms
+ ✓ Compiled in 454ms (1604 modules)
+ ✓ Compiled in 374ms (1604 modules)
+ ✓ Compiled in 292ms (1604 modules)
+ GET /employee/dashboard 200 in 83ms

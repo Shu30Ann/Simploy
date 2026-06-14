@@ -46,7 +46,7 @@ export default function LoginForm() {
 
   const onSubmit = async () => {
     await new Promise((res) => setTimeout(res, 1200));
-    router.push("/employer/dashboard");
+    router.push("/employee/dashboard");
   };
 
   return (
