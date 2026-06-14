@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -76,7 +79,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
           Simploy
         </p>
