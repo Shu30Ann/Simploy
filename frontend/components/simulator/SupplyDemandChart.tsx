@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Clock, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ComposedChart, Bar, Line, Cell,
+  ComposedChart, Bar, Line,
   XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer,
 } from "recharts";
@@ -26,6 +26,11 @@ const LEGEND = [
 
 export default function SupplyDemandChart({ result, aiPresetActive, compareMode, resultB }: Props) {
   const [showCostBreakdown, setShowCostBreakdown] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
+
+  useEffect(() => {
+    setChartReady(true);
+  }, []);
 
   const { chartData } = result;
   const lastPoint = chartData[chartData.length - 1];
@@ -108,6 +113,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
 
       {/* Chart */}
       <div style={{ height: 240 }}>
+        {chartReady && (
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={mergedData} barCategoryGap="35%" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1EFE8" vertical={false} />
@@ -186,6 +192,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
             </>}
           </ComposedChart>
         </ResponsiveContainer>
+        )}
       </div>
 
       {/* Stat bar — 5 cols */}

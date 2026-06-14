@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, CheckCircle2, CircleDot, Globe, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionLabel from "@/components/ui/SectionLabel";
 
@@ -120,14 +120,6 @@ export default function ActionEnginePage() {
     () => actions.filter((action) => selectedFilter === "All" || action.category === selectedFilter),
     [selectedFilter]
   );
-
-  const totalCost = useMemo(() => {
-    const costValue = actions.reduce((sum, action) => {
-      const numeric = Number(action.cost.replace(/[^0-9.]/g, ""));
-      return sum + (Number.isNaN(numeric) ? 0 : numeric);
-    }, 0);
-    return `RM ${costValue.toFixed(1)}M`;
-  }, []);
 
   return (
     <main className="min-h-screen bg-[#F8F6FB] text-[#1F2937]">
