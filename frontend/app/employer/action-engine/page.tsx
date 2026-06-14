@@ -1,8 +1,16 @@
 "use client";
 
+import type { ElementType } from "react";
 import { useMemo, useState } from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
-import Button from "@/components/ui/Button";
+import {
+  ArrowRight,
+  BarChart3,
+  BriefcaseBusiness,
+  GraduationCap,
+  Repeat2,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 
 const actions = [
@@ -102,15 +110,38 @@ const actions = [
 const filters = ["All", "Hire", "Upskill", "Mobility", "Automate", "Retain"];
 
 const labelStyles: Record<string, string> = {
-  Critical: "bg-[#E8197A]/10 text-[#E8197A] border-[#E8197A]/20",
-  High: "bg-[#EF4444]/10 text-[#DC2626] border-[#FCA5A5]/30",
-  Medium: "bg-[#F59E0B]/10 text-[#B45309] border-[#FCD34D]/30",
+  Critical: "bg-[#FFF0F8] text-[#E8197A] border-[#FFD0E8]",
+  High: "bg-[#F5F0FF] text-[#6B46C1] border-[#DDD0F8]",
+  Medium: "bg-[#E0F9FF] text-[#087C7E] border-[#BAF3FF]",
 };
 
 const impactStyles: Record<string, string> = {
-  High: "text-[#DC2626]",
-  "Medium-High": "text-[#B45309]",
-  Medium: "text-[#F59E0B]",
+  High: "text-[#E8197A]",
+  "Medium-High": "text-[#087C7E]",
+  Medium: "text-[#6B46C1]",
+};
+
+const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
+  Hire: {
+    icon: BriefcaseBusiness,
+    accent: "text-[#E8197A] bg-[#FFF0F8]",
+  },
+  Upskill: {
+    icon: GraduationCap,
+    accent: "text-[#6B46C1] bg-[#F5F0FF]",
+  },
+  Mobility: {
+    icon: Repeat2,
+    accent: "text-[#087C7E] bg-[#E0F9FF]",
+  },
+  Automate: {
+    icon: Zap,
+    accent: "text-[#C2410C] bg-[#FFF3E8]",
+  },
+  Retain: {
+    icon: Sparkles,
+    accent: "text-[#E8197A] bg-[#FFF0F8]",
+  },
 };
 
 export default function ActionEnginePage() {
@@ -122,90 +153,50 @@ export default function ActionEnginePage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#F8F6FB] text-[#1F2937]">
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8 rounded-3xl border border-[#E8E3F1] bg-white p-8 shadow-[0_18px_64px_rgba(57,44,93,0.08)]">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <SectionLabel>Layer 3</SectionLabel>
-              <h1 className="text-3xl font-semibold tracking-tight text-[#111827] sm:text-4xl">
-                Action Engine
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#4B5563]">
-                Now that we detected the workforce gap, Simploy recommends the exact strategic actions to close it.
-                Review AI-recommended workforce plans and launch the next moves for hiring, upskilling, mobility, automation, retention, and succession.
-              </p>
+    <main className="min-h-screen bg-[#FFF8FC] text-[#1A1033]">
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+          <div>
+            <SectionLabel>Layer 3 Execution Plan</SectionLabel>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold leading-tight text-[#1A1033] sm:text-4xl">Action Engine</h1>
+              <span className="rounded-full bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase text-[#E8197A]">
+                7 plans
+              </span>
             </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button variant="outline" className="min-w-[160px]">
-                Review Simulator Output
-              </Button>
-              <Button className="min-w-[160px]">Open action board</Button>
-            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4B5563]">
+              Layer 2 detected the gap. Layer 3 turns it into a prioritized execution plan.
+            </p>
           </div>
-        </div>
+        </header>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6">
-            <section className="rounded-3xl border border-[#E8E3F1] bg-white p-6 shadow-[0_12px_40px_rgba(57,44,93,0.05)]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="mt-5 rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(26,16,51,0.05)]">
+          <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-center">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Gap detected</p>
+              <p className="mt-1 font-bold text-[#1A1033]">1,850 roles</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Main risk</p>
+              <p className="mt-1 font-bold text-[#E8197A]">Engineering shortage</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Recommended strategy</p>
+              <p className="mt-1 font-bold text-[#087C7E]">Hire + Upskill + Mobility</p>
+            </div>
+            <span className="rounded-full bg-[#E0F9FF] px-4 py-2 text-xs font-bold text-[#087C7E]">
+              Based on current gap signals
+            </span>
+          </div>
+        </section>
+
+        <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
+          <section className="min-w-0">
+            <div className="sticky top-0 z-10 rounded-lg border border-[#F0EBF8] bg-white/95 p-3 shadow-[0_8px_22px_rgba(26,16,51,0.06)] backdrop-blur">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6D28D9]">
-                    AI Workforce Strategy
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-[#111827]">Simulator-led action summary</h2>
-                </div>
-                <div className="rounded-3xl bg-[#F8FAFC] px-4 py-3 text-sm text-[#475569] shadow-sm">
-                  <p className="font-semibold">Based on current gap signals</p>
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl border border-[#E9E6F8] bg-[#FAF7FF] p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#7C3AED]">Total workforce gap</p>
-                  <p className="mt-3 text-3xl font-bold text-[#111827]">1,850 roles</p>
-                </div>
-                <div className="rounded-3xl border border-[#E6F3F9] bg-[#F0FDFF] p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0F766E]">Estimated cost</p>
-                  <p className="mt-3 text-3xl font-bold text-[#065F46]">RM 18.8M</p>
-                </div>
-                <div className="rounded-3xl border border-[#FEF3C7] bg-[#FFFBEB] p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#B45309]">Expected impact</p>
-                  <p className="mt-3 text-3xl font-bold text-[#92400E]">High</p>
-                </div>
-                <div className="rounded-3xl border border-[#E8E3F1] bg-[#F8F6FB] p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#4B5563]">Recommended action count</p>
-                  <p className="mt-3 text-3xl font-bold text-[#111827]">7 plans</p>
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-3xl border border-[#E8E3F1] bg-[#F7F3FF] p-5">
-                <p className="text-sm font-semibold text-[#6B7280]">Scenario result</p>
-                <p className="mt-3 text-sm leading-7 text-[#374151]">
-                  The workforce simulator detected a growing talent deficit and internal imbalance across engineering, HR, and data operations. These recommendations are prioritized to reduce risk, accelerate delivery, and preserve workforce continuity.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {[
-                    "Engineering shortage",
-                    "Role mismatch risk",
-                    "Automation opportunity",
-                    "Global sourcing needed",
-                    "Retention pressure",
-                  ].map((badge) => (
-                    <span key={badge} className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1 text-xs font-semibold text-[#475569]">
-                      {badge}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-[#E8E3F1] bg-white p-6 shadow-[0_12px_40px_rgba(57,44,93,0.05)]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6D28D9]">Action filter</p>
-                  <h3 className="mt-2 text-xl font-semibold text-[#111827]">Refine by action type</h3>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Action plan</p>
+                  <h2 className="text-lg font-bold text-[#1A1033]">Execution cards</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {filters.map((filter) => (
@@ -213,10 +204,10 @@ export default function ActionEnginePage() {
                       key={filter}
                       type="button"
                       onClick={() => setSelectedFilter(filter)}
-                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      className={`rounded-lg border px-3 py-2 text-sm font-bold transition ${
                         selectedFilter === filter
-                          ? "bg-[#6D28D9] text-white"
-                          : "bg-[#F3F4F6] text-[#475569] hover:bg-[#EDE9FE]"
+                          ? "border-[#E8197A] bg-[#E8197A] text-white shadow-[0_8px_18px_rgba(232,25,122,0.18)]"
+                          : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#FFD0E8] hover:text-[#E8197A]"
                       }`}
                     >
                       {filter}
@@ -224,100 +215,120 @@ export default function ActionEnginePage() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="mt-6 grid gap-4">
-                {filteredActions.map((action) => (
-                  <article key={action.id} className="overflow-hidden rounded-3xl border border-[#E8E3F1] bg-[#FAFAFC] p-6 shadow-[0_10px_24px_rgba(57,44,93,0.04)]">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6B7280]">
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {filteredActions.map((action) => {
+                const visual = actionVisuals[action.category] ?? actionVisuals.Retain;
+                const Icon = visual.icon;
+                return (
+                  <article
+                    key={action.id}
+                    className="flex min-h-[310px] flex-col rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_24px_rgba(26,16,51,0.04)] transition hover:-translate-y-0.5 hover:border-[#FFD0E8] hover:shadow-[0_14px_34px_rgba(232,25,122,0.12)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${visual.accent}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate text-xl font-bold text-[#1A1033]">{action.title}</h3>
+                          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">
                             Priority {action.priority}
-                          </span>
-                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${labelStyles[action.label]}`}>
-                            {action.label}
-                          </span>
-                        </div>
-                        <h4 className="mt-3 text-2xl font-semibold text-[#111827]">{action.title}</h4>
-                        <p className="mt-3 text-sm leading-7 text-[#4B5563]">{action.problem}</p>
-                        <p className="mt-3 text-sm font-semibold text-[#111827]">Recommendation</p>
-                        <p className="mt-1 text-sm leading-7 text-[#374151]">{action.recommendation}</p>
-                      </div>
-                      <div className="grid gap-3 text-sm text-[#374151] sm:w-64">
-                        <div className="rounded-3xl bg-white p-4 shadow-sm">
-                          <p className="text-xs uppercase tracking-[0.24em] text-[#6B7280]">Impact</p>
-                          <p className={`mt-2 text-lg font-semibold ${impactStyles[action.impact] || "text-[#111827]"}`}>{action.impact}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-4 shadow-sm">
-                          <p className="text-xs uppercase tracking-[0.24em] text-[#6B7280]">Estimated cost</p>
-                          <p className="mt-2 text-lg font-semibold text-[#111827]">{action.cost}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-4 shadow-sm">
-                          <p className="text-xs uppercase tracking-[0.24em] text-[#6B7280]">Timeline</p>
-                          <p className="mt-2 text-lg font-semibold text-[#111827]">{action.timeline}</p>
+                          </p>
                         </div>
                       </div>
+                      <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold ${labelStyles[action.label]}`}>
+                        {action.label}
+                      </span>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between gap-4">
-                      <span className="text-xs uppercase tracking-[0.24em] text-[#6B7280]">Type: {action.category}</span>
-                      <Button className="inline-flex items-center gap-2 bg-[#1D4ED8] hover:bg-[#1E40AF]">
+                    <p className="mt-4 text-sm font-semibold leading-6 text-[#374151]">{action.problem}</p>
+
+                    <div className="mt-4 rounded-lg bg-[#FDFCFF] p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-[#E8197A]">Recommendation</p>
+                      <p className="mt-1 text-sm leading-6 text-[#374151]">{action.recommendation}</p>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      {[
+                        ["Impact", action.impact, impactStyles[action.impact] || "text-[#1A1033]"],
+                        ["Cost", action.cost, "text-[#1A1033]"],
+                        ["Timeline", action.timeline, "text-[#1A1033]"],
+                      ].map(([label, value, color]) => (
+                        <div key={label} className="rounded-lg border border-[#F0EBF8] bg-white p-2">
+                          <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+                          <p className={`mt-1 text-sm font-bold ${color}`}>{value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto pt-5">
+                      <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#C91569] hover:shadow-[0_10px_22px_rgba(232,25,122,0.22)]">
                         {action.buttonLabel}
-                        <ArrowRight size={16} />
-                      </Button>
+                        <ArrowRight size={15} />
+                      </button>
                     </div>
                   </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <aside className="hidden xl:block">
+            <div className="sticky top-4 rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_16px_42px_rgba(232,25,122,0.12)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Layer 3 Output</p>
+                  <h2 className="mt-1 text-xl font-bold text-[#1A1033]">Execution Summary</h2>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#E0F9FF] text-[#087C7E]">
+                  <BarChart3 size={20} />
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-lg bg-[#FFF0F8] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#E8197A]">Gap reduction potential</p>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <p className="text-4xl font-bold text-[#1A1033]">82%</p>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#E8197A]">High confidence</span>
+                </div>
+                <div className="mt-4 h-2 rounded-full bg-white">
+                  <div className="h-2 w-[82%] rounded-full bg-[#E8197A]" />
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {[
+                  ["Total plans", "7", "text-[#1A1033]"],
+                  ["Critical actions", "2", "text-[#E8197A]"],
+                  ["Estimated cost", "RM 18.8M", "text-[#087C7E]"],
+                  ["Time horizon", "12-36 mo", "text-[#6B46C1]"],
+                ].map(([label, value, color]) => (
+                  <div key={label} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+                    <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+                    <p className={`mt-2 text-base font-bold ${color}`}>{value}</p>
+                  </div>
                 ))}
               </div>
-            </section>
-          </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-3xl border border-[#E8E3F1] bg-[#F8F6FB] p-6 shadow-[0_12px_40px_rgba(57,44,93,0.05)]">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <SectionLabel>AI Recommended Actions</SectionLabel>
-                  <h3 className="text-xl font-semibold text-[#111827]">Action Engine panel</h3>
-                </div>
-                <div className="rounded-3xl bg-[#EEF2FF] px-3 py-2 text-sm font-semibold text-[#4338CA]">
-                  Live guidance
-                </div>
-              </div>
 
-              <div className="mt-6 space-y-4">
-                <div className="rounded-3xl bg-white p-5 shadow-sm">
-                  <p className="text-sm font-semibold text-[#6B7280]">Highest priority</p>
-                  <p className="mt-3 text-lg font-semibold text-[#111827]">Hire engineering talent to close the 1,200-person gap.</p>
-                </div>
-                <div className="rounded-3xl bg-white p-5 shadow-sm">
-                  <p className="text-sm font-semibold text-[#6B7280]">Quick win</p>
-                  <p className="mt-3 text-lg font-semibold text-[#111827]">Upskill analysts into AI business analyst roles within 6 months.</p>
-                </div>
-                <div className="rounded-3xl bg-white p-5 shadow-sm">
-                  <p className="text-sm font-semibold text-[#6B7280]">Risk signal</p>
-                  <p className="mt-3 text-lg font-semibold text-[#111827]">Retention planning is critical for senior engineering leaders.</p>
+              <div className="mt-4 rounded-lg bg-[#E0F9FF] p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#087C7E]">Execution result</p>
+                <div className="mt-3 space-y-3">
+                  {[
+                    ["Shortage reduced", "1,517 roles"],
+                    ["Priority sequence", "Hire -> Upskill -> Mobility"],
+                    ["Residual risk", "Senior leadership retention"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="border-b border-white/70 pb-3 last:border-b-0 last:pb-0">
+                      <p className="text-[10px] font-bold uppercase text-[#087C7E]">{label}</p>
+                      <p className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </section>
-
-            <section className="rounded-3xl border border-[#E8E3F1] bg-white p-6 shadow-[0_12px_40px_rgba(57,44,93,0.05)]">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <SectionLabel>Leadership note</SectionLabel>
-                  <p className="text-lg font-semibold text-[#111827]">Recommended next step</p>
-                </div>
-                <Sparkles size={22} className="text-[#9333EA]" />
-              </div>
-              <p className="mt-4 text-sm leading-7 text-[#475569]">
-                Use the Action Engine after your Layer 2 simulation completes. The model prioritizes workforce actions that balance headcount, talent supply, automation, and retention across the next 12–36 months.
-              </p>
-              <div className="mt-5 rounded-3xl bg-[#EEF2FF] p-4 text-sm text-[#0F172A]">
-                <p className="font-semibold">Insight:</p>
-                <p className="mt-2 leading-6 text-[#475569]">
-                  Hiring, mobility, and retention are required together. Acting on a single strategy will leave gaps in adjacent workforce categories.
-                </p>
-              </div>
-            </section>
+            </div>
           </aside>
         </div>
       </section>

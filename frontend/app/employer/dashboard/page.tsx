@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import {
   ArrowUpRight,
   BarChart3,
   BriefcaseBusiness,
-  Building2,
   ClipboardList,
   EllipsisVertical,
   FilePenLine,
@@ -16,6 +16,7 @@ import {
   Sparkles,
   UsersRound,
 } from "lucide-react";
+import { routes } from "@/lib/routes";
 
 const jobs = [
   {
@@ -425,10 +426,13 @@ function DemographicClock() {
             ))}
           </div>
 
-          <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]">
+          <Link
+            href={routes.employerSimulator}
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
+          >
             Checkout workforce simulator
             <ArrowUpRight size={16} />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
@@ -447,7 +451,9 @@ function WorkforcePlanner() {
           <Map size={20} className="text-[#06B6D4]" />
           Workforce Planner
         </h2>
-        <button className="text-sm font-bold text-[#0891B2]">Open</button>
+        <Link href={routes.employerActionEngine} className="text-sm font-bold text-[#0891B2]">
+          Open
+        </Link>
       </div>
 
       <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
@@ -481,44 +487,6 @@ function WorkforcePlanner() {
 export default function EmployerDashboardPage() {
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <header className="border-b border-[#F0EBF8] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold text-[#E8197A]">
-              Simploy
-            </a>
-            <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-              <a href="#jobs" className="rounded-full bg-[#FFF0F8] px-4 py-2 text-[#E8197A]">
-                Jobs
-              </a>
-              <a href="#applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Applications
-              </a>
-              <a href="#matches" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Skills
-              </a>
-              <a href="#planner" className="rounded-full px-4 py-2 text-[#E8197A] underline decoration-2 underline-offset-8">
-                Workforce Simulator
-              </a>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-full border border-[#6B46C1] bg-white px-4 py-2 text-sm font-bold text-[#6B46C1] shadow-sm">
-              <Building2 size={16} />
-              Switch Portal
-            </button>
-            <button className="inline-flex items-center gap-2 rounded-full bg-[#E8197A] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,25,122,0.22)]">
-              <BriefcaseBusiness size={16} />
-              Post a Job
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1033] text-sm font-bold text-white">
-              L2
-            </div>
-          </div>
-        </div>
-      </header>
-
       <section className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
           <div>
