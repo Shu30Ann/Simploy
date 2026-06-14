@@ -71,7 +71,7 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
 
   const onSubmit = async () => {
     await new Promise((res) => setTimeout(res, 1400));
-    router.push(role === "employee" ? "/onboarding/employee" : "/onboarding/employer");
+    router.push(role === "employee" ? "/onboarding/employee" : "/employer/dashboard");
   };
 
   return (

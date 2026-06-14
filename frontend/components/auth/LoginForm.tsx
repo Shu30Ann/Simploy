@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,6 +39,8 @@ function Divider() {
 
 export default function LoginForm() {
   const router = useRouter();
+  const [role, setRole] = useState<"employer" | "employee">("employer");
+
   const {
     register,
     handleSubmit,
@@ -46,7 +49,7 @@ export default function LoginForm() {
 
   const onSubmit = async () => {
     await new Promise((res) => setTimeout(res, 1200));
-    router.push("/employee/dashboard");
+    router.push(role === "employer" ? "/employer/dashboard" : "/employee/dashboard");
   };
 
   return (
@@ -56,7 +59,7 @@ export default function LoginForm() {
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
           Simploy
         </p>
@@ -69,6 +72,24 @@ export default function LoginForm() {
             Create one free
           </a>
         </p>
+      </div>
+
+      {/* Role toggle */}
+      <div className="flex rounded-xl p-1 mb-6" style={{ background: "#F1EFE8" }}>
+        {(["employer", "employee"] as const).map(r => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => setRole(r)}
+            className="flex-1 py-2 rounded-lg text-sm font-medium transition-all capitalize"
+            style={role === r
+              ? { background: "white", color: "var(--pink)", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
+              : { color: "var(--text-secondary)" }
+            }
+          >
+            {r === "employer" ? "I'm an Employer" : "I'm an Employee"}
+          </button>
+        ))}
       </div>
 
       <GoogleAuthButton />
