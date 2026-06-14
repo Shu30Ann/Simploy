@@ -39,6 +39,7 @@ export default function SignupFlow({ initialRole }: SignupFlowProps) {
   const [role, setRole] = useState<"employee" | "employer" | null>(validRole);
 
   const handleSelect = (r: "employee" | "employer") => {
+    window.localStorage.setItem("simploy-role", r);
     setRole(r);
     setStep(2);
   };

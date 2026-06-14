@@ -10,15 +10,12 @@ import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
 import GoogleAuthButton from "./GoogleAuthButton";
+import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Please enter your full name"),
   email: z.string().email("Please enter a valid email"),
-  password: z
-    .string()
-    .min(8, "Must be at least 8 characters")
-    .regex(/[A-Z]/, "Must include an uppercase letter")
-    .regex(/[0-9]/, "Must include a number"),
+  password: z.string().min(8, "Must be at least 8 characters"),
   terms: z.literal<boolean>(true, {
     message: "You must accept the terms to continue",
   }),
@@ -71,7 +68,8 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
 
   const onSubmit = async () => {
     await new Promise((res) => setTimeout(res, 1400));
-    router.push(role === "employee" ? "/onboarding/employee" : "/onboarding/employer");
+    window.localStorage.setItem("simploy-role", role);
+    router.push(dashboardRouteFor(role));
   };
 
   return (
@@ -248,7 +246,7 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
 
       <p className="text-center text-sm mt-4" style={{ color: "var(--text-secondary)" }}>
         Already have an account?{" "}
-        <a href="/login" className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
+        <a href={authRouteWithRole(routes.login, role)} className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
           Sign in
         </a>
       </p>

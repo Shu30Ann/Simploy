@@ -2,6 +2,7 @@
 
 import { ArrowRight, UserCircle2, Building2, Check } from "lucide-react";
 import { motion } from "framer-motion";
+import { authRouteWithRole, routes } from "@/lib/routes";
 
 interface RoleSelectProps {
   role: "employee" | "employer" | null;
@@ -152,7 +153,7 @@ export default function RoleSelect({ role, onSelect }: RoleSelectProps) {
 
         <p className="text-sm text-center mt-5" style={{ color: "var(--text-secondary)" }}>
           Already have an account?{" "}
-          <a href="/login" className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
+          <a href={authRouteWithRole(routes.login, role)} className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
             Sign in
           </a>
         </p>
