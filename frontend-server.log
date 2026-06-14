@@ -31,3 +31,9 @@
  ✓ Compiled in 374ms (1604 modules)
  ✓ Compiled in 292ms (1604 modules)
  GET /employee/dashboard 200 in 83ms
+ ✓ Compiled /_not-found in 769ms (1566 modules)
+ ✓ Compiled (1552 modules)
+ ✓ Compiled in 238ms (800 modules)
+ ✓ Compiled in 588ms (1566 modules)
+ ○ Compiling /employee/dashboard ...
+ ✓ Compiled /employee/dashboard in 1292ms (1604 modules)
