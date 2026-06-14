@@ -1,0 +1,19 @@
+
+> frontend@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+ ✓ Ready in 1862ms
+ ○ Compiling /employer/dashboard ...
+ ✓ Compiled /employer/dashboard in 1195ms (536 modules)
+ GET /employer/dashboard 200 in 1328ms
+ ✓ Compiled in 156ms (261 modules)
+ ✓ Compiled in 315ms (261 modules)
+ ✓ Compiled in 78ms (261 modules)
+ ✓ Compiled in 248ms (261 modules)
+ ✓ Compiled in 214ms (261 modules)
+ ✓ Compiled in 225ms (261 modules)
+ ✓ Compiled in 506ms (261 modules)
