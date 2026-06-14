@@ -593,10 +593,13 @@ export default function EmployeeDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm">
+            <a
+              href="/employer/dashboard"
+              className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
+            >
               <Building2 size={16} />
               Switch Portal
-            </button>
+            </a>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1033] text-sm font-bold text-white">
               A
             </div>

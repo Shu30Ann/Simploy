@@ -1,15 +1,29 @@
 const cols = [
   {
     heading: "Product",
-    links: ["Jobs Marketplace", "Gap Simulator", "Action Engine", "Pricing"],
+    links: [
+      { label: "Jobs Marketplace", href: "/employee/dashboard" },
+      { label: "Gap Simulator", href: "/employer/analytics/simulator" },
+      { label: "Action Engine", href: "/employer/analytics/simulator" },
+      { label: "Pricing", href: "/#pricing" },
+    ],
   },
   {
     heading: "Company",
-    links: ["About", "Blog", "Careers", "Press"],
+    links: [
+      { label: "About", href: "/#about" },
+      { label: "For Employees", href: "/#solutions" },
+      { label: "For Employers", href: "/#solutions" },
+      { label: "How It Works", href: "/#how-it-works" },
+    ],
   },
   {
     heading: "Legal",
-    links: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
+    links: [
+      { label: "Privacy Policy", href: "/login" },
+      { label: "Terms of Service", href: "/signup" },
+      { label: "Cookie Policy", href: "/" },
+    ],
   },
 ];
 
@@ -31,11 +45,11 @@ export default function Footer() {
             </p>
             {col.links.map((link) => (
               <a
-                key={link}
-                href="#"
+                key={link.label}
+                href={link.href}
                 className="text-sm text-white/60 hover:text-white transition-colors block mb-2"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </div>

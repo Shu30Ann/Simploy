@@ -6,9 +6,11 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import GoogleAuthButton from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
+import { authRouteWithRole, dashboardRouteFor, routes, type UserRole } from "@/lib/routes";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -36,17 +38,37 @@ function Divider() {
   );
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  initialRole?: string;
+}
+
+export default function LoginForm({ initialRole }: LoginFormProps) {
   const router = useRouter();
+  const validInitialRole = initialRole === "employee" || initialRole === "employer" ? initialRole : null;
+  const [role, setRole] = useState<UserRole>(validInitialRole ?? "employee");
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
+  useEffect(() => {
+    if (validInitialRole) {
+      window.localStorage.setItem("simploy-role", validInitialRole);
+      setRole(validInitialRole);
+      return;
+    }
+
+    const savedRole = window.localStorage.getItem("simploy-role");
+    if (savedRole === "employee" || savedRole === "employer") {
+      setRole(savedRole);
+    }
+  }, [validInitialRole]);
+
   const onSubmit = async () => {
     await new Promise((res) => setTimeout(res, 1200));
-    router.push("/employee/dashboard");
+    window.localStorage.setItem("simploy-role", role);
+    router.push(dashboardRouteFor(role));
   };
 
   return (
@@ -65,10 +87,28 @@ export default function LoginForm() {
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
           Don&apos;t have an account?{" "}
-          <a href="/signup" className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
+          <a href={authRouteWithRole(routes.signup, role)} className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
             Create one free
           </a>
         </p>
+      </div>
+
+      <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#F0EBF8] bg-[#FDFCFF] p-1">
+        {(["employee", "employer"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => {
+              setRole(option);
+              window.localStorage.setItem("simploy-role", option);
+            }}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              role === option ? "bg-white text-[#E8197A] shadow-sm" : "text-[#6B7280] hover:bg-white/70"
+            }`}
+          >
+            {option === "employee" ? "Employee" : "Employer"}
+          </button>
+        ))}
       </div>
 
       <GoogleAuthButton />

@@ -11,7 +11,11 @@ const DEFAULT_FEATURES = [
   { icon: Zap,       text: "Automated action plans" },
 ];
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { role?: string };
+}) {
   return (
     <AuthLayout
       leftPanel={
@@ -22,7 +26,7 @@ export default function LoginPage() {
         />
       }
     >
-      <LoginForm />
+      <LoginForm initialRole={searchParams.role} />
     </AuthLayout>
   );
 }

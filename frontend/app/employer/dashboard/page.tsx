@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { routes } from "@/lib/routes";
 
 export default function EmployerDashboard() {
   return (
@@ -13,11 +14,11 @@ export default function EmployerDashboard() {
       </div>
 
       <Link
-        href="/employer/analytics/simulator"
+        href={routes.employerSimulator}
         className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full text-white w-fit transition-colors"
         style={{ background: "var(--pink)" }}
       >
-        Open Workforce Gap Simulator →
+        Open Workforce Gap Simulator -&gt;
       </Link>
     </div>
   );

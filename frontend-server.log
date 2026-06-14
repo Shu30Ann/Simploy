@@ -3,7 +3,32 @@
 > next dev
 
   ▲ Next.js 14.2.35
-  - Local:        http://localhost:3001
+  - Local:        http://localhost:3000
 
  ✓ Starting...
- ✓ Ready in 1585ms
+ ✓ Ready in 2.1s
+ ○ Compiling /employee/applications ...
+ ✓ Compiled /employee/applications in 2.4s (525 modules)
+ GET /employee/applications 200 in 2492ms
+ GET /_next/static/webpack/397e7f3c020d8cd1.webpack.hot-update.json 404 in 2577ms
+ ✓ Compiled in 221ms (256 modules)
+ GET /employee/applications 200 in 72ms
+ GET /employee/applications 200 in 38ms
+ GET /_next/static/webpack/397e7f3c020d8cd1.webpack.hot-update.json 404 in 37ms
+ GET /employee/applications 200 in 55ms
+ ✓ Compiled /favicon.ico in 186ms (301 modules)
+ GET /favicon.ico 200 in 237ms
+ ○ Compiling /employer/dashboard ...
+ ✓ Compiled /employer/dashboard in 2.7s (1611 modules)
+ GET /employer/dashboard 200 in 2737ms
+ GET /login?role=employee 200 in 2781ms
+ GET /login?role=employer 200 in 2854ms
+ ○ Compiling /employee/dashboard ...
+ ✓ Compiled /employee/dashboard in 1210ms (2215 modules)
+ GET /employee/dashboard 200 in 1321ms
+ ○ Compiling /employer/analytics/simulator ...
+ ✓ Compiled /employer/analytics/simulator in 2.3s (3065 modules)
+ GET /employer/analytics/simulator 200 in 2550ms
+ ✓ Compiled in 514ms (1510 modules)
+ ✓ Compiled in 382ms (1333 modules)
+ ✓ Compiled in 149ms (1065 modules)

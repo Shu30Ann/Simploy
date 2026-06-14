@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { routes } from "@/lib/routes";
 
 const NAV = [
-  { label: "Dashboard",  href: "/employer/dashboard" },
-  { label: "Analytics",  href: "/employer/analytics/simulator" },
-  { label: "Jobs",       href: "#" },
-  { label: "Team",       href: "#" },
+  { label: "Dashboard", href: routes.employerDashboard },
+  { label: "Analytics", href: routes.employerSimulator },
+  { label: "Employee View", href: routes.employeeDashboard },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -21,7 +21,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         }}
       >
         {/* Logo */}
-        <span className="text-lg font-bold" style={{ color: "var(--pink)" }}>Simploy</span>
+        <Link href={routes.home} className="text-lg font-bold" style={{ color: "var(--pink)" }}>
+          Simploy
+        </Link>
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-6">
