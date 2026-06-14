@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MousePointer2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -207,7 +207,12 @@ function DeptPopup({ dept, hasSimulated }: { dept: DeptData; hasSimulated: boole
 
 export default function DepartmentPieChart({ hasSimulated = false }: { hasSimulated?: boolean }) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [chartReady, setChartReady] = useState(false);
   const activeDept = DEPT_DATA.find(d => d.id === activeId) ?? null;
+
+  useEffect(() => {
+    setChartReady(true);
+  }, []);
 
   const pieData = DEPT_DATA.map(d => ({
     ...d,
@@ -244,6 +249,7 @@ export default function DepartmentPieChart({ hasSimulated = false }: { hasSimula
         {/* Left — pie chart */}
         <div className="flex flex-col items-center">
           <div style={{ height: 240, width: "100%" }}>
+            {chartReady && (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -270,6 +276,7 @@ export default function DepartmentPieChart({ hasSimulated = false }: { hasSimula
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
+            )}
           </div>
 
           {/* Legend */}
