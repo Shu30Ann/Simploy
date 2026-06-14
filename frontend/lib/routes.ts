@@ -6,6 +6,7 @@ export const routes = {
   employeeApplications: "/employee/applications",
   employerDashboard: "/employer/dashboard",
   employerSimulator: "/employer/analytics/simulator",
+  employerActionEngine: "/employer/action-engine",
 };
 
 export type UserRole = "employee" | "employer";
