@@ -38,6 +38,21 @@
   /* Shadows */
   --shadow-card:  0 4px 24px rgba(232, 25, 122, 0.08);
   --shadow-hero:  0 8px 48px rgba(232, 25, 122, 0.12);
+
+  /* Auth */
+  --input-border:       #E2D9F3;
+  --input-border-focus: #E8197A;
+  --input-border-error: #EF4444;
+  --input-bg:           #FFFFFF;
+  --label-color:        #374151;
+  --error-bg:           #FFF5F5;
+  --error-border:       #FECACA;
+  --error-text:         #DC2626;
+  --success-bg:         #F0FDF4;
+  --success-border:     #BBF7D0;
+  --success-text:       #15803D;
+  --divider-color:      #F0EBF8;
+  --google-border:      #E5E7EB;
 }
 
 html {
