@@ -10,6 +10,7 @@ import {
   Search,
   Send,
 } from "lucide-react";
+import { ProfileMenu } from "@/components/ProfileMenu";
 
 const applications = [
   {
@@ -92,9 +93,7 @@ export default function EmployeeApplicationsPage() {
               <Building2 size={16} />
               Switch Portal
             </a>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1033] text-sm font-bold text-white">
-              A
-            </div>
+            <ProfileMenu role="employee" initials="A" name="Alex" label="Open employee profile menu" />
           </div>
         </div>
       </header>
