@@ -11,8 +11,6 @@ export const MOCK_ROLE_GAPS: RoleGap[] = [
 
 const TIMEFRAME_YEARS: Record<SimState["timeframe"], number> = {
   CURRENT: 1,
-  "1Y":    2,
-  "3Y":    3,
   "5Y":    4,
   "10Y":   5,
   "20Y":   6,
@@ -104,7 +102,7 @@ export const DEFAULT_STATE: SimState = {
   retirementExtension: 3,
   migrationImpact:     12,
   presets: { attritionSpike: true, aiAutomation: true, hiringFreeze: false, massRetirement: false },
-  timeframe: "1Y",
+  timeframe: "5Y",
 };
 
 export const DEFAULT_RESULT = runMockSimulation(DEFAULT_STATE);

@@ -5,11 +5,9 @@ import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import worldCountries from "world-atlas/countries-110m.json";
 import {
   ArrowUpRight,
-  BadgeCheck,
   BookOpen,
   BriefcaseBusiness,
   Building2,
-  CalendarDays,
   ChevronRight,
   CircleDollarSign,
   ClipboardCheck,
@@ -17,13 +15,18 @@ import {
   FileBadge,
   GraduationCap,
   Globe2,
-  LineChart,
   Map as MapIcon,
   MapPin,
   Search,
   Sparkles,
-  UserRound,
 } from "lucide-react";
+
+const careerCommandCenter = {
+  readiness: 76,
+  nextRole: "Product Manager",
+  missingSkills: 2,
+  nextAction: "Start Product Analytics Path",
+};
 
 const opportunities = [
   {
@@ -107,6 +110,12 @@ const asiaMarkets: Array<{
   visa: number;
   remote: number;
   future: number;
+  fitScore: number;
+  demand: string;
+  salaryUpside: string;
+  visaFriendliness: string;
+  remoteRoles: string;
+  recommendedRating: string;
   averageSalary: string;
   employability: number;
   topSkills: string[];
@@ -122,6 +131,12 @@ const asiaMarkets: Array<{
     visa: 88,
     remote: 63,
     future: 82,
+    fitScore: 91,
+    demand: "Very high",
+    salaryUpside: "+36%",
+    visaFriendliness: "Excellent",
+    remoteRoles: "1,240",
+    recommendedRating: "Strong",
     averageSalary: "SGD 124k",
     employability: 92,
     topSkills: ["AI product", "UX research", "cybersecurity"],
@@ -137,6 +152,12 @@ const asiaMarkets: Array<{
     visa: 69,
     remote: 41,
     future: 76,
+    fitScore: 78,
+    demand: "High",
+    salaryUpside: "+28%",
+    visaFriendliness: "Moderate",
+    remoteRoles: "680",
+    recommendedRating: "Good",
     averageSalary: "JPY 11.2m",
     employability: 78,
     topSkills: ["automation", "data analytics", "care tech"],
@@ -152,6 +173,12 @@ const asiaMarkets: Array<{
     visa: 65,
     remote: 46,
     future: 80,
+    fitScore: 83,
+    demand: "High",
+    salaryUpside: "+24%",
+    visaFriendliness: "Moderate",
+    remoteRoles: "740",
+    recommendedRating: "Strong",
     averageSalary: "KRW 92m",
     employability: 83,
     topSkills: ["AI tools", "growth marketing", "semiconductors"],
@@ -167,6 +194,12 @@ const asiaMarkets: Array<{
     visa: 58,
     remote: 71,
     future: 89,
+    fitScore: 88,
+    demand: "Very high",
+    salaryUpside: "+18%",
+    visaFriendliness: "Developing",
+    remoteRoles: "2,180",
+    recommendedRating: "Strong",
     averageSalary: "INR 34L",
     employability: 88,
     topSkills: ["cloud", "product analytics", "full-stack"],
@@ -182,6 +215,12 @@ const asiaMarkets: Array<{
     visa: 61,
     remote: 54,
     future: 85,
+    fitScore: 81,
+    demand: "High",
+    salaryUpside: "+21%",
+    visaFriendliness: "Moderate",
+    remoteRoles: "910",
+    recommendedRating: "Good",
     averageSalary: "USD 38k",
     employability: 81,
     topSkills: ["operations", "QA automation", "digital sales"],
@@ -197,6 +236,12 @@ const asiaMarkets: Array<{
     visa: 57,
     remote: 49,
     future: 79,
+    fitScore: 77,
+    demand: "Growing",
+    salaryUpside: "+15%",
+    visaFriendliness: "Developing",
+    remoteRoles: "860",
+    recommendedRating: "Good",
     averageSalary: "IDR 520m",
     employability: 77,
     topSkills: ["fintech", "mobile", "customer success"],
@@ -207,41 +252,23 @@ const skillGaps = [
   {
     skill: "Three.js / WebGL",
     impact: "+5 matching roles",
+    rolesUnlocked: ["Interactive Product Designer", "Creative Strategy Lead"],
     progress: 42,
-    action: "Start learning path",
+    roadmapSteps: ["Ship one interactive portfolio scene", "Learn scene lighting and camera controls", "Publish a WebGL case study"],
   },
   {
     skill: "Product Analytics",
     impact: "+7 matching roles",
+    rolesUnlocked: ["Product Manager", "AI Product Marketing Lead"],
     progress: 58,
-    action: "Browse courses",
+    roadmapSteps: ["Build funnel and activation dashboards", "Practice cohort analysis", "Present one product insight memo"],
   },
   {
     skill: "Stakeholder Storytelling",
     impact: "+4 leadership roles",
+    rolesUnlocked: ["UX Research Manager", "Strategy Lead"],
     progress: 74,
-    action: "Practice scenario",
-  },
-];
-
-const roadmap = [
-  {
-    phase: "Step 1",
-    title: "Build finance foundations",
-    detail: "Strengthen financial planning, budgeting, risk, insurance, investment, and tax basics.",
-    icon: BookOpen,
-  },
-  {
-    phase: "Step 2",
-    title: "Earn advisory credentials",
-    detail: "Prepare for relevant licensing, ethics, compliance, and client suitability requirements.",
-    icon: FileBadge,
-  },
-  {
-    phase: "Step 3",
-    title: "Practice client consultation",
-    detail: "Run mock discovery calls, create sample financial plans, and learn objection handling.",
-    icon: BadgeCheck,
+    roadmapSteps: ["Convert research into an exec narrative", "Run a mock steering update", "Create a decision-ready recommendation"],
   },
 ];
 
@@ -332,10 +359,16 @@ function OpportunityCard({ job }: { job: (typeof opportunities)[number] }) {
 function AsiaMarketMap() {
   const [selectedMetric, setSelectedMetric] = useState<MarketMetricKey>("growth");
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>("Singapore");
+  const [activeMetricInfo, setActiveMetricInfo] = useState<MarketMetricKey | null>(null);
   const metric = marketMetrics.find((item) => item.key === selectedMetric) ?? marketMetrics[0];
+  const infoMetric = marketMetrics.find((item) => item.key === activeMetricInfo) ?? null;
   const rankedMarkets = [...asiaMarkets].sort((a, b) => b[selectedMetric] - a[selectedMetric]);
   const leadingMarket = rankedMarkets[0];
-  const activeMarket = asiaMarkets.find((market) => market.country === hoveredCountry) ?? leadingMarket;
+  const activeMarket =
+    asiaMarkets.find((market) => market.country === hoveredCountry) ??
+    asiaMarkets.find((market) => market.country === selectedCountry) ??
+    leadingMarket;
   const marketByCountry = new Map(asiaMarkets.map((market) => [market.country, market]));
 
   const getCountryColor = (value: number) => {
@@ -349,21 +382,17 @@ function AsiaMarketMap() {
   return (
     <section
       aria-labelledby="asia-market-title"
-      className="w-full rounded-lg border border-[#BAF3FF] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)] xl:col-span-2 xl:order-last"
+      className="w-full rounded-lg border border-[#BAF3FF] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)] xl:col-span-2 xl:order-last"
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
           <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
             <Globe2 size={14} />
             Asia market signals
           </p>
-          <h2 id="asia-market-title" className="mt-3 text-xl font-bold">
+          <h2 id="asia-market-title" className="mt-2 text-xl font-bold">
             Where jobs are growing across Asia
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
-            Choose a metric to compare demand, salary upside, visa friendliness, remote work, and future demand by
-            country.
-          </p>
         </div>
         <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Top market</p>
@@ -377,22 +406,48 @@ function AsiaMarketMap() {
 
       <div className="mt-5 flex flex-wrap gap-2">
         {marketMetrics.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => setSelectedMetric(item.key)}
-            className={`rounded-full border px-3 py-2 text-xs font-bold transition ${
-              selectedMetric === item.key
-                ? "border-[#06B6D4] bg-[#06B6D4] text-white"
-                : "border-[#E2D9F3] bg-white text-[#6B7280] hover:border-[#BAF3FF] hover:bg-[#F0FDFF]"
-            }`}
-          >
-            {item.label}
-          </button>
+          <div key={item.key} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMetric(item.key);
+                setActiveMetricInfo(activeMetricInfo === item.key ? null : item.key);
+              }}
+              onMouseEnter={() => setActiveMetricInfo(item.key)}
+              className={`rounded-full border px-3 py-2 text-xs font-bold transition ${
+                selectedMetric === item.key
+                  ? "border-[#06B6D4] bg-[#06B6D4] text-white"
+                  : "border-[#E2D9F3] bg-white text-[#6B7280] hover:border-[#BAF3FF] hover:bg-[#F0FDFF]"
+              }`}
+              aria-expanded={activeMetricInfo === item.key}
+            >
+              {item.label}
+            </button>
+            {activeMetricInfo === item.key && (
+              <div className="absolute left-0 top-11 z-20 w-56 rounded-lg border border-[#F0EBF8] bg-white p-3 text-xs font-semibold leading-5 text-[#6B7280] shadow-[0_16px_44px_rgba(26,16,51,0.14)]">
+                <p className="font-bold text-[#1A1033]">{item.label}</p>
+                <p className="mt-1">{item.legend}.</p>
+                <p className="mt-2 text-[#0891B2]">
+                  {leadingMarket.country} leads with {leadingMarket[item.key]}
+                  {item.suffix}.
+                </p>
+              </div>
+            )}
+          </div>
         ))}
       </div>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.7fr)]">
+      {infoMetric && (
+        <button
+          type="button"
+          onClick={() => setActiveMetricInfo(null)}
+          className="mt-3 text-xs font-bold text-[#9CA3AF] hover:text-[#6B7280]"
+        >
+          Hide metric note
+        </button>
+      )}
+
+      <div className="mt-4 grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.7fr)]">
         <div className="relative w-full overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#F7FBFF]">
           <ComposableMap
             projection="geoMercator"
@@ -422,7 +477,8 @@ function AsiaMarketMap() {
                           : countryName
                       }
                       onMouseEnter={() => market && setHoveredCountry(market.country)}
-                      onMouseLeave={() => market && setHoveredCountry(null)}
+                      onMouseLeave={() => setHoveredCountry(null)}
+                      onClick={() => market && setSelectedCountry(market.country)}
                       onFocus={() => market && setHoveredCountry(market.country)}
                       onBlur={() => market && setHoveredCountry(null)}
                       style={{
@@ -468,6 +524,10 @@ function AsiaMarketMap() {
                 <span className="font-bold text-[#E8197A]">{activeMarket.shortage}%</span>
               </div>
               <div className="flex items-center justify-between">
+                <span>Your fit score</span>
+                <span className="font-bold text-[#0891B2]">{activeMarket.fitScore}%</span>
+              </div>
+              <div className="flex items-center justify-between">
                 <span>Average salary</span>
                 <span className="font-bold text-[#1A1033]">{activeMarket.averageSalary}</span>
               </div>
@@ -499,32 +559,56 @@ function AsiaMarketMap() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="flex max-h-[520px] flex-col gap-3 overflow-y-auto pr-1">
           <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
-            <p className="text-xs font-bold uppercase text-[#0891B2]">Hovering</p>
+            <p className="text-xs font-bold uppercase text-[#0891B2]">Selected market</p>
             <p className="mt-2 text-lg font-bold text-[#1A1033]">{activeMarket.country}</p>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-bold">
+            <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs font-bold sm:grid-cols-3 xl:grid-cols-2">
+              <div className="rounded-lg bg-white p-2 text-[#0891B2]">
+                {activeMarket.fitScore}%
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">fit score</span>
+              </div>
               <div className="rounded-lg bg-white p-2 text-[#E8197A]">
-                {activeMarket.shortage}%
-                <span className="mt-1 block text-[10px] text-[#9CA3AF]">shortage</span>
+                {activeMarket.demand}
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">demand</span>
               </div>
               <div className="rounded-lg bg-white p-2 text-[#1A1033]">
-                {activeMarket.averageSalary}
-                <span className="mt-1 block text-[10px] text-[#9CA3AF]">salary</span>
+                {activeMarket.salaryUpside}
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">salary upside</span>
               </div>
               <div className="rounded-lg bg-white p-2 text-[#059669]">
-                {activeMarket.employability}%
-                <span className="mt-1 block text-[10px] text-[#9CA3AF]">employable</span>
+                {activeMarket.visaFriendliness}
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">visa</span>
+              </div>
+              <div className="rounded-lg bg-white p-2 text-[#6B46C1]">
+                {activeMarket.remoteRoles}
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">remote roles</span>
+              </div>
+              <div className="rounded-lg bg-white p-2 text-[#E8197A]">
+                {activeMarket.recommendedRating}
+                <span className="mt-1 block text-[10px] text-[#9CA3AF]">recommended</span>
               </div>
             </div>
+            <p className="mt-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold leading-5 text-[#6B7280]">
+              Recommended for you: {activeMarket.recommendedRating} based on your product, analytics, and leadership
+              skill profile.
+            </p>
           </div>
 
-          {rankedMarkets.slice(0, 4).map((market) => (
-            <div
+          {rankedMarkets.slice(0, 3).map((market) => (
+            <button
+              type="button"
               key={market.country}
               onMouseEnter={() => setHoveredCountry(market.country)}
               onMouseLeave={() => setHoveredCountry(null)}
-              className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 transition hover:border-[#BAF3FF] hover:bg-white"
+              onFocus={() => setHoveredCountry(market.country)}
+              onBlur={() => setHoveredCountry(null)}
+              onClick={() => setSelectedCountry(market.country)}
+              className={`w-full rounded-lg border p-4 text-left transition hover:border-[#BAF3FF] hover:bg-white ${
+                selectedCountry === market.country
+                  ? "border-[#06B6D4] bg-white"
+                  : "border-[#F0EBF8] bg-[#FDFCFF]"
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -555,7 +639,7 @@ function AsiaMarketMap() {
                   </span>
                 ))}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -577,24 +661,21 @@ export default function EmployeeDashboardPage() {
               Simploy
             </a>
             <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-              <a href="/employee/dashboard" className="rounded-full bg-[#FFF0F8] px-4 py-2 text-[#E8197A]">
-                Marketplace
+              <a href="#asia-market-title" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+                Asia Market Insight
               </a>
               <a href="/employee/applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Applications
               </a>
               <a href="#skills" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Skill gaps
-              </a>
-              <a href="#roadmap" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Roadmap
+                Learning Path
               </a>
             </nav>
           </div>
 
           <div className="flex items-center gap-3">
             <a
-              href="/employer/dashboard"
+              href="/"
               className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
             >
               <Building2 size={16} />
@@ -623,10 +704,49 @@ export default function EmployeeDashboardPage() {
             </p>
           </div>
           <div className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
-            <p className="text-xs font-semibold uppercase text-[#9CA3AF]">Talent graph</p>
-            <p className="mt-1 text-2xl font-bold text-[#1A1033]">94% complete</p>
+            <p className="text-xs font-semibold uppercase text-[#9CA3AF]">Profile Strength</p>
+            <p className="mt-1 text-2xl font-bold text-[#1A1033]">94%</p>
+            <p className="mt-1 max-w-56 text-xs font-semibold leading-5 text-[#6B7280]">
+              Add leadership experience to unlock 8 more matches
+            </p>
           </div>
         </div>
+
+        <section
+          aria-label="Career Command Center"
+          className="mt-6 rounded-lg border border-[#BAF3FF] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+                <ClipboardCheck size={14} />
+                Career Command Center
+              </p>
+              <p className="mt-3 text-lg font-bold text-[#1A1033]">
+                {careerCommandCenter.readiness}% ready · {careerCommandCenter.nextRole} ·{" "}
+                {careerCommandCenter.missingSkills} skills missing
+              </p>
+            </div>
+            <div className="grid gap-2 text-sm font-bold sm:grid-cols-3 lg:min-w-[520px]">
+              <div className="rounded-lg bg-[#FFF0F8] px-4 py-3 text-[#E8197A]">
+                {careerCommandCenter.readiness}%
+                <span className="mt-1 block text-xs text-[#9CA3AF]">Career readiness</span>
+              </div>
+              <div className="rounded-lg bg-[#E0F9FF] px-4 py-3 text-[#0891B2]">
+                {careerCommandCenter.nextRole}
+                <span className="mt-1 block text-xs text-[#9CA3AF]">Recommended next role</span>
+              </div>
+              <div className="rounded-lg bg-[#F5F0FF] px-4 py-3 text-[#6B46C1]">
+                {careerCommandCenter.missingSkills}
+                <span className="mt-1 block text-xs text-[#9CA3AF]">Missing skills</span>
+              </div>
+            </div>
+            <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white">
+              {careerCommandCenter.nextAction}
+              <ArrowUpRight size={16} />
+            </button>
+          </div>
+        </section>
 
         <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
           <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
@@ -707,65 +827,22 @@ export default function EmployeeDashboardPage() {
               aria-labelledby="skills-title"
               className="rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
             >
-              <h2 id="skills-title" className="flex items-center gap-2 text-xl font-bold">
-                <GraduationCap size={21} className="text-[#6B46C1]" />
-                Skill Gaps Required
-              </h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 id="skills-title" className="flex items-center gap-2 text-xl font-bold">
+                  <GraduationCap size={21} className="text-[#6B46C1]" />
+                  Skill Gaps and Roadmap
+                </h2>
+                <MapIcon size={20} className="text-[#06B6D4]" />
+              </div>
               <p className="mt-2 text-sm leading-6 text-[#6B7280]">
-                Unlock 12 new opportunities by improving these skills.
+                Close the missing skills that unlock stronger Product Manager and leadership matches.
               </p>
 
-              <div className="mt-5 space-y-4">
-                {skillGaps.map((gap) => (
-                  <div key={gap.skill} className="rounded-lg bg-white/75 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-bold">{gap.skill}</p>
-                        <button className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#6B46C1]">
-                          {gap.action}
-                          <ChevronRight size={13} />
-                        </button>
-                      </div>
-                      <span className="text-xs font-bold text-[#6B46C1]">{gap.impact}</span>
-                    </div>
-                    <div className="mt-4 h-2 rounded-full bg-[#E9DFF8]">
-                      <div
-                        className="h-2 rounded-full bg-[#6B46C1]"
-                        style={{ width: `${gap.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section
-              id="roadmap"
-              aria-labelledby="roadmap-title"
-              role="button"
-              tabIndex={0}
-              onClick={() => setIsRoadmapOpen(true)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setIsRoadmapOpen(true);
-                }
-              }}
-              className="cursor-pointer rounded-lg border border-[#F0EBF8] bg-white p-5 text-left shadow-[0_4px_24px_rgba(232,25,122,0.08)] transition hover:-translate-y-0.5 hover:border-[#BAF3FF] hover:shadow-[0_8px_30px_rgba(6,182,212,0.12)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h2 id="roadmap-title" className="flex items-center gap-2 text-xl font-bold">
-                  <MapIcon size={20} className="text-[#06B6D4]" />
-                  Improvement Roadmap
-                </h2>
-                <LineChart size={20} className="text-[#9CA3AF]" />
-              </div>
-
-              <div className="mt-5 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+              <div className="mt-5 rounded-lg border border-[#DDD0F8] bg-white/80 p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold">Career readiness</p>
-                    <p className="text-xs text-[#9CA3AF]">Based on current marketplace matches</p>
+                    <p className="text-xs text-[#9CA3AF]">Based on current role matches</p>
                   </div>
                   <span className="text-2xl font-bold text-[#E8197A]">76%</span>
                 </div>
@@ -777,30 +854,49 @@ export default function EmployeeDashboardPage() {
               </div>
 
               <div className="mt-5 space-y-4">
-                {roadmap.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.title} className="relative flex gap-3">
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E0F9FF] text-[#0891B2]">
-                          <Icon size={17} />
+                {skillGaps.map((gap) => (
+                  <div key={gap.skill} className="rounded-lg bg-white/85 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold">{gap.skill}</p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {gap.rolesUnlocked.map((role) => (
+                            <span
+                              key={role}
+                              className="rounded-full bg-[#E0F9FF] px-2 py-1 text-xs font-bold text-[#0891B2]"
+                            >
+                              {role}
+                            </span>
+                          ))}
                         </div>
-                        {index < roadmap.length - 1 && <div className="mt-2 h-full min-h-10 w-px bg-[#E2D9F3]" />}
                       </div>
-                      <div className="pb-2">
-                        <p className="text-xs font-bold uppercase text-[#9CA3AF]">{item.phase}</p>
-                        <p className="mt-1 font-bold">{item.title}</p>
-                        <p className="mt-1 text-sm leading-6 text-[#6B7280]">{item.detail}</p>
-                      </div>
+                      <span className="shrink-0 text-xs font-bold text-[#6B46C1]">{gap.impact}</span>
                     </div>
-                  );
-                })}
+                    <div className="mt-4 h-2 rounded-full bg-[#E9DFF8]">
+                      <div className="h-2 rounded-full bg-[#6B46C1]" style={{ width: `${gap.progress}%` }} />
+                    </div>
+                    <ol className="mt-4 space-y-2">
+                      {gap.roadmapSteps.map((step, index) => (
+                        <li key={step} className="flex gap-2 text-sm leading-6 text-[#6B7280]">
+                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FFF0F8] text-xs font-bold text-[#E8197A]">
+                            {index + 1}
+                          </span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-3 text-sm font-bold text-white">
-                <CalendarDays size={16} />
-                View Financial Consultant Roadmap
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsRoadmapOpen(true)}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-3 text-sm font-bold text-white"
+              >
+                Start learning path
+                <ChevronRight size={16} />
+              </button>
             </section>
           </aside>
         </div>
@@ -900,11 +996,6 @@ export default function EmployeeDashboardPage() {
           </div>
         </div>
       )}
-
-      <button className="fixed bottom-5 right-5 hidden rounded-full bg-[#E8197A] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(232,25,122,0.24)] md:inline-flex md:items-center md:gap-2">
-        <UserRound size={16} />
-        Career coach
-      </button>
     </main>
   );
 }

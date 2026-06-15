@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { UserPlus, GraduationCap, ArrowLeftRight, Bot, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { SimResult } from "@/lib/simulator/types";
+import { routes } from "@/lib/routes";
 
 const ACTIONS = [
   {
@@ -81,7 +83,8 @@ export default function ActionEngine({ result: _result }: { result: SimResult })
         </div>
 
         {/* Deploy button */}
-        <button
+        <Link
+          href={routes.employerActionEngine}
           onClick={onDeploy}
           className="w-full text-white font-medium py-3 rounded-full text-sm transition-colors
             flex items-center justify-center gap-2 mt-auto"
@@ -89,7 +92,7 @@ export default function ActionEngine({ result: _result }: { result: SimResult })
         >
           <Zap size={14} fill="white" />
           Deploy Action Engine
-        </button>
+        </Link>
 
       </div>
 
