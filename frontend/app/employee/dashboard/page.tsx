@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   ExternalLink,
   FileBadge,
+  Flag,
   GraduationCap,
   Globe2,
   Map as MapIcon,
@@ -251,11 +252,11 @@ const asiaMarkets: Array<{
 
 const skillGaps = [
   {
-    skill: "Three.js / WebGL",
-    impact: "+5 matching roles",
+    skill: "Product Discovery",
+    impact: "+5 product roles",
     rolesUnlocked: ["Interactive Product Designer", "Creative Strategy Lead"],
     progress: 42,
-    roadmapSteps: ["Ship one interactive portfolio scene", "Learn scene lighting and camera controls", "Publish a WebGL case study"],
+    roadmapSteps: ["Run customer problem interviews", "Frame opportunity statements", "Publish one product discovery brief"],
   },
   {
     skill: "Product Analytics",
@@ -277,32 +278,49 @@ const consultantRoadmap = [
   {
     stage: "Foundation",
     timeframe: "Weeks 1-4",
-    title: "Master personal finance and advisory basics",
-    tasks: ["Budgeting and cash-flow analysis", "Insurance and risk planning", "Investment products and portfolio basics"],
+    title: "Build product discovery foundations",
+    tasks: ["Interview users and map pain points", "Prioritize problems with impact sizing", "Write a clear product opportunity brief"],
     icon: BookOpen,
   },
   {
-    stage: "Credentialing",
+    stage: "Analytics",
     timeframe: "Weeks 5-10",
-    title: "Prepare for financial consultant licensing",
-    tasks: ["Study compliance and ethics", "Review client suitability rules", "Complete mock licensing exams"],
+    title: "Turn product data into decisions",
+    tasks: ["Build funnel and activation dashboards", "Practice cohort analysis", "Present one product insight memo"],
     icon: FileBadge,
   },
   {
-    stage: "Client Skills",
+    stage: "Influence",
     timeframe: "Weeks 11-14",
-    title: "Build consultation confidence",
-    tasks: ["Practice discovery calls", "Create sample financial plans", "Improve presentation and objection handling"],
+    title: "Strengthen stakeholder storytelling",
+    tasks: ["Convert research into an executive narrative", "Run a mock steering update", "Create a decision-ready recommendation"],
     icon: ClipboardCheck,
   },
   {
     stage: "Market Ready",
     timeframe: "Weeks 15-18",
-    title: "Apply for financial consultant roles",
-    tasks: ["Prepare a client case-study portfolio", "Target banks, advisory firms, and insurance groups", "Track applications and interviews"],
+    title: "Apply for Product Manager roles",
+    tasks: ["Prepare a product case-study portfolio", "Target internal PM gigs and external PM roles", "Track applications and interviews"],
     icon: CircleDollarSign,
   },
 ];
+
+const learningPathMilestones = consultantRoadmap.map((item, index) => ({
+  ...item,
+  progress: [34, 58, 74, 88][index],
+  description: [
+    "Build a strong base in product thinking.",
+    "Learn to use data to drive product decisions.",
+    "Influence stakeholders through clear product narratives.",
+    "Package proof and apply for stronger PM matches.",
+  ][index],
+  markerPosition: [
+    "left-[7%] top-[71%]",
+    "left-[31%] top-[67%]",
+    "left-[53%] top-[55%]",
+    "left-[75%] top-[67%]",
+  ][index],
+}));
 
 const toneStyles: Record<string, string> = {
   pink: "bg-[#FFF0F8] text-[#E8197A] border-[#FFD0E8]",
@@ -648,6 +666,282 @@ function AsiaMarketMap() {
   );
 }
 
+function SkillRoadmapModule({ onStartRoadmap }: { onStartRoadmap: () => void }) {
+  const [hoveredMilestone, setHoveredMilestone] = useState<number | null>(null);
+  const [selectedMilestone, setSelectedMilestone] = useState<number | null>(null);
+  const activeMilestone = hoveredMilestone ?? selectedMilestone;
+
+  return (
+    <section
+      id="skills"
+      aria-labelledby="skills-title"
+      className="mt-8 rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7"
+    >
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-[#F5F0FF] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+            <GraduationCap size={14} />
+            Skill Gaps and Roadmap
+          </p>
+          <h2 id="skills-title" className="mt-3 text-3xl font-bold tracking-tight sm:text-[40px]">
+            Your clearest path to Product Manager.
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#6B7280] sm:text-base">
+            Close the priority gaps, follow the recommended learning sequence, and unlock stronger internal gigs and
+            external roles.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onStartRoadmap}
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8197A] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(232,25,122,0.18)]"
+        >
+          Start roadmap
+          <ArrowUpRight size={16} />
+        </button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <article className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-5">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Career readiness</p>
+          <div className="mt-4 flex items-end gap-2">
+            <p className="text-5xl font-bold text-[#E8197A]">{careerCommandCenter.readiness}%</p>
+            <span className="pb-2 text-xs font-bold text-[#059669]">+12% after roadmap</span>
+          </div>
+          <div className="mt-4 h-3 rounded-full bg-white">
+            <div className="h-3 rounded-full bg-[#E8197A]" style={{ width: `${careerCommandCenter.readiness}%` }} />
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] p-5">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Missing skills</p>
+          <p className="mt-4 text-4xl font-bold text-[#6B46C1]">{careerCommandCenter.missingSkills}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {skillGaps.slice(0, 2).map((gap) => (
+              <span key={gap.skill} className="rounded-full bg-[#F5F0FF] px-3 py-1 text-xs font-bold text-[#6B46C1]">
+                {gap.skill.replace(",", "")}
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-5">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Recommended next role</p>
+          <p className="mt-4 text-2xl font-bold leading-tight text-[#0891B2]">{careerCommandCenter.nextRole}</p>
+          <p className="mt-3 text-sm leading-6 text-[#6B7280]">Best fit based on analytics, leadership, and customer insight.</p>
+        </article>
+
+        <article className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-5 xl:col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Roadmap overview</p>
+            <MapIcon size={18} className="text-[#06B6D4]" />
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            {[
+              ["18", "Weeks"],
+              ["4", "Milestones"],
+              ["12+", "Skills to build"],
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-lg bg-white p-3">
+                <p className="text-xl font-bold text-[#6B46C1]">{value}</p>
+                <p className="mt-1 text-xs font-bold text-[#9CA3AF]">{label}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <section
+        aria-labelledby="learning-roadmap-title"
+        className="mt-6 overflow-hidden rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 sm:p-5"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#6B46C1]">Your learning roadmap</p>
+            <h3 id="learning-roadmap-title" className="mt-1 text-xl font-bold text-[#1A1033]">
+              Follow the path from skill gaps to Product Manager ready.
+            </h3>
+            <p className="mt-2 hidden text-sm font-semibold text-[#6B7280] lg:block">
+              Click or hover over numbers 1-4 to view milestone insights.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[#6B7280] lg:hidden">
+              Milestone insights are expanded below for easier mobile scanning.
+            </p>
+          </div>
+          <Pill tone="teal">18 weeks</Pill>
+        </div>
+
+        <div className="relative hidden min-h-[430px] overflow-hidden rounded-lg bg-gradient-to-b from-white via-[#F7FDFF] to-[#E0F9FF] lg:block">
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox="0 0 1200 430"
+            role="img"
+            aria-label="Winding learning path with four milestones leading to Product Manager ready"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M-20 324 C 130 282, 194 386, 330 318 S 514 186, 665 256 S 874 356, 1028 244 S 1138 167, 1224 210"
+              fill="none"
+              stroke="#C9C8FF"
+              strokeLinecap="round"
+              strokeWidth="64"
+            />
+            <path
+              d="M-20 324 C 130 282, 194 386, 330 318 S 514 186, 665 256 S 874 356, 1028 244 S 1138 167, 1224 210"
+              fill="none"
+              stroke="#FFFFFF"
+              strokeDasharray="18 24"
+              strokeLinecap="round"
+              strokeWidth="5"
+            />
+            {[90, 160, 720, 790, 1110].map((x) => (
+              <g key={x} opacity="0.7">
+                <path d={`M${x} 338 l16 -38 l16 38 z`} fill="#9FE7CA" />
+                <rect x={x + 14} y="338" width="4" height="18" rx="2" fill="#7BC8AE" />
+              </g>
+            ))}
+            <path d="M1042 143 l58 -22 v58 l-58 22 z" fill="#E8197A" opacity="0.9" />
+            <line x1="1042" x2="1042" y1="143" y2="235" stroke="#6B46C1" strokeWidth="6" strokeLinecap="round" />
+          </svg>
+
+          {learningPathMilestones.map((item, index) => (
+            <div
+              key={item.stage}
+              className={`absolute z-10 ${item.markerPosition}`}
+              onMouseEnter={() => setHoveredMilestone(index)}
+              onMouseLeave={() => setHoveredMilestone(null)}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedMilestone(selectedMilestone === index ? null : index)}
+                onFocus={() => setHoveredMilestone(index)}
+                onBlur={() => setHoveredMilestone(null)}
+                className="flex h-11 w-11 items-center justify-center rounded-full border-[5px] border-white bg-[#6B46C1] text-sm font-bold text-white shadow-[0_10px_24px_rgba(26,16,51,0.2)] transition hover:bg-[#E8197A] focus:outline-none focus:ring-4 focus:ring-[#FFD0E8]"
+                aria-expanded={activeMilestone === index}
+                aria-label={`Open ${item.stage} milestone details`}
+              >
+                {index + 1}
+              </button>
+
+              {activeMilestone === index && (
+                <article
+                  className={`absolute bottom-14 w-[240px] rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_18px_44px_rgba(26,16,51,0.16)] ${
+                    index === 0 ? "left-0" : index === learningPathMilestones.length - 1 ? "right-0" : "left-1/2 -translate-x-1/2"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F0FF] text-xs font-bold text-[#6B46C1]">
+                      {index + 1}
+                    </span>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">{item.timeframe}</p>
+                  </div>
+                  <h4 className="mt-3 font-bold text-[#1A1033]">{item.stage}</h4>
+                  <p className="mt-1 text-xs leading-5 text-[#6B7280]">{item.description}</p>
+                  <div className="mt-3 flex items-center justify-between text-xs font-bold">
+                    <span className="text-[#6B46C1]">Skill progress</span>
+                    <span className="text-[#E8197A]">{item.progress}%</span>
+                  </div>
+                  <div className="mt-2 h-2 rounded-full bg-[#E9DFF8]">
+                    <div className="h-2 rounded-full bg-[#E8197A]" style={{ width: `${item.progress}%` }} />
+                  </div>
+                </article>
+              )}
+            </div>
+          ))}
+
+          <div className="absolute right-5 top-20 w-48 rounded-lg border border-[#FFD0E8] bg-white p-4 shadow-[0_12px_36px_rgba(26,16,51,0.12)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF0F8] text-[#E8197A]">
+              <Flag size={19} />
+            </div>
+            <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Goal</p>
+            <p className="mt-1 text-lg font-bold text-[#1A1033]">Product Manager ready</p>
+            <p className="mt-2 text-xs leading-5 text-[#6B7280]">Readiness above 88% with a product case study.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:hidden">
+          {learningPathMilestones.map((item, index) => (
+            <article key={item.stage} className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F0FF] text-sm font-bold text-[#6B46C1]">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{item.timeframe}</p>
+                    <h4 className="font-bold text-[#1A1033]">{item.stage}</h4>
+                  </div>
+                </div>
+                <span className="rounded-full bg-[#FFF0F8] px-2 py-1 text-xs font-bold text-[#E8197A]">
+                  {item.progress}%
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#6B7280]">{item.description}</p>
+              <div className="mt-3 h-2.5 rounded-full bg-[#E9DFF8]">
+                <div className="h-2.5 rounded-full bg-[#E8197A]" style={{ width: `${item.progress}%` }} />
+              </div>
+            </article>
+          ))}
+          <article className="rounded-lg border border-[#FFD0E8] bg-white p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF0F8] text-[#E8197A]">
+                <Flag size={19} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Goal</p>
+                <h4 className="font-bold text-[#1A1033]">Product Manager ready</h4>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#6B7280]">Readiness above 88% with a product case study.</p>
+          </article>
+        </div>
+      </section>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-4 md:grid-cols-3">
+          {skillGaps.map((gap) => (
+            <article key={gap.skill} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold">{gap.skill.replace(",", "")}</p>
+                  <p className="mt-1 text-xs font-bold text-[#6B46C1]">{gap.impact}</p>
+                </div>
+                <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[#E8197A]">{gap.progress}%</span>
+              </div>
+              <div className="mt-4 h-2.5 rounded-full bg-[#E9DFF8]">
+                <div className="h-2.5 rounded-full bg-[#6B46C1]" style={{ width: `${gap.progress}%` }} />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {gap.rolesUnlocked.map((role) => (
+                  <span key={role} className="rounded-full bg-[#E0F9FF] px-2 py-1 text-xs font-bold text-[#0891B2]">
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <aside className="rounded-lg bg-[#1A1033] p-5 text-white">
+          <p className="text-xs font-bold uppercase tracking-wide text-white/45">Next action</p>
+          <h3 className="mt-3 text-2xl font-bold">Start with Product Analytics.</h3>
+          <p className="mt-3 text-sm leading-6 text-white/75">
+            Build the analytics foundation first, then add stakeholder storytelling to raise readiness above 88%.
+          </p>
+          <button
+            type="button"
+            onClick={onStartRoadmap}
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-bold text-[#1A1033]"
+          >
+            Start roadmap
+            <ChevronRight size={16} />
+          </button>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export default function EmployeeDashboardPage() {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const internalOpportunities = opportunities.filter((job) => job.type === "Internal");
@@ -722,7 +1016,7 @@ export default function EmployeeDashboardPage() {
                 Career Command Center
               </p>
               <p className="mt-3 text-lg font-bold text-[#1A1033]">
-                {careerCommandCenter.readiness}% ready · {careerCommandCenter.nextRole} ·{" "}
+                {careerCommandCenter.readiness}% ready / {careerCommandCenter.nextRole} /{" "}
                 {careerCommandCenter.missingSkills} skills missing
               </p>
             </div>
@@ -747,6 +1041,8 @@ export default function EmployeeDashboardPage() {
           </div>
         </section>
 
+        <SkillRoadmapModule onStartRoadmap={() => setIsRoadmapOpen(true)} />
+
         <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
           <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
             <Search size={18} />
@@ -770,18 +1066,26 @@ export default function EmployeeDashboardPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.9fr)]">
-          <div className="space-y-6 xl:contents">
-            <section aria-labelledby="opportunities-title">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 id="opportunities-title" className="flex items-center gap-2 text-xl font-bold">
+        <div className="mt-8 space-y-8">
+          <section
+            aria-labelledby="opportunities-title"
+            className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7"
+          >
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Matched opportunities</p>
+                <h2 id="opportunities-title" className="mt-2 flex items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
                   <BriefcaseBusiness size={20} className="text-[#E8197A]" />
-                  Internal Gigs and External Job Opportunities
+                  Opportunities unlocked by this roadmap
                 </h2>
-                <button className="hidden text-sm font-bold text-[#0891B2] sm:inline-flex">View all matches</button>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
+                  These internal gigs and external roles become stronger matches as you complete the roadmap skills.
+                </p>
               </div>
+              <button className="hidden text-sm font-bold text-[#0891B2] sm:inline-flex">View all matches</button>
+            </div>
 
-              <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-2">
                 <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-3">
                   <div className="mb-3 flex items-center justify-between rounded-lg bg-white px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -814,90 +1118,10 @@ export default function EmployeeDashboardPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-            </section>
+            </div>
+          </section>
 
-            <AsiaMarketMap />
-          </div>
-
-          <aside className="space-y-6 xl:col-start-2 xl:row-start-1">
-            <section
-              id="skills"
-              aria-labelledby="skills-title"
-              className="rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h2 id="skills-title" className="flex items-center gap-2 text-xl font-bold">
-                  <GraduationCap size={21} className="text-[#6B46C1]" />
-                  Skill Gaps and Roadmap
-                </h2>
-                <MapIcon size={20} className="text-[#06B6D4]" />
-              </div>
-              <p className="mt-2 text-sm leading-6 text-[#6B7280]">
-                Close the missing skills that unlock stronger Product Manager and leadership matches.
-              </p>
-
-              <div className="mt-5 rounded-lg border border-[#DDD0F8] bg-white/80 p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold">Career readiness</p>
-                    <p className="text-xs text-[#9CA3AF]">Based on current role matches</p>
-                  </div>
-                  <span className="text-2xl font-bold text-[#E8197A]">76%</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
-                  <div className="rounded-lg bg-[#FFF0F8] p-2 text-[#E8197A]">Creative</div>
-                  <div className="rounded-lg bg-[#E0F9FF] p-2 text-[#0891B2]">Technical</div>
-                  <div className="rounded-lg bg-[#ECFDF5] p-2 text-[#059669]">Leadership</div>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                {skillGaps.map((gap) => (
-                  <div key={gap.skill} className="rounded-lg bg-white/85 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-bold">{gap.skill}</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {gap.rolesUnlocked.map((role) => (
-                            <span
-                              key={role}
-                              className="rounded-full bg-[#E0F9FF] px-2 py-1 text-xs font-bold text-[#0891B2]"
-                            >
-                              {role}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-xs font-bold text-[#6B46C1]">{gap.impact}</span>
-                    </div>
-                    <div className="mt-4 h-2 rounded-full bg-[#E9DFF8]">
-                      <div className="h-2 rounded-full bg-[#6B46C1]" style={{ width: `${gap.progress}%` }} />
-                    </div>
-                    <ol className="mt-4 space-y-2">
-                      {gap.roadmapSteps.map((step, index) => (
-                        <li key={step} className="flex gap-2 text-sm leading-6 text-[#6B7280]">
-                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FFF0F8] text-xs font-bold text-[#E8197A]">
-                            {index + 1}
-                          </span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsRoadmapOpen(true)}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-3 text-sm font-bold text-white"
-              >
-                Start learning path
-                <ChevronRight size={16} />
-              </button>
-            </section>
-          </aside>
+          <AsiaMarketMap />
         </div>
       </section>
 
@@ -906,17 +1130,17 @@ export default function EmployeeDashboardPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1033]/55 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="financial-roadmap-title"
+          aria-labelledby="product-roadmap-title"
         >
           <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-[0_24px_80px_rgba(26,16,51,0.28)]">
             <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#F0EBF8] bg-white px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-[#0891B2]">Career roadmap</p>
-                <h2 id="financial-roadmap-title" className="mt-1 text-2xl font-bold text-[#1A1033]">
-                  Financial Consultant Pathway
+                <h2 id="product-roadmap-title" className="mt-1 text-2xl font-bold text-[#1A1033]">
+                  Product Manager Pathway
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
-                  A focused plan to move from applicant readiness into financial consulting roles.
+                  A focused plan to move from applicant readiness into product management roles.
                 </p>
               </div>
               <button
@@ -932,10 +1156,10 @@ export default function EmployeeDashboardPage() {
             <div className="p-5 sm:p-6">
               <div className="grid gap-4 md:grid-cols-4">
                 {[
-                  ["Target role", "Financial Consultant"],
+                  ["Target role", "Product Manager"],
                   ["Timeline", "18 weeks"],
-                  ["Current readiness", "62%"],
-                  ["Priority gap", "Licensing"],
+                  ["Current readiness", "76%"],
+                  ["Priority gap", "Product Analytics"],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
                     <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
@@ -987,8 +1211,7 @@ export default function EmployeeDashboardPage() {
               <div className="mt-6 rounded-lg bg-[#1A1033] p-5 text-white">
                 <p className="text-sm font-bold">Next recommended action</p>
                 <p className="mt-2 text-sm leading-6 text-white/75">
-                  Start with finance foundations, then shortlist the exact licensing requirement for the country and
-                  firm type you want to apply to.
+                  Start with product analytics, then turn one insight into a decision-ready product case study.
                 </p>
               </div>
             </div>
