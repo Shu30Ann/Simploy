@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { BriefcaseBusiness, Building2 } from "lucide-react";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { routes } from "@/lib/routes";
 
 const NAV = [
@@ -52,11 +53,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
             <Link
               href={routes.employerSimulator}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1033] text-sm font-bold text-white"
+              className="hidden h-10 items-center justify-center rounded-full border border-[#F0EBF8] bg-white px-4 text-sm font-bold text-[#1A1033] shadow-sm transition hover:bg-[#F8F5FC] sm:inline-flex"
               aria-label="Open Layer 2 workforce simulator"
             >
               L2
             </Link>
+            <ProfileMenu role="employer" initials="HR" name="Hiring Team" label="Open employer profile menu" />
           </div>
         </div>
       </header>

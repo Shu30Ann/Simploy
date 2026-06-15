@@ -3,18 +3,21 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  BadgeCheck,
   BarChart3,
-  BriefcaseBusiness,
   ClipboardList,
   EllipsisVertical,
   FilePenLine,
-  Handshake,
   LineChart,
-  Map,
-  Search,
+  Megaphone,
+  Send,
   ShieldCheck,
   Sparkles,
-  UsersRound,
+  Target,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Zap,
 } from "lucide-react";
 import { routes } from "@/lib/routes";
 
@@ -69,29 +72,45 @@ const insights = [
   },
 ];
 
-const acquisitionTips = [
-  'Review 12 new applicants for "Senior Protocol Engineer"',
-  'Finalize offer for "DevRel Lead" candidate Felicia A.',
-  'Update job brief for "Product Designer" draft',
+const commandMetrics = [
+  { label: "Active Roles", value: "12", detail: "8 live, 3 drafts, 1 offer", icon: ClipboardList, tone: "pink" },
+  { label: "Applications", value: "124", detail: "45 new this week", icon: Users, tone: "teal" },
+  { label: "Hires", value: "18", detail: "Q2 accepted offers", icon: UserCheck, tone: "purple" },
+  { label: "Qualified Matches", value: "37", detail: "Ready for review", icon: BadgeCheck, tone: "pink" },
 ];
 
-const talentMatches = [
+const attentionItems = [
   {
-    name: "Sarah Chen",
-    current: "Sr. Blockchain Dev",
-    match: "98%",
-    role: "Senior Protocol",
-    initials: "SC",
+    title: "Review applicants",
+    detail: '12 new applicants for "Senior Protocol Engineer" need a decision.',
+    meta: "Due today",
+    action: "Review queue",
+    icon: Users,
     tone: "pink",
   },
   {
-    name: "Marcus Wright",
-    current: "Community Lead",
-    match: "92%",
-    role: "DevRel Lead",
-    initials: "MW",
+    title: "Publish draft jobs",
+    detail: '"Product Designer (v2)" is ready once compensation is confirmed.',
+    meta: "3 drafts",
+    action: "Open drafts",
+    icon: FilePenLine,
+    tone: "purple",
+  },
+  {
+    title: "Low candidate supply",
+    detail: "Senior protocol roles are trending below target supply this week.",
+    meta: "Supply risk",
+    action: "Find talent",
+    icon: Target,
     tone: "teal",
   },
+];
+
+const marketplaceSnapshot = [
+  { label: "Most In-Demand Skill", value: "Rust / Wasm", detail: "Engineering demand up 24%", icon: Zap, tone: "pink" },
+  { label: "Talent Supply Score", value: "72/100", detail: "Healthy, but tightening", icon: Users, tone: "teal" },
+  { label: "Competition Level", value: "High", detail: "5 similar employers active", icon: TrendingUp, tone: "purple" },
+  { label: "Hiring Outlook", value: "Positive", detail: "Faster with certified talent", icon: ShieldCheck, tone: "teal" },
 ];
 
 const workforceForecast = [
@@ -99,12 +118,6 @@ const workforceForecast = [
   { year: "2030", population: "9,100", value: 91 },
   { year: "2040", population: "7,800", value: 78 },
   { year: "2050", population: "6,900", value: 69 },
-];
-
-const plannerItems = [
-  { label: "Roles opening in 30 days", value: "5", icon: BriefcaseBusiness, tone: "pink" },
-  { label: "Internal candidates ready", value: "18", icon: UsersRound, tone: "teal" },
-  { label: "Skills to backfill", value: "7", icon: ShieldCheck, tone: "purple" },
 ];
 
 const toneStyles: Record<string, string> = {
@@ -128,13 +141,18 @@ function JobPostingTable() {
     <section
       id="jobs"
       aria-labelledby="jobs-title"
-      className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+      className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7"
     >
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 id="jobs-title" className="flex items-center gap-2 text-xl font-bold">
-          <ClipboardList size={20} className="text-[#E8197A]" />
-          Job Postings
-        </h2>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Active Hiring Pipeline</p>
+          <h2 id="jobs-title" className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+            Active Hiring Pipeline
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
+            Track every live role, application flow, and matching signal from one focused queue.
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <Pill tone="pink">Hiring (8)</Pill>
           <Pill tone="purple">Draft (3)</Pill>
@@ -200,130 +218,195 @@ function JobPostingTable() {
   );
 }
 
-function MarketplaceInsights() {
+function WorkforceCommandCenter() {
   return (
-    <div id="insights" className="space-y-4">
-      <section
-        aria-labelledby="insights-title"
-        className="rounded-lg border border-[#F0D9E6] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
-      >
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 id="insights-title" className="flex items-center gap-2 text-lg font-bold">
-            <BarChart3 size={18} className="text-[#087C7E]" />
-            Hiring Velocity
-          </h2>
-          <LineChart size={18} className="text-[#1A1033]" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
+    <section aria-labelledby="command-center-title" className="relative overflow-hidden bg-[#FDFCFF] pb-14 pt-12 sm:pb-20 sm:pt-16">
+      <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#E8197A]/[0.06] blur-3xl" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)] lg:items-center">
           <div>
-            <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Time-to-hire</p>
-            <div className="mt-1 flex items-end gap-2">
-              <p className="text-2xl font-bold text-[#1A1033]">18 Days</p>
-              <span className="pb-1 text-xs font-bold text-[#087C7E]">-2.4%</span>
+            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#FFD0E8] bg-[#FFF5FA] px-5 py-2 text-base font-bold text-[#E8197A]">
+              <Sparkles size={17} />
+              Employer marketplace
+            </div>
+            <h1
+              id="command-center-title"
+              className="font-bold leading-[1.1] tracking-tight text-[#1A1033]"
+              style={{ fontSize: "clamp(36px, 6vw, 64px)" }}
+            >
+              Workforce Command Center
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#6B7280]">
+              Focus today&apos;s hiring work around live roles, qualified candidates, and the actions that move your
+              workforce plan forward.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                href="#jobs"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8197A] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#C91569]"
+              >
+                Find Talent
+                <ArrowUpRight size={16} />
+              </Link>
+              <Link
+                href="#jobs"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#E8197A] bg-transparent px-6 py-3 text-sm font-medium text-[#E8197A] transition-colors hover:bg-[#FFF5FA]"
+              >
+                <Send size={16} />
+                Post Job
+              </Link>
             </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Cost-per-hire</p>
-            <div className="mt-1 flex items-end gap-2">
-              <p className="text-2xl font-bold text-[#1A1033]">$4,200</p>
-              <span className="pb-1 text-xs font-bold text-[#E8197A]">+1.2%</span>
-            </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {commandMetrics.map(({ label, value, detail, icon: Icon, tone }) => (
+              <article key={label} className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.1)]">
+                <div className={`mb-5 flex h-11 w-11 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
+                  <Icon size={20} />
+                </div>
+                <p className="text-4xl font-bold text-[#1A1033]">{value}</p>
+                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
+                <p className="mt-2 text-sm font-semibold text-[#6B7280]">{detail}</p>
+              </article>
+            ))}
           </div>
         </div>
-
-        <div className="mt-6 space-y-4">
-          {insights.map((insight) => (
-            <div key={insight.label}>
-              <div className="mb-2 flex items-center justify-between gap-3 text-xs font-bold">
-                <span>{insight.label}</span>
-                <span className="text-[#6B7280]">{insight.benchmark}</span>
-              </div>
-              <div className="h-3 rounded-full bg-[#E8E3EA]">
-                <div className={`h-3 rounded-full ${insight.color}`} style={{ width: `${insight.value}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 rounded-lg border border-[#BAF3FF] bg-[#D8F7FF] p-4">
-          <p className="text-sm italic leading-6 text-[#34616F]">
-            Hiring velocity is <span className="font-bold">15% faster</span> for candidates with existing skill
-            certifications.
-          </p>
-          <button className="mt-3 inline-flex items-center gap-1 text-xs font-bold uppercase text-[#0891B2]">
-            AI strategy insight
-            <ArrowUpRight size={13} />
-          </button>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="talent-acquisition-title"
-        className="rounded-lg bg-[#E8195E] p-5 text-white shadow-[0_8px_24px_rgba(232,25,94,0.2)]"
-      >
-        <h2 id="talent-acquisition-title" className="text-lg font-bold">
-          Talent Acquisition Tips
-        </h2>
-        <div className="mt-4 space-y-3">
-          {acquisitionTips.map((tip) => (
-            <div key={tip} className="flex gap-2 text-sm leading-5">
-              <ShieldCheck size={15} className="mt-0.5 shrink-0" />
-              <span>{tip}</span>
-            </div>
-          ))}
-        </div>
-        <button className="mt-5 w-full rounded-lg bg-white px-4 py-3 text-sm font-bold text-[#E8195E]">
-          Go to Tasks
-        </button>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 
-function TalentMatches() {
+function AttentionRequired() {
   return (
-    <section
-      id="matches"
-      aria-labelledby="matches-title"
-      className="rounded-lg border border-[#DDD0F8] bg-[#F9F2FF] p-5"
-    >
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 id="matches-title" className="flex items-center gap-2 text-xl font-bold">
-          <Sparkles size={20} className="text-[#6B46C1]" />
-          Top Talent Matches (Internal)
-        </h2>
-        <button className="text-sm font-bold text-[#0891B2]">View all</button>
-      </div>
+    <section aria-labelledby="attention-title" className="bg-[#FDFCFF] py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Attention Required</p>
+            <h2 id="attention-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
+              Clear the blockers first.
+            </h2>
+          </div>
+          <Link href={routes.employerActionEngine} className="inline-flex items-center gap-1 text-sm font-medium text-[#E8197A] hover:underline">
+            Open action engine
+            <ArrowUpRight size={14} />
+          </Link>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {talentMatches.map((talent) => (
-          <article
-            key={talent.name}
-            className="flex items-center justify-between gap-3 rounded-lg bg-white p-4 shadow-[0_4px_18px_rgba(26,16,51,0.08)]"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${toneStyles[talent.tone]}`}
-              >
-                {talent.initials}
+        <div className="grid gap-4 md:grid-cols-3">
+          {attentionItems.map(({ title, detail, meta, action, icon: Icon, tone }) => (
+            <article key={title} className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+              <div className="flex items-start justify-between gap-4">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
+                  <Icon size={20} />
+                </div>
+                <Pill tone={tone}>{meta}</Pill>
               </div>
-              <div className="min-w-0">
-                <p className="truncate font-bold">{talent.name}</p>
-                <p className="truncate text-xs font-semibold text-[#6B7280]">Current: {talent.current}</p>
-                <Pill tone="teal">
-                  {talent.match} Match: {talent.role}
-                </Pill>
+              <h3 className="mt-5 text-xl font-bold">{title}</h3>
+              <p className="mt-2 min-h-[48px] text-sm leading-6 text-[#6B7280]">{detail}</p>
+              <button className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#E8197A]">
+                {action}
+                <ArrowUpRight size={15} />
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WorkforceInsights() {
+  return (
+    <section id="insights" aria-labelledby="insights-title" className="bg-white py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 max-w-3xl">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Workforce Insights</p>
+          <h2 id="insights-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
+            Marketplace signals for the next hire.
+          </h2>
+          <p className="mt-3 text-lg leading-relaxed text-[#6B7280]">
+            Pair hiring velocity with supply, demand, and competition signals before you post or source.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <section className="rounded-2xl border border-[#F0D9E6] bg-[#FDFCFF] p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7" aria-labelledby="velocity-title">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <h3 id="velocity-title" className="flex items-center gap-2 text-2xl font-bold">
+                <BarChart3 size={22} className="text-[#087C7E]" />
+                Hiring Velocity
+              </h3>
+              <LineChart size={20} className="text-[#1A1033]" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg bg-white p-4">
+                <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Time-to-hire</p>
+                <div className="mt-1 flex items-end gap-2">
+                  <p className="text-3xl font-bold text-[#1A1033]">18 Days</p>
+                  <span className="pb-1 text-xs font-bold text-[#087C7E]">-2.4%</span>
+                </div>
+              </div>
+              <div className="rounded-lg bg-white p-4">
+                <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Cost-per-hire</p>
+                <div className="mt-1 flex items-end gap-2">
+                  <p className="text-3xl font-bold text-[#1A1033]">$4,200</p>
+                  <span className="pb-1 text-xs font-bold text-[#E8197A]">+1.2%</span>
+                </div>
               </div>
             </div>
-            <button
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6B46C1] text-white"
-              aria-label={`Review ${talent.name}`}
+
+            <div className="mt-6 space-y-4">
+              {insights.map((insight) => (
+                <div key={insight.label}>
+                  <div className="mb-2 flex items-center justify-between gap-3 text-xs font-bold">
+                    <span>{insight.label}</span>
+                    <span className="text-[#6B7280]">{insight.benchmark}</span>
+                  </div>
+                  <div className="h-3 rounded-full bg-[#E8E3EA]">
+                    <div className={`h-3 rounded-full ${insight.color}`} style={{ width: `${insight.value}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-lg border border-[#BAF3FF] bg-[#D8F7FF] p-4">
+              <p className="text-sm leading-6 text-[#34616F]">
+                Hiring velocity is <span className="font-bold">15% faster</span> for candidates with existing skill
+                certifications.
+              </p>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7" aria-labelledby="snapshot-title">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <h3 id="snapshot-title" className="text-2xl font-bold">
+                Talent Marketplace Snapshot
+              </h3>
+              <Megaphone size={20} className="text-[#E8197A]" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {marketplaceSnapshot.map(({ label, value, detail, icon: Icon, tone }) => (
+                <article key={label} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+                  <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
+                    <Icon size={18} />
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
+                  <p className="mt-2 text-2xl font-bold text-[#1A1033]">{value}</p>
+                  <p className="mt-2 text-sm leading-6 text-[#6B7280]">{detail}</p>
+                </article>
+              ))}
+            </div>
+            <Link
+              href={routes.employerSimulator}
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1A1033] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
             >
-              <Handshake size={17} />
-            </button>
-          </article>
-        ))}
+              Open workforce simulator
+              <ArrowUpRight size={16} />
+            </Link>
+          </section>
+        </div>
       </div>
     </section>
   );
@@ -331,154 +414,125 @@ function TalentMatches() {
 
 function DemographicClock() {
   return (
-    <section
-      aria-labelledby="demographic-clock-title"
-      className="overflow-hidden rounded-lg border border-[#F0EBF8] bg-white shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
-    >
-      <div className="grid gap-0 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <div className="bg-[#1A1033] p-5 text-white">
-          <h2 id="demographic-clock-title" className="flex items-center gap-2 text-xl font-bold">
-            <LineChart size={20} className="text-[#39BFE8]" />
-            Demographic Clock
+    <section aria-labelledby="workforce-forecast-title" className="bg-[#FFF8FC] py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 max-w-3xl">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Workforce Forecast</p>
+          <h2 id="workforce-forecast-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
+            Workforce Availability Forecast
           </h2>
-          <p className="mt-3 text-sm leading-6 text-white/70">
-            Workforce availability forecast for aging Asian labor markets.
+          <p className="mt-3 text-lg leading-relaxed text-[#6B7280]">
+            Long-range supply signals for planning roles, mobility, and hiring demand.
           </p>
-          <div className="mt-8">
-            <p className="text-xs font-bold uppercase text-white/45">Projected decline</p>
-            <p className="mt-2 text-5xl font-bold text-[#39BFE8]">31%</p>
-            <p className="mt-2 text-sm font-semibold text-white/70">Working-age population by 2050</p>
-          </div>
-          <div className="mt-8 rounded-lg bg-white/10 p-4">
-            <p className="text-xs font-bold uppercase text-white/45">Planning signal</p>
-            <p className="mt-2 text-sm leading-6 text-white/75">
-              Build internal mobility and skills transfer before hiring demand peaks.
-            </p>
-          </div>
         </div>
 
-        <div className="p-5">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h3 className="text-xl font-bold">Workforce Availability Forecast</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
-                Working-age population trend from 2026 to 2050.
+        <div className="overflow-hidden rounded-2xl border border-[#F0EBF8] bg-white shadow-[0_8px_48px_rgba(232,25,122,0.1)]">
+          <div className="grid gap-0 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="bg-[#1A1033] p-6 text-white sm:p-8">
+              <h3 className="flex items-center gap-3 text-2xl font-bold">
+                <LineChart size={22} className="text-[#39BFE8]" />
+                Demographic Clock
+              </h3>
+              <p className="mt-6 text-lg leading-8 text-white/80">
+                Workforce availability forecast for aging Asian labor markets.
               </p>
+              <div className="mt-10">
+                <p className="text-xs font-bold uppercase text-white/45">Projected decline</p>
+                <p className="mt-3 text-6xl font-bold text-[#39BFE8]">31%</p>
+                <p className="mt-3 text-base font-semibold leading-7 text-white/75">Working-age population by 2050</p>
+              </div>
+              <div className="mt-10 rounded-lg bg-white/10 p-5">
+                <p className="text-xs font-bold uppercase text-white/45">Planning signal</p>
+                <p className="mt-3 text-base leading-7 text-white/80">
+                  Build internal mobility and skills transfer before hiring demand peaks.
+                </p>
+              </div>
             </div>
-            <Pill tone="pink">2026 - 2050</Pill>
-          </div>
 
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
-            <div className="relative h-56">
-              <div className="absolute inset-x-0 top-4 border-t border-dashed border-[#E5DDEC]" />
-              <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-[#E5DDEC]" />
-              <div className="absolute inset-x-0 bottom-8 border-t border-dashed border-[#E5DDEC]" />
+            <div className="p-6 sm:p-8">
+              <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-3xl font-bold tracking-tight">Workforce Availability Forecast</h3>
+                  <p className="mt-3 text-lg leading-8 text-[#6B7280]">
+                    Working-age population trend from 2026 to 2050.
+                  </p>
+                </div>
+                <Pill tone="pink">2026 - 2050</Pill>
+              </div>
 
-              <svg className="absolute inset-0 h-full w-full" viewBox="0 0 420 210" role="img" aria-label="Working age population declines from 10,000 in 2026 to 6,900 in 2050">
-                <defs>
-                  <linearGradient id="workforceLine" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#087C7E" />
-                    <stop offset="55%" stopColor="#E8197A" />
-                    <stop offset="100%" stopColor="#6B46C1" />
-                  </linearGradient>
-                </defs>
-                <polyline
-                  points="28,38 152,73 276,116 392,145"
-                  fill="none"
-                  stroke="url(#workforceLine)"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="7"
-                />
-                <polyline points="28,38 152,73 276,116 392,145 392,178 28,178" fill="rgba(232,25,122,0.08)" />
-                {[
-                  ["28", "38", "#087C7E"],
-                  ["152", "73", "#E8197A"],
-                  ["276", "116", "#6B46C1"],
-                  ["392", "145", "#1A1033"],
-                ].map(([cx, cy, color]) => (
-                  <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="8" fill={color} stroke="#FFFFFF" strokeWidth="4" />
-                ))}
-              </svg>
+              <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 sm:p-5">
+                <div className="relative h-72">
+                  <div className="absolute inset-x-0 top-8 border-t border-dashed border-[#E5DDEC]" />
+                  <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-[#E5DDEC]" />
+                  <div className="absolute inset-x-0 bottom-14 border-t border-dashed border-[#E5DDEC]" />
 
-              <div className="absolute bottom-0 left-0 right-0 grid grid-cols-4 gap-2">
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox="0 0 420 250"
+                    role="img"
+                    aria-label="Working age population declines from 10,000 in 2026 to 6,900 in 2050"
+                  >
+                    <defs>
+                      <linearGradient id="workforceLine" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0%" stopColor="#087C7E" />
+                        <stop offset="55%" stopColor="#E8197A" />
+                        <stop offset="100%" stopColor="#6B46C1" />
+                      </linearGradient>
+                    </defs>
+                    <polyline
+                      points="48,54 160,92 286,145 386,176"
+                      fill="none"
+                      stroke="url(#workforceLine)"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="7"
+                    />
+                    <polyline points="48,54 160,92 286,145 386,176 386,215 48,215" fill="rgba(232,25,122,0.08)" />
+                    {[
+                      ["48", "54", "#087C7E"],
+                      ["160", "92", "#E8197A"],
+                      ["286", "145", "#6B46C1"],
+                      ["386", "176", "#1A1033"],
+                    ].map(([cx, cy, color]) => (
+                      <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="8" fill={color} stroke="#FFFFFF" strokeWidth="4" />
+                    ))}
+                  </svg>
+
+                  <div className="absolute bottom-0 left-0 right-0 grid grid-cols-4 gap-2">
+                    {workforceForecast.map((point) => (
+                      <div key={point.year} className="text-center">
+                        <p className="text-base font-bold text-[#1A1033]">{point.year}</p>
+                        <p className="text-sm font-semibold text-[#6B7280]">{point.population}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4 pb-4 sm:grid-cols-4 sm:pb-6">
                 {workforceForecast.map((point) => (
-                  <div key={point.year} className="text-center">
-                    <p className="text-sm font-bold text-[#1A1033]">{point.year}</p>
-                    <p className="text-xs font-semibold text-[#6B7280]">{point.population}</p>
+                  <div key={point.year} className="rounded-lg bg-[#FFF8FC] p-4">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold text-[#6B46C1]">{point.year}</span>
+                      <span className="text-sm font-bold text-[#E8197A]">{point.value}%</span>
+                    </div>
+                    <div className="h-2.5 rounded-full bg-[#EFE7F4]">
+                      <div className="h-2.5 rounded-full bg-[#E8197A]" style={{ width: `${point.value}%` }} />
+                    </div>
                   </div>
                 ))}
               </div>
+
+              <Link
+                href={routes.employerSimulator}
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-4 text-base font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
+              >
+                Checkout workforce simulator
+                <ArrowUpRight size={18} />
+              </Link>
             </div>
           </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-4">
-            {workforceForecast.map((point) => (
-              <div key={point.year} className="rounded-lg bg-[#FFF8FC] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#6B46C1]">{point.year}</span>
-                  <span className="text-xs font-bold text-[#E8197A]">{point.value}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-[#EFE7F4]">
-                  <div className="h-2 rounded-full bg-[#E8197A]" style={{ width: `${point.value}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Link
-            href={routes.employerSimulator}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
-          >
-            Checkout workforce simulator
-            <ArrowUpRight size={16} />
-          </Link>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function WorkforcePlanner() {
-  return (
-    <section
-      id="planner"
-      aria-labelledby="planner-title"
-      className="rounded-lg border-2 border-dashed border-[#C8DEF8] bg-white p-5 shadow-[0_4px_24px_rgba(6,182,212,0.08)]"
-    >
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 id="planner-title" className="flex items-center gap-2 text-xl font-bold">
-          <Map size={20} className="text-[#06B6D4]" />
-          Workforce Planner
-        </h2>
-        <Link href={routes.employerActionEngine} className="text-sm font-bold text-[#0891B2]">
-          Open
-        </Link>
-      </div>
-
-      <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
-        <p className="text-xs font-bold uppercase text-[#9CA3AF]">Next planning cycle</p>
-        <p className="mt-2 text-3xl font-bold text-[#1A1033]">Q3 Hiring Mix</p>
-        <p className="mt-2 text-sm leading-6 text-[#6B7280]">
-          Balance internal mobility, upskilling, and external hiring before publishing new roles.
-        </p>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        {plannerItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.label} className="flex items-center justify-between gap-3 rounded-lg bg-[#FDFCFF] p-3">
-              <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${toneStyles[item.tone]}`}>
-                  <Icon size={18} />
-                </div>
-                <p className="text-sm font-semibold text-[#6B7280]">{item.label}</p>
-              </div>
-              <span className="text-xl font-bold">{item.value}</span>
-            </div>
-          );
-        })}
       </div>
     </section>
   );
@@ -487,70 +541,15 @@ function WorkforcePlanner() {
 export default function EmployerDashboardPage() {
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <section className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
-              <Sparkles size={14} />
-              Employer marketplace
-            </div>
-            <h1 className="text-3xl font-bold sm:text-4xl">
-              Welcome back, <span className="text-[#E8197A]">Layer 2 Team</span>!
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
-              Your talent marketplace is humming. You have 12 active roles and 45 new applications waiting for review.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg bg-[#EF6DB9] p-5 text-center shadow-[0_8px_24px_rgba(232,25,122,0.18)]">
-              <p className="text-3xl font-bold text-[#1A1033]">124</p>
-              <p className="mt-1 text-xs font-bold uppercase text-[#7B285A]">Applications</p>
-            </div>
-            <div className="rounded-lg bg-[#39BFE8] p-5 text-center shadow-[0_8px_24px_rgba(6,182,212,0.18)]">
-              <p className="text-3xl font-bold text-[#1A1033]">18</p>
-              <p className="mt-1 text-xs font-bold uppercase text-[#115A70]">Hired</p>
-            </div>
-          </div>
+      <WorkforceCommandCenter />
+      <AttentionRequired />
+      <section className="bg-[#FDFCFF] pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <JobPostingTable />
         </div>
-
-        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
-          <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
-            <Search size={18} />
-            <input
-              className="w-full bg-transparent text-[#1A1033] outline-none placeholder:text-[#9CA3AF]"
-              placeholder="Search job postings, candidates, skills, or departments..."
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex">
-            {["Status", "Department", "Role type"].map((filter) => (
-              <button
-                key={filter}
-                className="rounded-lg bg-[#F8F5FC] px-4 py-3 text-sm font-semibold text-[#6B7280]"
-              >
-                {filter}
-              </button>
-            ))}
-            <button className="rounded-lg bg-[#06B6D4] px-5 py-3 text-sm font-bold text-white shadow-sm">
-              Find Talent
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.75fr)_minmax(320px,0.9fr)]">
-          <div className="space-y-6">
-            <JobPostingTable />
-            <TalentMatches />
-            <DemographicClock />
-          </div>
-
-          <aside className="space-y-6">
-            <MarketplaceInsights />
-            <WorkforcePlanner />
-          </aside>
-        </div>
-
       </section>
+      <WorkforceInsights />
+      <DemographicClock />
     </main>
   );
 }
