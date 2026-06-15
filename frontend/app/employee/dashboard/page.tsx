@@ -22,7 +22,6 @@ import {
   MapPin,
   Search,
   Sparkles,
-  UserRound,
 } from "lucide-react";
 
 const opportunities = [
@@ -900,11 +899,6 @@ export default function EmployeeDashboardPage() {
           </div>
         </div>
       )}
-
-      <button className="fixed bottom-5 right-5 hidden rounded-full bg-[#E8197A] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(232,25,122,0.24)] md:inline-flex md:items-center md:gap-2">
-        <UserRound size={16} />
-        Career coach
-      </button>
     </main>
   );
 }

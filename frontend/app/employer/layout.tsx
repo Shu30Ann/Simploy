@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { BriefcaseBusiness, Building2 } from "lucide-react";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { routes } from "@/lib/routes";
 
 const NAV = [
@@ -63,6 +64,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {children}
       </div>
+
+      <ChatWidget
+        title="Hiring Advisor"
+        assistantName="Maya"
+        intro="Hi, I am Maya, your hiring advisor. Ask me about job posts, candidate matches, workforce planning, or hiring priorities."
+        placeholder="Ask Maya about hiring..."
+        quickPrompts={["Review applicants", "Improve a job post", "Plan workforce gaps"]}
+      />
     </div>
   );
 }
