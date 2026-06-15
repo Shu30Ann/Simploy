@@ -2,7 +2,7 @@
 
 import type { SimState } from "@/lib/simulator/types";
 
-const TIMEFRAMES: SimState["timeframe"][] = ["CURRENT", "1Y", "3Y", "5Y", "10Y", "20Y", "30Y"];
+const TIMEFRAMES: SimState["timeframe"][] = ["CURRENT", "5Y", "10Y", "20Y", "30Y"];
 
 interface Props {
   value: SimState["timeframe"];

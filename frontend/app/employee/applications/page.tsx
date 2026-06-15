@@ -63,8 +63,8 @@ export default function EmployeeApplicationsPage() {
               Simploy
             </a>
             <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-              <a href="/employee/dashboard" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Marketplace
+              <a href="/employee/dashboard#asia-market-title" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+                Asia Market Insight
               </a>
               <a href="/employee/applications" className="rounded-full bg-[#FFF0F8] px-4 py-2 text-[#E8197A]">
                 Applications

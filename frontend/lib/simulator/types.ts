@@ -21,7 +21,7 @@ export interface SimState {
     hiringFreeze:   boolean;
     massRetirement: boolean;
   };
-  timeframe: "CURRENT" | "1Y" | "3Y" | "5Y" | "10Y" | "20Y" | "30Y";
+  timeframe: "CURRENT" | "5Y" | "10Y" | "20Y" | "30Y";
 }
 
 export interface DeptRisk {
