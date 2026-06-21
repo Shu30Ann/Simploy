@@ -40,3 +40,12 @@ class Application(BaseModel):
     status: ApplicationStatus
     match_score: float
     created_at: str
+
+
+class ApplicationDetail(Application):
+    job_title: str
+    work_style: str
+    location: str | None = None
+    required_skills: list[str] = []
+    company_name: str | None = None
+    candidate_name: str | None = None

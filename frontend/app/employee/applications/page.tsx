@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BriefcaseBusiness,
   Building2,
@@ -11,6 +11,8 @@ import {
   Send,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { getAuthToken, getJson } from "@/lib/api";
+import type { BackendApplication } from "@/lib/backendTypes";
 
 const applications = [
   {
@@ -39,6 +41,19 @@ const applications = [
   },
 ];
 
+type ApplicationView = (typeof applications)[number];
+
+function applicationFromBackend(application: BackendApplication): ApplicationView {
+  return {
+    title: application.job_title,
+    company: application.company_name ? `External - ${application.company_name}` : "External",
+    status: application.status === "submitted" ? "Applied" : application.status,
+    date: `Submitted ${new Date(application.created_at).toLocaleDateString()}`,
+    type: "External",
+    accent: application.match_score >= 80 ? "green" : application.match_score >= 65 ? "teal" : "pink",
+  };
+}
+
 const toneStyles: Record<string, string> = {
   pink: "bg-[#FFF0F8] text-[#E8197A] border-[#FFD0E8]",
   teal: "bg-[#E0F9FF] text-[#0891B2] border-[#BAF3FF]",
@@ -58,8 +73,18 @@ function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: s
 export default function EmployeeApplicationsPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<(typeof applications)[number] | null>(null);
-  const filteredApplications = applications.filter((application) => {
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationView | null>(null);
+  const [dbApplications, setDbApplications] = useState<ApplicationView[] | null>(null);
+
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    getJson<BackendApplication[]>("/applications/me", { auth: true })
+      .then((items) => setDbApplications(items.map(applicationFromBackend)))
+      .catch(() => setDbApplications(null));
+  }, []);
+
+  const visibleApplications = dbApplications?.length ? dbApplications : applications;
+  const filteredApplications = visibleApplications.filter((application) => {
     if (activeFilter === "All") return true;
     return application.type === activeFilter || application.status === activeFilter;
   });
@@ -112,8 +137,8 @@ export default function EmployeeApplicationsPage() {
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
-              ["Total", applications.length.toString()],
-              ["Active", "2"],
+              ["Total", visibleApplications.length.toString()],
+              ["Active", visibleApplications.filter((application) => application.status !== "Rejected").length.toString()],
               ["Next step", "Jun 18"],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">

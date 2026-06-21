@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import worldCountries from "world-atlas/countries-110m.json";
 import {
@@ -22,6 +22,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { getAuthToken, getJson, postJson } from "@/lib/api";
+import type { BackendApplication, BackendJob, EmployeeDashboardData } from "@/lib/backendTypes";
 
 const careerCommandCenter = {
   readiness: 76,
@@ -86,6 +88,23 @@ const opportunities = [
     tone: "pink",
   },
 ];
+
+type Opportunity = (typeof opportunities)[number] & { jobId?: number; applied?: boolean };
+
+function opportunityFromJob(job: BackendJob, applications: BackendApplication[]): Opportunity {
+  const hasApplied = applications.some((application) => application.job_id === job.id);
+  return {
+    title: job.title,
+    company: job.department_name ? `${job.department_name} Team` : "Hiring Team",
+    type: "External",
+    match: `${Math.max(68, 94 - job.required_skills.length * 4)}%`,
+    location: job.location ?? job.work_style,
+    tags: job.required_skills.slice(0, 3),
+    tone: hasApplied ? "green" : "teal",
+    jobId: job.id,
+    applied: hasApplied,
+  };
+}
 
 const marketMetrics = [
   { key: "growth", label: "Job growth", suffix: "%", legend: "Where jobs are growing" },
@@ -339,7 +358,7 @@ function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: s
   );
 }
 
-function OpportunityCard({ job }: { job: (typeof opportunities)[number] }) {
+function OpportunityCard({ job, onApply }: { job: Opportunity; onApply?: (job: Opportunity) => void }) {
   const isInternal = job.type === "Internal";
 
   return (
@@ -366,8 +385,13 @@ function OpportunityCard({ job }: { job: (typeof opportunities)[number] }) {
         <span className="text-sm font-bold text-[#0891B2]">
           {job.match} {isInternal ? "skill fit" : "match"}
         </span>
-        <button className="inline-flex items-center gap-1 rounded-lg bg-[#FFF0F8] px-3 py-2 text-sm font-bold text-[#E8197A]">
-          {isInternal ? "Join Gig" : "Explore"}
+        <button
+          type="button"
+          onClick={() => onApply?.(job)}
+          disabled={job.applied}
+          className="inline-flex items-center gap-1 rounded-lg bg-[#FFF0F8] px-3 py-2 text-sm font-bold text-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {job.applied ? "Applied" : isInternal ? "Join Gig" : "Apply"}
           <ArrowUpRight size={14} />
         </button>
       </div>
@@ -944,8 +968,34 @@ function SkillRoadmapModule({ onStartRoadmap }: { onStartRoadmap: () => void }) 
 
 export default function EmployeeDashboardPage() {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
-  const internalOpportunities = opportunities.filter((job) => job.type === "Internal");
-  const externalOpportunities = opportunities.filter((job) => job.type === "External");
+  const [dashboard, setDashboard] = useState<EmployeeDashboardData | null>(null);
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    getJson<EmployeeDashboardData>("/dashboard/employee", { auth: true })
+      .then(setDashboard)
+      .catch(() => setDashboard(null));
+  }, []);
+
+  const dynamicOpportunities = dashboard?.jobs.length
+    ? dashboard.jobs.map((job) => opportunityFromJob(job, dashboard.applications))
+    : opportunities;
+  const internalOpportunities = dynamicOpportunities.filter((job) => job.type === "Internal");
+  const externalOpportunities = dynamicOpportunities.filter((job) => job.type === "External");
+  const displayName = dashboard?.full_name?.split(" ")[0] ?? "Alex";
+
+  const handleApply = async (job: Opportunity) => {
+    if (!job.jobId || job.applied || !getAuthToken()) return;
+    try {
+      await postJson(`/jobs/${job.jobId}/apply`, {}, { auth: true });
+      const nextDashboard = await getJson<EmployeeDashboardData>("/dashboard/employee", { auth: true });
+      setDashboard(nextDashboard);
+      setApplyMessage(`Application submitted for ${job.title}.`);
+    } catch (error) {
+      setApplyMessage(error instanceof Error ? error.message : "Unable to submit application.");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
@@ -989,7 +1039,7 @@ export default function EmployeeDashboardPage() {
               Career marketplace
             </div>
             <h1 className="text-3xl font-bold sm:text-4xl">
-              Level up, <span className="text-[#E8197A]">Alex</span>.
+              Level up, <span className="text-[#E8197A]">{displayName}</span>.
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
               Explore internal mobility and external career opportunities, track submitted applications, and close the
@@ -1042,6 +1092,11 @@ export default function EmployeeDashboardPage() {
         </section>
 
         <SkillRoadmapModule onStartRoadmap={() => setIsRoadmapOpen(true)} />
+        {applyMessage && (
+          <div className="mt-6 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] px-4 py-3 text-sm font-bold text-[#087C7E]">
+            {applyMessage}
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
           <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
@@ -1099,7 +1154,7 @@ export default function EmployeeDashboardPage() {
                   </p>
                   <div className="space-y-4">
                     {internalOpportunities.map((job) => (
-                      <OpportunityCard key={job.title} job={job} />
+                      <OpportunityCard key={job.title} job={job} onApply={handleApply} />
                     ))}
                   </div>
                 </div>
@@ -1114,7 +1169,7 @@ export default function EmployeeDashboardPage() {
                   </div>
                   <div className="space-y-4">
                     {externalOpportunities.map((job) => (
-                      <OpportunityCard key={job.title} job={job} />
+                      <OpportunityCard key={job.title} job={job} onApply={handleApply} />
                     ))}
                   </div>
                 </div>

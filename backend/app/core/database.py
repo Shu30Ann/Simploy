@@ -109,3 +109,87 @@ def init_db() -> None:
             );
             """
         )
+        seed_demo_data(conn)
+
+
+def seed_demo_data(conn: sqlite3.Connection) -> None:
+    employer = conn.execute("SELECT id FROM users WHERE email = ?", ("demo-employer@simploy.local",)).fetchone()
+    if employer is None:
+        cursor = conn.execute(
+            "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
+            ("demo-employer@simploy.local", "seeded-account", "employer"),
+        )
+        user_id = cursor.lastrowid
+        profile_cursor = conn.execute(
+            """
+            INSERT INTO employer_profiles (user_id, company_name, industry, company_size, location)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (user_id, "Simploy Demo Talent Network", "Technology", 230, "Kuala Lumpur"),
+        )
+        employer_id = profile_cursor.lastrowid
+    else:
+        profile = conn.execute(
+            "SELECT id FROM employer_profiles WHERE user_id = ?",
+            (employer["id"],),
+        ).fetchone()
+        employer_id = profile["id"]
+
+    existing_jobs = conn.execute("SELECT COUNT(*) AS count FROM jobs").fetchone()["count"]
+    if existing_jobs:
+        return
+
+    seeded_jobs = [
+        (
+            "Product Analytics Lead",
+            "Own product analytics, experimentation, and decision dashboards.",
+            "Product",
+            '["analytics", "sql", "experimentation", "storytelling"]',
+            "Hybrid",
+            "Kuala Lumpur",
+            9000,
+            14000,
+            "open",
+        ),
+        (
+            "Senior Software Engineer",
+            "Build workforce intelligence products across frontend, backend, and data services.",
+            "Engineering",
+            '["python", "typescript", "cloud", "automation"]',
+            "Remote",
+            "Malaysia",
+            12000,
+            18000,
+            "open",
+        ),
+        (
+            "Talent Mobility Specialist",
+            "Design internal mobility programs and skill transition pathways.",
+            "People",
+            '["coaching", "talent analytics", "change management"]',
+            "Hybrid",
+            "Singapore",
+            8000,
+            13000,
+            "open",
+        ),
+    ]
+
+    for title, description, dept_name, skills, work_style, location, salary_min, salary_max, status in seeded_jobs:
+        conn.execute(
+            "INSERT OR IGNORE INTO departments (employer_id, name) VALUES (?, ?)",
+            (employer_id, dept_name),
+        )
+        dept = conn.execute(
+            "SELECT id FROM departments WHERE employer_id = ? AND name = ?",
+            (employer_id, dept_name),
+        ).fetchone()
+        conn.execute(
+            """
+            INSERT INTO jobs
+              (employer_id, department_id, title, description, required_skills_json,
+               work_style, location, salary_min, salary_max, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (employer_id, dept["id"], title, description, skills, work_style, location, salary_min, salary_max, status),
+        )

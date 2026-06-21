@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -20,8 +21,10 @@ import {
   Zap,
 } from "lucide-react";
 import { routes } from "@/lib/routes";
+import { getAuthToken, getJson } from "@/lib/api";
+import type { BackendJob, EmployerDashboardData } from "@/lib/backendTypes";
 
-const jobs = [
+const fallbackJobs = [
   {
     title: "Senior Protocol Engineer",
     department: "Core Infrastructure",
@@ -50,6 +53,18 @@ const jobs = [
     matchTone: "purple",
   },
 ];
+
+function jobFromBackend(job: BackendJob) {
+  return {
+    title: job.title,
+    department: job.department_name ?? "General",
+    workStyle: job.work_style,
+    hiringStatus: job.status === "open" ? "Hiring" : job.status === "draft" ? "Draft" : "Closed",
+    appsReceived: job.applications_count,
+    matches: job.applications_count > 0 ? [`${job.applications_count}`] : [],
+    matchTone: job.applications_count > 0 ? "pink" : "purple",
+  };
+}
 
 const insights = [
   {
@@ -136,7 +151,7 @@ function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: s
   );
 }
 
-function JobPostingTable() {
+function JobPostingTable({ jobs }: { jobs: typeof fallbackJobs }) {
   return (
     <section
       id="jobs"
@@ -218,7 +233,13 @@ function JobPostingTable() {
   );
 }
 
-function WorkforceCommandCenter() {
+function WorkforceCommandCenter({
+  metrics = commandMetrics,
+  companyName,
+}: {
+  metrics?: typeof commandMetrics;
+  companyName?: string;
+}) {
   return (
     <section aria-labelledby="command-center-title" className="relative overflow-hidden bg-[#FDFCFF] pb-14 pt-12 sm:pb-20 sm:pt-16">
       <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#E8197A]/[0.06] blur-3xl" />
@@ -237,6 +258,7 @@ function WorkforceCommandCenter() {
               Workforce Command Center
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#6B7280]">
+              {companyName ? `${companyName}: ` : ""}
               Focus today&apos;s hiring work around live roles, qualified candidates, and the actions that move your
               workforce plan forward.
             </p>
@@ -259,7 +281,7 @@ function WorkforceCommandCenter() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {commandMetrics.map(({ label, value, detail, icon: Icon, tone }) => (
+            {metrics.map(({ label, value, detail, icon: Icon, tone }) => (
               <article key={label} className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.1)]">
                 <div className={`mb-5 flex h-11 w-11 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
                   <Icon size={20} />
@@ -539,13 +561,64 @@ function DemographicClock() {
 }
 
 export default function EmployerDashboardPage() {
+  const [dashboard, setDashboard] = useState<EmployerDashboardData | null>(null);
+  const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "fallback">("idle");
+
+  useEffect(() => {
+    if (!getAuthToken()) {
+      setLoadState("fallback");
+      return;
+    }
+
+    setLoadState("loading");
+    getJson<EmployerDashboardData>("/dashboard/employer", { auth: true })
+      .then((data) => {
+        setDashboard(data);
+        setLoadState("loaded");
+      })
+      .catch(() => setLoadState("fallback"));
+  }, []);
+
+  const visibleJobs = dashboard?.jobs.length ? dashboard.jobs.map(jobFromBackend) : fallbackJobs;
+  const metrics = dashboard
+    ? [
+        {
+          label: "Active Roles",
+          value: String(dashboard.metrics.active_roles),
+          detail: `${dashboard.metrics.draft_roles} drafts in progress`,
+          icon: ClipboardList,
+          tone: "pink",
+        },
+        {
+          label: "Applications",
+          value: String(dashboard.metrics.applications),
+          detail: `${dashboard.metrics.qualified_matches} qualified matches`,
+          icon: Users,
+          tone: "teal",
+        },
+        { label: "Hires", value: "0", detail: "No accepted offers yet", icon: UserCheck, tone: "purple" },
+        {
+          label: "Saved Plans",
+          value: String(dashboard.simulations.length),
+          detail: "Workforce simulations saved",
+          icon: BadgeCheck,
+          tone: "pink",
+        },
+      ]
+    : commandMetrics;
+
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <WorkforceCommandCenter />
+      <WorkforceCommandCenter metrics={metrics} companyName={dashboard?.company_name} />
+      {loadState === "loaded" && (
+        <div className="border-y border-[#BAF3FF] bg-[#F0FDFF] px-4 py-3 text-center text-sm font-bold text-[#087C7E]">
+          Dashboard loaded from database for {dashboard?.company_name}.
+        </div>
+      )}
       <AttentionRequired />
       <section className="bg-[#FDFCFF] pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <JobPostingTable />
+          <JobPostingTable jobs={visibleJobs} />
         </div>
       </section>
       <WorkforceInsights />

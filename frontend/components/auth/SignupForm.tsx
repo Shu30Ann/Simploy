@@ -10,8 +10,8 @@ import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
 import GoogleAuthButton from "./GoogleAuthButton";
-import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
-import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
+import { clearAuthSession, postJson, type AuthResponse } from "@/lib/api";
+import { authRouteWithRole, routes } from "@/lib/routes";
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Please enter your full name"),
@@ -78,9 +78,10 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
     };
 
     try {
-      const session = await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
-      storeAuthSession(session);
-      window.location.replace(dashboardRouteFor(session.user.role === "admin" ? role : session.user.role));
+      await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
+      clearAuthSession();
+      window.localStorage.setItem("simploy-role", role);
+      window.location.replace(routes.home);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create account. Please try again.");
     }

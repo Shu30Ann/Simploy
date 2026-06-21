@@ -68,3 +68,26 @@ export async function postJson<TResponse, TPayload>(
 
   return response.json() as Promise<TResponse>;
 }
+
+export async function getJson<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
+  const headers: Record<string, string> = {};
+  const token = options.auth ? getAuthToken() : null;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers });
+
+  if (!response.ok) {
+    let message = await response.text();
+    try {
+      const parsed = JSON.parse(message);
+      message = parsed.detail ?? message;
+    } catch {
+      // Keep the raw response body.
+    }
+    throw new Error(message || `Request failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<TResponse>;
+}

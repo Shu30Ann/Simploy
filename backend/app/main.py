@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.core.config import settings
 from backend.app.core.database import init_db
-from backend.app.routers import auth, jobs, predictions, profiles, simulations
+from backend.app.routers import applications, auth, dashboard, jobs, predictions, profiles, simulations
 
 
 def create_app() -> FastAPI:
@@ -31,6 +31,8 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(profiles.router)
     app.include_router(jobs.router)
+    app.include_router(applications.router)
+    app.include_router(dashboard.router)
     app.include_router(simulations.router)
     app.include_router(predictions.router)
     return app

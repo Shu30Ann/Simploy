@@ -1,7 +1,7 @@
 "use client";
 
 import type { ElementType } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -12,6 +12,8 @@ import {
   Zap,
 } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
+import { getAuthToken, getJson } from "@/lib/api";
+import type { EmployerDashboardData } from "@/lib/backendTypes";
 
 const actions = [
   {
@@ -107,6 +109,41 @@ const actions = [
   },
 ];
 
+type ActionCard = (typeof actions)[number];
+
+interface RecommendationResponse {
+  recommendations: Array<{
+    action: string;
+    target: string;
+    priority: string;
+    rationale: string;
+  }>;
+}
+
+function actionFromRecommendation(item: RecommendationResponse["recommendations"][number], index: number): ActionCard {
+  const categoryByAction: Record<string, ActionCard["category"]> = {
+    hire: "Hire",
+    retrain: "Upskill",
+    monitor: "Retain",
+    automate: "Automate",
+    outsource: "Mobility",
+  };
+  const category = categoryByAction[item.action] ?? "Retain";
+  return {
+    id: `${item.action}-${item.target}-${index}`,
+    priority: index + 1,
+    title: item.target,
+    category,
+    problem: item.rationale,
+    recommendation: `${category} action recommended for ${item.target}.`,
+    impact: item.priority === "high" ? "High" : item.priority === "medium" ? "Medium-High" : "Medium",
+    cost: "TBD",
+    timeline: item.priority === "high" ? "90 days" : "6 months",
+    buttonLabel: category === "Hire" ? "Create Hiring Plan" : category === "Upskill" ? "Generate Learning Path" : "Open Plan",
+    label: item.priority === "high" ? "Critical" : item.priority === "medium" ? "High" : "Medium",
+  };
+}
+
 const filters = ["All", "Hire", "Upskill", "Mobility", "Automate", "Retain"];
 
 const labelStyles: Record<string, string> = {
@@ -146,10 +183,25 @@ const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
 
 export default function ActionEnginePage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [dbActions, setDbActions] = useState<ActionCard[] | null>(null);
+
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    getJson<EmployerDashboardData>("/dashboard/employer", { auth: true })
+      .then(async (dashboard) => {
+        const latest = dashboard.simulations[0];
+        if (!latest) return;
+        const response = await getJson<RecommendationResponse>(`/simulations/${latest.id}/actions`, { auth: true });
+        setDbActions(response.recommendations.map(actionFromRecommendation));
+      })
+      .catch(() => setDbActions(null));
+  }, []);
+
+  const visibleActions = dbActions?.length ? dbActions : actions;
 
   const filteredActions = useMemo(
-    () => actions.filter((action) => selectedFilter === "All" || action.category === selectedFilter),
-    [selectedFilter]
+    () => visibleActions.filter((action) => selectedFilter === "All" || action.category === selectedFilter),
+    [selectedFilter, visibleActions]
   );
 
   return (
@@ -161,7 +213,7 @@ export default function ActionEnginePage() {
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold leading-tight text-[#1A1033] sm:text-4xl">Action Engine</h1>
               <span className="rounded-full bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase text-[#E8197A]">
-                7 plans
+                {visibleActions.length} plans
               </span>
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4B5563]">
