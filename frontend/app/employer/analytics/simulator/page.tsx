@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getAuthToken, postJson } from "@/lib/api";
 import { DEFAULT_STATE, DEFAULT_RESULT, runMockSimulation } from "@/lib/simulator/mockCompute";
 import type { SimState, SimResult } from "@/lib/simulator/types";
 import SimulatorSidebar        from "@/components/simulator/SimulatorSidebar";
@@ -19,11 +20,17 @@ const DEFAULT_STATE_B: SimState = {
   aiLevel: 3,
 };
 
+interface SimulationRecord {
+  id: number;
+  result: SimResult;
+}
+
 export default function SimulatorPage() {
   const [simState, setSimState]   = useState<SimState>(DEFAULT_STATE);
   const [result, setResult]       = useState<SimResult>(DEFAULT_RESULT);
   const [isRunning, setIsRunning] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
+  const [lastSavedSimulationId, setLastSavedSimulationId] = useState<number | null>(null);
 
   // Compare mode
   const [compareMode, setCompareMode] = useState(false);
@@ -32,8 +39,25 @@ export default function SimulatorPage() {
 
   const handleRunSimulation = async () => {
     setIsRunning(true);
-    await new Promise(res => setTimeout(res, 1500));
-    const r = runMockSimulation(simState);
+    let r: SimResult;
+    try {
+      const payload = {
+        name: `Workforce scenario ${new Date().toLocaleDateString()}`,
+        input: simState,
+      };
+      if (getAuthToken()) {
+        const saved = await postJson<SimulationRecord, typeof payload>("/simulations", payload, { auth: true });
+        r = saved.result;
+        setLastSavedSimulationId(saved.id);
+      } else {
+        r = await postJson<SimResult, typeof payload>("/simulations/preview", payload);
+        setLastSavedSimulationId(null);
+      }
+    } catch {
+      await new Promise(res => setTimeout(res, 700));
+      r = runMockSimulation(simState);
+      setLastSavedSimulationId(null);
+    }
     setResult(r);
     setHasSimulated(true);
     if (compareMode) setResultB(runMockSimulation(stateB));
@@ -80,6 +104,11 @@ export default function SimulatorPage() {
             compareMode={compareMode}
             onToggleCompare={handleToggleCompare}
           />
+          {lastSavedSimulationId && (
+            <div className="rounded-lg border border-[#BAF3FF] bg-[#E0F9FF] px-4 py-3 text-sm font-bold text-[#087C7E]">
+              Saved simulation #{lastSavedSimulationId} to the database.
+            </div>
+          )}
           <DepartmentPieChart hasSimulated={hasSimulated} />
           <SupplyDemandChart
             result={result}

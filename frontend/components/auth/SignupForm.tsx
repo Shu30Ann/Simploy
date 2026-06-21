@@ -1,15 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
 import GoogleAuthButton from "./GoogleAuthButton";
+import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
 
 const baseSchema = z.object({
@@ -52,8 +53,8 @@ interface SignupFormProps {
 }
 
 export default function SignupForm({ role, onBack }: SignupFormProps) {
-  const router = useRouter();
   const schema = role === "employer" ? employerSchema : baseSchema;
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -66,10 +67,23 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
 
   const passwordValue: string = useWatch({ control, name: "password", defaultValue: "" }) ?? "";
 
-  const onSubmit = async () => {
-    await new Promise((res) => setTimeout(res, 1400));
-    window.localStorage.setItem("simploy-role", role);
-    router.push(dashboardRouteFor(role));
+  const onSubmit = async (data: FormData) => {
+    setSubmitError(null);
+    const payload = {
+      email: data.email,
+      password: data.password,
+      role,
+      full_name: data.fullName,
+      company_name: role === "employer" ? data.companyName : undefined,
+    };
+
+    try {
+      const session = await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
+      storeAuthSession(session);
+      window.location.replace(dashboardRouteFor(session.user.role === "admin" ? role : session.user.role));
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to create account. Please try again.");
+    }
   };
 
   return (
@@ -111,6 +125,12 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
       <Divider />
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        {submitError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {submitError}
+          </div>
+        )}
+
         {/* Full name */}
         <div>
           <label htmlFor="fullName" className={labelBase} style={{ color: "var(--label-color)" }}>

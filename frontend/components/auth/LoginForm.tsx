@@ -5,11 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import GoogleAuthButton from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
+import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes, type UserRole } from "@/lib/routes";
 
 const schema = z.object({
@@ -43,9 +43,9 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ initialRole }: LoginFormProps) {
-  const router = useRouter();
   const validInitialRole = initialRole === "employee" || initialRole === "employer" ? initialRole : null;
   const [role, setRole] = useState<UserRole>(validInitialRole ?? "employee");
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -65,10 +65,19 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
     }
   }, [validInitialRole]);
 
-  const onSubmit = async () => {
-    await new Promise((res) => setTimeout(res, 1200));
-    window.localStorage.setItem("simploy-role", role);
-    router.push(dashboardRouteFor(role));
+  const onSubmit = async (data: FormData) => {
+    setSubmitError(null);
+    try {
+      const session = await postJson<AuthResponse, FormData>("/auth/login", data);
+      if (session.user.role !== role) {
+        setSubmitError(`This account is registered as ${session.user.role}. Switch portal and try again.`);
+        return;
+      }
+      storeAuthSession(session);
+      window.location.replace(dashboardRouteFor(session.user.role));
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");
+    }
   };
 
   return (
@@ -115,6 +124,12 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
       <Divider />
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        {submitError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {submitError}
+          </div>
+        )}
+
         {/* Email */}
         <div>
           <label
