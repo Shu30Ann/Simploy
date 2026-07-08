@@ -23,42 +23,51 @@ import {
 import { routes } from "@/lib/routes";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { BackendJob, EmployerDashboardData } from "@/lib/backendTypes";
+import type { DashboardTone, WorkStyle } from "@/lib/mock-data";
+import {
+  employerAttentionItems,
+  employerDashboardMetrics,
+  industrySignals,
+  marketplaceCompanies,
+  marketplaceJobs,
+  marketplaceSkills,
+  manufacturingForecast,
+  marketplaceSummary,
+} from "@/lib/mock-data";
 
-const fallbackJobs = [
-  {
-    title: "Senior Protocol Engineer",
-    department: "Core Infrastructure",
-    workStyle: "Hybrid",
-    hiringStatus: "Hiring",
-    appsReceived: 42,
-    matches: ["JE", "MC", "+3"],
-    matchTone: "pink",
-  },
-  {
-    title: "DevRel Lead",
-    department: "Ecosystem Growth",
-    workStyle: "Remote",
-    hiringStatus: "Hiring",
-    appsReceived: 15,
-    matches: ["AS", "SR"],
-    matchTone: "teal",
-  },
-  {
-    title: "Product Designer (v2)",
-    department: "UI/UX",
-    workStyle: "On-site",
-    hiringStatus: "Draft",
-    appsReceived: 0,
-    matches: [],
-    matchTone: "purple",
-  },
-];
+type EmployerJobView = {
+  title: string;
+  department: string;
+  workStyle: WorkStyle;
+  hiringStatus: string;
+  appsReceived: number;
+  matches: string[];
+  matchTone: string;
+};
 
-function jobFromBackend(job: BackendJob) {
+type EmployerMetricView = {
+  label: string;
+  value: string;
+  detail: string;
+  icon: typeof ClipboardList;
+  tone: DashboardTone;
+};
+
+const fallbackJobs: EmployerJobView[] = marketplaceJobs.slice(0, 6).map((job, index) => ({
+  title: job.title,
+  department: `${marketplaceCompanies.find((company) => company.id === job.companyId)?.name ?? job.department} - ${job.department}`,
+  workStyle: job.workStyle,
+  hiringStatus: job.status === "open" ? "Hiring" : job.status === "draft" ? "Draft" : "Closed",
+  appsReceived: job.applicants,
+  matches: job.qualifiedMatches > 0 ? [String(job.qualifiedMatches), `+${Math.max(1, Math.round(job.applicants / 12))}`] : [],
+  matchTone: ["pink", "teal", "purple"][index % 3],
+}));
+
+function jobFromBackend(job: BackendJob): EmployerJobView {
   return {
     title: job.title,
     department: job.department_name ?? "General",
-    workStyle: job.work_style,
+    workStyle: (["On-site", "Hybrid", "Remote"].includes(job.work_style) ? job.work_style : "Hybrid") as WorkStyle,
     hiringStatus: job.status === "open" ? "Hiring" : job.status === "draft" ? "Draft" : "Closed",
     appsReceived: job.applications_count,
     matches: job.applications_count > 0 ? [`${job.applications_count}`] : [],
@@ -87,58 +96,62 @@ const insights = [
   },
 ];
 
-const commandMetrics = [
-  { label: "Active Roles", value: "12", detail: "8 live, 3 drafts, 1 offer", icon: ClipboardList, tone: "pink" },
-  { label: "Applications", value: "124", detail: "45 new this week", icon: Users, tone: "teal" },
-  { label: "Hires", value: "18", detail: "Q2 accepted offers", icon: UserCheck, tone: "purple" },
-  { label: "Qualified Matches", value: "37", detail: "Ready for review", icon: BadgeCheck, tone: "pink" },
+const commandMetrics: EmployerMetricView[] = [
+  { ...employerDashboardMetrics[0], icon: ClipboardList },
+  { ...employerDashboardMetrics[1], icon: Users },
+  { ...employerDashboardMetrics[2], icon: BadgeCheck },
+  { ...employerDashboardMetrics[3], icon: Target },
 ];
 
-const attentionItems = [
+const attentionItems = employerAttentionItems.map((item, index) => ({
+  ...item,
+  icon: [Users, FilePenLine, Target][index] ?? Target,
+}));
+
+const marketplaceSnapshot = [
   {
-    title: "Review applicants",
-    detail: '12 new applicants for "Senior Protocol Engineer" need a decision.',
-    meta: "Due today",
-    action: "Review queue",
-    icon: Users,
+    label: "Most In-Demand Skill",
+    value: marketplaceSummary.mostInDemandSkills[0],
+    detail: `${marketplaceSkills[0].growthRate}% demand growth across platform roles`,
+    icon: Zap,
     tone: "pink",
   },
   {
-    title: "Publish draft jobs",
-    detail: '"Product Designer (v2)" is ready once compensation is confirmed.',
-    meta: "3 drafts",
-    action: "Open drafts",
-    icon: FilePenLine,
+    label: "Talent Supply Score",
+    value: `${marketplaceSummary.platformTalentSupplyScore}/100`,
+    detail: "Healthy overall, tight for technical roles",
+    icon: Users,
+    tone: "teal",
+  },
+  {
+    label: "Highest Shortage Industry",
+    value: industrySignals.slice().sort((a, b) => b.shortageIndex - a.shortageIndex)[0].industry,
+    detail: "Shortages are strongest in data and technical roles",
+    icon: TrendingUp,
     tone: "purple",
   },
   {
-    title: "Low candidate supply",
-    detail: "Senior protocol roles are trending below target supply this week.",
-    meta: "Supply risk",
-    action: "Find talent",
-    icon: Target,
+    label: "Hiring Outlook",
+    value: "Transformation",
+    detail: "Employers need hire + upskill pathways",
+    icon: ShieldCheck,
     tone: "teal",
   },
 ];
 
-const marketplaceSnapshot = [
-  { label: "Most In-Demand Skill", value: "Rust / Wasm", detail: "Engineering demand up 24%", icon: Zap, tone: "pink" },
-  { label: "Talent Supply Score", value: "72/100", detail: "Healthy, but tightening", icon: Users, tone: "teal" },
-  { label: "Competition Level", value: "High", detail: "5 similar employers active", icon: TrendingUp, tone: "purple" },
-  { label: "Hiring Outlook", value: "Positive", detail: "Faster with certified talent", icon: ShieldCheck, tone: "teal" },
-];
-
-const workforceForecast = [
-  { year: "2026", population: "10,000", value: 100 },
-  { year: "2030", population: "9,100", value: 91 },
-  { year: "2040", population: "7,800", value: 78 },
-  { year: "2050", population: "6,900", value: 69 },
-];
+const workforceForecast = manufacturingForecast
+  .filter((_, index) => [0, 2, 4, 5].includes(index))
+  .map((point) => ({
+    year: point.year,
+    population: point.supply.toLocaleString(),
+    value: Math.round((point.supply / manufacturingForecast[0].supply) * 100),
+  }));
 
 const toneStyles: Record<string, string> = {
   pink: "border-[#FFD0E8] bg-[#FFF0F8] text-[#E8197A]",
   teal: "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]",
   purple: "border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]",
+  orange: "border-[#FED7AA] bg-[#FFF7ED] text-[#C2410C]",
 };
 
 function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: string }) {
@@ -587,22 +600,22 @@ export default function EmployerDashboardPage() {
           value: String(dashboard.metrics.active_roles),
           detail: `${dashboard.metrics.draft_roles} drafts in progress`,
           icon: ClipboardList,
-          tone: "pink",
+          tone: "pink" as DashboardTone,
         },
         {
           label: "Applications",
           value: String(dashboard.metrics.applications),
           detail: `${dashboard.metrics.qualified_matches} qualified matches`,
           icon: Users,
-          tone: "teal",
+          tone: "teal" as DashboardTone,
         },
-        { label: "Hires", value: "0", detail: "No accepted offers yet", icon: UserCheck, tone: "purple" },
+        { label: "Hires", value: "0", detail: "No accepted offers yet", icon: UserCheck, tone: "purple" as DashboardTone },
         {
           label: "Saved Plans",
           value: String(dashboard.simulations.length),
           detail: "Workforce simulations saved",
           icon: BadgeCheck,
-          tone: "pink",
+          tone: "pink" as DashboardTone,
         },
       ]
     : commandMetrics;

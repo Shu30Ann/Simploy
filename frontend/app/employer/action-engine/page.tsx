@@ -14,99 +14,26 @@ import {
 import SectionLabel from "@/components/ui/SectionLabel";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { EmployerDashboardData } from "@/lib/backendTypes";
+import { manufacturingRecommendations, manufacturingSimulationSummary } from "@/lib/mock-data";
 
 const actions = [
-  {
-    id: "hire",
-    priority: 1,
-    title: "Hire",
-    category: "Hire",
-    problem: "Engineering will face a shortage of 1,200 employees by 2030.",
-    recommendation: "Hire 800 software engineers, 250 AI engineers, and 150 cybersecurity specialists.",
-    impact: "High",
-    cost: "RM 12M",
-    timeline: "3 years",
-    buttonLabel: "Create Hiring Plan",
-    label: "Critical",
-  },
-  {
-    id: "upskill",
-    priority: 2,
-    title: "Upskill",
-    category: "Upskill",
-    problem: "800 business analysts are at risk of role mismatch.",
-    recommendation: "Retrain 500 analysts into AI business analysts.",
-    impact: "High",
-    cost: "RM 1.2M",
-    timeline: "6 months",
-    buttonLabel: "Generate Learning Path",
-    label: "High",
-  },
-  {
-    id: "mobility",
-    priority: 3,
-    title: "Internal Mobility",
-    category: "Mobility",
-    problem: "HR Operations has 300 surplus employees while Data Operations has a 200-person shortage.",
-    recommendation: "Move 200 employees from HR Operations to Data Operations.",
-    impact: "Medium-High",
-    cost: "RM 400K",
-    timeline: "4 months",
-    buttonLabel: "View Candidates",
-    label: "High",
-  },
-  {
-    id: "automate",
-    priority: 4,
-    title: "Automate",
-    category: "Automate",
-    problem: "HR administrative tasks have 82% automation risk.",
-    recommendation: "Automate payroll processing, leave approval, and document verification.",
-    impact: "Medium",
-    cost: "RM 800K",
-    timeline: "4 months",
-    buttonLabel: "View Automation Opportunities",
-    label: "Medium",
-  },
-  {
-    id: "global",
-    priority: 5,
-    title: "Global Talent Sourcing",
-    category: "Hire",
-    problem: "Local talent supply is insufficient for AI engineering roles.",
-    recommendation: "Source talent from Vietnam, India, Philippines, and Indonesia.",
-    impact: "High",
-    cost: "RM 3M",
-    timeline: "12 months",
-    buttonLabel: "Explore Talent Pool",
-    label: "High",
-  },
-  {
-    id: "retention",
-    priority: 6,
-    title: "Retention Plan",
-    category: "Retain",
-    problem: "Senior engineers have high retirement and attrition risk.",
-    recommendation: "Launch salary review, flexible work, mentorship, and leadership program.",
-    impact: "Medium",
-    cost: "RM 900K",
-    timeline: "6 months",
-    buttonLabel: "Create Retention Plan",
-    label: "Medium",
-  },
-  {
-    id: "succession",
-    priority: 7,
-    title: "Succession Planning",
-    category: "Retain",
-    problem: "15 engineering managers may retire within 5 years.",
-    recommendation: "Identify 8 ready-now successors, 5 ready-in-2-years candidates, and 2 requiring development.",
-    impact: "High",
-    cost: "RM 500K",
-    timeline: "2 years",
-    buttonLabel: "Generate Succession Plan",
-    label: "High",
-  },
+  ...manufacturingRecommendations.map((item, index) => ({
+    id: item.id,
+    priority: index + 1,
+    title: item.title,
+    category: item.category,
+    problem: item.problem,
+    recommendation: item.recommendation,
+    impact: item.impact,
+    cost: item.estimatedCost,
+    timeline: item.timeline,
+    buttonLabel:
+      item.category === "Hire" ? "Create Hiring Plan" :
+      item.category === "Upskill" ? "Generate Learning Path" :
+      item.category === "Mobility" ? "View Transition Pool" :
+      item.category === "Automate" ? "View Automation Plan" : "Create Retention Plan",
+    label: item.priority,
+  })),
 ];
 
 type ActionCard = (typeof actions)[number];
@@ -226,15 +153,15 @@ export default function ActionEnginePage() {
           <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-center">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Gap detected</p>
-              <p className="mt-1 font-bold text-[#1A1033]">1,850 roles</p>
+              <p className="mt-1 font-bold text-[#1A1033]">{manufacturingSimulationSummary.projectedGap.toLocaleString()} roles</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Main risk</p>
-              <p className="mt-1 font-bold text-[#E8197A]">Engineering shortage</p>
+              <p className="mt-1 font-bold text-[#E8197A]">Maintenance technician shortage</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Recommended strategy</p>
-              <p className="mt-1 font-bold text-[#087C7E]">Hire + Upskill + Mobility</p>
+              <p className="mt-1 font-bold text-[#087C7E]">{manufacturingSimulationSummary.strongestActionMix.join(" + ")}</p>
             </div>
             <span className="rounded-full bg-[#E0F9FF] px-4 py-2 text-xs font-bold text-[#087C7E]">
               Based on current gap signals

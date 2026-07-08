@@ -13,32 +13,21 @@ import {
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { BackendApplication } from "@/lib/backendTypes";
+import { demoApplicationTimeline } from "@/lib/mock-data";
 
 const applications = [
-  {
-    title: "Lead UX Researcher",
-    company: "Internal - Talent & Culture",
-    status: "Interviewing",
-    date: "Next: Jun 18, 2026",
-    type: "Internal",
-    accent: "green",
-  },
-  {
-    title: "VP of Experience",
-    company: "External - BrightFuture Tech",
-    status: "Applied",
-    date: "Sent 3 days ago",
+  ...demoApplicationTimeline.map((application) => ({
+    title: application.title,
+    company: `External - ${application.company}`,
+    status:
+      application.status === "submitted" ? "Applied" :
+      application.status === "reviewed" ? "Reviewed" :
+      application.status === "shortlisted" ? "Shortlisted" :
+      application.status === "interviewing" ? "Interviewing" : application.status,
+    date: application.dateLabel,
     type: "External",
-    accent: "pink",
-  },
-  {
-    title: "Product Analytics Fellow",
-    company: "Internal - Growth Lab",
-    status: "Reviewed",
-    date: "Updated yesterday",
-    type: "Internal",
-    accent: "teal",
-  },
+    accent: application.matchScore >= 88 ? "green" : application.matchScore >= 84 ? "teal" : "pink",
+  })),
 ];
 
 type ApplicationView = (typeof applications)[number];

@@ -1,12 +1,15 @@
+import { manufacturingDepartments, manufacturingForecast, manufacturingRoleGaps } from "@/lib/mock-data";
 import type { SimState, SimResult, ChartPoint, DeptRisk, RoleGap } from "./types";
 
 export const MOCK_ROLE_GAPS: RoleGap[] = [
-  { role: "Sr. Software Engineer", dept: "Engineering", current: 120, projected: 340, gap: -220, marketSupply: "Critical" },
-  { role: "Data Analyst",          dept: "Engineering", current: 85,  projected: 180, gap: -95,  marketSupply: "Scarce"   },
-  { role: "DevOps Engineer",       dept: "Engineering", current: 40,  projected: 110, gap: -70,  marketSupply: "Critical" },
-  { role: "Product Manager",       dept: "Sales",       current: 62,  projected: 115, gap: -53,  marketSupply: "Balanced" },
-  { role: "ML Engineer",           dept: "Engineering", current: 18,  projected: 65,  gap: -47,  marketSupply: "Critical" },
-  { role: "Sales Engineer",        dept: "Sales",       current: 55,  projected: 90,  gap: -35,  marketSupply: "Scarce"   },
+  ...manufacturingRoleGaps.map((role) => ({
+    role: role.role,
+    dept: role.department,
+    current: role.current,
+    projected: role.projected,
+    gap: role.gap,
+    marketSupply: role.marketSupply,
+  })),
 ];
 
 const TIMEFRAME_YEARS: Record<SimState["timeframe"], number> = {
@@ -17,7 +20,7 @@ const TIMEFRAME_YEARS: Record<SimState["timeframe"], number> = {
   "30Y":   7,
 };
 
-const ALL_YEARS = ["2024", "2026", "2028", "2030", "2032", "2040", "2055"];
+const ALL_YEARS = manufacturingForecast.map((point) => point.year);
 
 export function runMockSimulation(state: SimState): SimResult {
   const { attritionRate, aiLevel, hiringBudget, growthTarget,
@@ -34,15 +37,16 @@ export function runMockSimulation(state: SimState): SimResult {
   const migrationBoost  = (migrationImpact ?? 12) * 30;
 
   const chartData: ChartPoint[] = years.map((year, i) => {
+    const basePoint = manufacturingForecast[i] ?? manufacturingForecast[manufacturingForecast.length - 1];
     const supply = Math.max(1500, Math.round(
-      5000
+      basePoint.supply
       - (attritionRate * 85 * i * attritionBoost * retirePenalty)
       + ((hiringBudget + hiringPenalty) * 180 * i)
       + (aiMult * 120 * i)
       + retirementBoost * i
       + migrationBoost * i
     ));
-    const demand = Math.round(4200 + (growthTarget * 160 * i));
+    const demand = Math.round(basePoint.demand + (growthTarget * 120 * i));
     return { year, supply, demand, net: supply - demand };
   });
 
@@ -53,28 +57,24 @@ export function runMockSimulation(state: SimState): SimResult {
     100 - (gap / 80) - (attritionRate * 0.5)
   ));
 
-  const deptRisks: DeptRisk[] = [
-    {
-      id: "eng", abbr: "ENG", label: "Engineering",
-      score: Math.min(95, Math.round(30 + attritionRate * 1.8 + (aiLevel === 3 ? 15 : 0))),
-      stability: "Critical",
-    },
-    {
-      id: "sls", abbr: "SLS", label: "Sales",
-      score: Math.min(80, Math.round(20 + attritionRate * 1.2)),
-      stability: "At Risk",
-    },
-    {
-      id: "ops", abbr: "OPS", label: "Operations",
-      score: Math.round(10 + attritionRate * 0.6),
-      stability: "Stable",
-    },
-    {
-      id: "fin", abbr: "FIN", label: "Finance",
-      score: Math.max(5, Math.round(25 - hiringBudget * 2)),
-      stability: "Growing",
-    },
-  ].map(d => ({
+  const deptRisks: DeptRisk[] = manufacturingDepartments.slice(0, 6).map((dept) => {
+    const score = Math.min(95, Math.max(5, Math.round(
+      20
+      + dept.attritionRisk * 1.2
+      + dept.retirementRisk * 0.7
+      + dept.automationExposure * 0.25
+      + (aiLevel === 3 ? 8 : 0)
+      - hiringBudget
+    )));
+
+    return {
+      id: dept.id,
+      abbr: dept.name.split(" ").map((part) => part[0]).join("").slice(0, 3).toUpperCase(),
+      label: dept.name,
+      score,
+      stability: dept.stability,
+    };
+  }).map(d => ({
     ...d,
     stability: (
       d.score >= 60 ? "Critical" :

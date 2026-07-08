@@ -24,69 +24,41 @@ import {
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { getAuthToken, getJson, postJson } from "@/lib/api";
 import type { BackendApplication, BackendJob, EmployeeDashboardData } from "@/lib/backendTypes";
+import {
+  demoCareerSkillGaps,
+  demoEmployeeProfile,
+  demoInternalGigs,
+  demoLearningPath,
+  marketplaceCompanies,
+  marketplaceJobs,
+} from "@/lib/mock-data";
 
 const careerCommandCenter = {
-  readiness: 76,
-  nextRole: "Product Manager",
-  missingSkills: 2,
-  nextAction: "Start Product Analytics Path",
+  readiness: demoEmployeeProfile.readinessScore,
+  nextRole: demoEmployeeProfile.targetRole,
+  missingSkills: demoEmployeeProfile.missingSkills.length,
+  nextAction: demoEmployeeProfile.nextAction,
 };
 
 const opportunities = [
-  {
-    title: "Company Dinner Photographer Needed",
-    company: "People & Culture Team",
+  ...demoInternalGigs.map((gig) => ({
+    title: gig.title,
+    company: gig.team,
     type: "Internal",
-    match: "96%",
-    location: "One-night gig",
-    tags: ["Photography", "Event Coverage", "Editing"],
-    tone: "pink",
-  },
-  {
-    title: "Sales Deck Design Sprint",
-    company: "Commercial Strategy Team",
-    type: "Internal",
-    match: "89%",
-    location: "2-week gig",
-    tags: ["Canva", "Storytelling", "Presentation"],
-    tone: "teal",
-  },
-  {
-    title: "Townhall Emcee Support",
-    company: "Corporate Communications",
-    type: "Internal",
-    match: "84%",
-    location: "Half-day gig",
-    tags: ["Public Speaking", "Hosting", "Coordination"],
-    tone: "blue",
-  },
-  {
-    title: "Creative Strategy Lead",
-    company: "BrightFuture Tech",
+    match: `${gig.matchScore}%`,
+    location: gig.duration,
+    tags: gig.skills,
+    tone: gig.tone,
+  })),
+  ...marketplaceJobs.slice(2, 7).map((job, index) => ({
+    title: job.title,
+    company: marketplaceCompanies.find((company) => company.id === job.companyId)?.name ?? "Hiring Company",
     type: "External",
-    match: "86%",
-    location: "Remote",
-    tags: ["Strategy", "Leadership", "Brand"],
-    tone: "blue",
-  },
-  {
-    title: "UX Research Manager",
-    company: "Nexa Talent Lab",
-    type: "External",
-    match: "82%",
-    location: "Singapore",
-    tags: ["Research Ops", "Journey Maps", "Testing"],
-    tone: "green",
-  },
-  {
-    title: "AI Product Marketing Lead",
-    company: "OrbitScale Asia",
-    type: "External",
-    match: "79%",
-    location: "Hybrid - Seoul",
-    tags: ["Product Marketing", "AI Tools", "Go-to-market"],
-    tone: "pink",
-  },
+    match: `${Math.max(72, 94 - index * 3)}%`,
+    location: `${job.workStyle} - ${job.region}`,
+    tags: job.requiredSkills.slice(0, 3),
+    tone: ["teal", "green", "blue", "pink", "teal"][index],
+  })),
 ];
 
 type Opportunity = (typeof opportunities)[number] & { jobId?: number; applied?: boolean };
@@ -269,70 +241,20 @@ const asiaMarkets: Array<{
   },
 ];
 
-const skillGaps = [
-  {
-    skill: "Product Discovery",
-    impact: "+5 product roles",
-    rolesUnlocked: ["Interactive Product Designer", "Creative Strategy Lead"],
-    progress: 42,
-    roadmapSteps: ["Run customer problem interviews", "Frame opportunity statements", "Publish one product discovery brief"],
-  },
-  {
-    skill: "Product Analytics",
-    impact: "+7 matching roles",
-    rolesUnlocked: ["Product Manager", "AI Product Marketing Lead"],
-    progress: 58,
-    roadmapSteps: ["Build funnel and activation dashboards", "Practice cohort analysis", "Present one product insight memo"],
-  },
-  {
-    skill: "Stakeholder Storytelling",
-    impact: "+4 leadership roles",
-    rolesUnlocked: ["UX Research Manager", "Strategy Lead"],
-    progress: 74,
-    roadmapSteps: ["Convert research into an exec narrative", "Run a mock steering update", "Create a decision-ready recommendation"],
-  },
-];
+const skillGaps = demoCareerSkillGaps;
 
-const consultantRoadmap = [
-  {
-    stage: "Foundation",
-    timeframe: "Weeks 1-4",
-    title: "Build product discovery foundations",
-    tasks: ["Interview users and map pain points", "Prioritize problems with impact sizing", "Write a clear product opportunity brief"],
-    icon: BookOpen,
-  },
-  {
-    stage: "Analytics",
-    timeframe: "Weeks 5-10",
-    title: "Turn product data into decisions",
-    tasks: ["Build funnel and activation dashboards", "Practice cohort analysis", "Present one product insight memo"],
-    icon: FileBadge,
-  },
-  {
-    stage: "Influence",
-    timeframe: "Weeks 11-14",
-    title: "Strengthen stakeholder storytelling",
-    tasks: ["Convert research into an executive narrative", "Run a mock steering update", "Create a decision-ready recommendation"],
-    icon: ClipboardCheck,
-  },
-  {
-    stage: "Market Ready",
-    timeframe: "Weeks 15-18",
-    title: "Apply for Product Manager roles",
-    tasks: ["Prepare a product case-study portfolio", "Target internal PM gigs and external PM roles", "Track applications and interviews"],
-    icon: CircleDollarSign,
-  },
-];
+const consultantRoadmap = demoLearningPath.map((item, index) => ({
+  stage: item.stage,
+  timeframe: item.timeframe,
+  title: item.title,
+  tasks: item.tasks,
+  icon: [BookOpen, FileBadge, ClipboardCheck, CircleDollarSign][index] ?? BookOpen,
+}));
 
 const learningPathMilestones = consultantRoadmap.map((item, index) => ({
   ...item,
-  progress: [34, 58, 74, 88][index],
-  description: [
-    "Build a strong base in product thinking.",
-    "Learn to use data to drive product decisions.",
-    "Influence stakeholders through clear product narratives.",
-    "Package proof and apply for stronger PM matches.",
-  ][index],
+  progress: demoLearningPath[index]?.progress ?? 0,
+  description: demoLearningPath[index]?.description ?? "",
   markerPosition: [
     "left-[7%] top-[71%]",
     "left-[31%] top-[67%]",
@@ -978,9 +900,12 @@ export default function EmployeeDashboardPage() {
       .catch(() => setDashboard(null));
   }, []);
 
-  const dynamicOpportunities = dashboard?.jobs.length
+  const mockInternalOpportunities = opportunities.filter((job) => job.type === "Internal");
+  const fallbackExternalOpportunities = opportunities.filter((job) => job.type === "External");
+  const externalSource = dashboard?.jobs.length
     ? dashboard.jobs.map((job) => opportunityFromJob(job, dashboard.applications))
-    : opportunities;
+    : fallbackExternalOpportunities;
+  const dynamicOpportunities = [...mockInternalOpportunities, ...externalSource];
   const internalOpportunities = dynamicOpportunities.filter((job) => job.type === "Internal");
   const externalOpportunities = dynamicOpportunities.filter((job) => job.type === "External");
   const displayName = dashboard?.full_name?.split(" ")[0] ?? "Alex";

@@ -26,11 +26,11 @@ export default function StrategyPanel() {
             style={{ background: "var(--pink-lighter)" }} />
           <p className="text-sm font-semibold mb-2 relative z-10"
             style={{ color: "var(--text-primary)" }}>
-            Talent Pipeline Strategy
+            Technician Pipeline Strategy
           </p>
           <p className="text-xs leading-relaxed relative z-10"
             style={{ color: "var(--text-secondary)" }}>
-            Accelerate engineering hiring by 40% over 18 months to offset projected attrition in senior roles.
+            Build TVET and regional hiring channels for maintenance technicians before the 2031 shortage peaks.
           </p>
           <button className="text-xs font-medium mt-3 flex items-center gap-1 hover:underline"
             style={{ color: "var(--pink)" }}>
@@ -45,11 +45,11 @@ export default function StrategyPanel() {
             style={{ background: "var(--purple-light)" }} />
           <p className="text-sm font-semibold mb-2 relative z-10"
             style={{ color: "var(--text-primary)" }}>
-            AI Upskilling Program
+            Operator Mobility Program
           </p>
           <p className="text-xs leading-relaxed relative z-10"
             style={{ color: "var(--text-secondary)" }}>
-            Deploy AI training for 800 analysts in Sales and Finance to offset automation displacement.
+            Convert production operator surplus into QA, line supervisor, and technician pathways.
           </p>
           <button className="text-xs font-medium mt-3 flex items-center gap-1 hover:underline"
             style={{ color: "var(--pink)" }}>

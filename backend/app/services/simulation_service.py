@@ -9,12 +9,17 @@ from backend.app.schemas.simulations import (
 MODEL_VERSION = "simulator-rules-v2"
 
 MOCK_ROLE_GAPS = [
-    RoleGap(role="Sr. Software Engineer", dept="Engineering", current=120, projected=340, gap=-220, marketSupply="Critical"),
-    RoleGap(role="Data Analyst", dept="Engineering", current=85, projected=180, gap=-95, marketSupply="Scarce"),
-    RoleGap(role="DevOps Engineer", dept="Engineering", current=40, projected=110, gap=-70, marketSupply="Critical"),
-    RoleGap(role="Product Manager", dept="Sales", current=62, projected=115, gap=-53, marketSupply="Balanced"),
-    RoleGap(role="ML Engineer", dept="Engineering", current=18, projected=65, gap=-47, marketSupply="Critical"),
-    RoleGap(role="Sales Engineer", dept="Sales", current=55, projected=90, gap=-35, marketSupply="Scarce"),
+    RoleGap(role="Production Operator", dept="Production", current=1200, projected=920, gap=280, marketSupply="Abundant"),
+    RoleGap(role="Line Supervisor", dept="Production", current=155, projected=190, gap=-35, marketSupply="Balanced"),
+    RoleGap(role="Maintenance Technician", dept="Maintenance", current=180, projected=310, gap=-130, marketSupply="Critical"),
+    RoleGap(role="Automation Engineer", dept="Engineering", current=35, projected=120, gap=-85, marketSupply="Critical"),
+    RoleGap(role="Quality Inspector", dept="Quality Assurance", current=210, projected=165, gap=45, marketSupply="Balanced"),
+    RoleGap(role="QA Analyst", dept="Quality Assurance", current=45, projected=90, gap=-45, marketSupply="Scarce"),
+    RoleGap(role="Supply Chain Planner", dept="Supply Chain", current=70, projected=115, gap=-45, marketSupply="Scarce"),
+    RoleGap(role="Digital Marketing Specialist", dept="Marketing", current=12, projected=35, gap=-23, marketSupply="Balanced"),
+    RoleGap(role="Finance Analyst", dept="Finance", current=32, projected=48, gap=-16, marketSupply="Balanced"),
+    RoleGap(role="HR Operations Executive", dept="Human Resources", current=38, projected=28, gap=10, marketSupply="Abundant"),
+    RoleGap(role="Data Analyst", dept="Digital Transformation", current=10, projected=42, gap=-32, marketSupply="Scarce"),
 ]
 
 TIMEFRAME_YEARS = {
@@ -25,7 +30,16 @@ TIMEFRAME_YEARS = {
     "30Y": 7,
 }
 
-ALL_YEARS = ["2024", "2026", "2028", "2030", "2032", "2040", "2055"]
+ALL_YEARS = ["2026", "2027", "2028", "2029", "2030", "2031", "2031"]
+BASE_FORECAST = [
+    {"supply": 4800, "demand": 4720},
+    {"supply": 4680, "demand": 4860},
+    {"supply": 4560, "demand": 5010},
+    {"supply": 4440, "demand": 5150},
+    {"supply": 4380, "demand": 5290},
+    {"supply": 4310, "demand": 5420},
+    {"supply": 4310, "demand": 5420},
+]
 
 
 class SimulationService:
@@ -42,10 +56,11 @@ class SimulationService:
 
         chart_data: list[ChartPoint] = []
         for index, year in enumerate(years):
+            base = BASE_FORECAST[index]
             supply = max(
                 1500,
                 round(
-                    5000
+                    base["supply"]
                     - (state.attritionRate * 85 * index * attrition_boost * retire_penalty)
                     + ((state.hiringBudget + hiring_penalty) * 180 * index)
                     + (ai_mult * 120 * index)
@@ -53,7 +68,7 @@ class SimulationService:
                     + migration_boost * index
                 ),
             )
-            demand = round(4200 + (state.growthTarget * 160 * index))
+            demand = round(base["demand"] + (state.growthTarget * 120 * index))
             chart_data.append(ChartPoint(year=year, supply=supply, demand=demand, net=supply - demand))
 
         last_point = chart_data[-1]
@@ -61,10 +76,12 @@ class SimulationService:
         resilience_score = min(100, max(10, 100 - (gap / 80) - (state.attritionRate * 0.5)))
 
         dept_risks = [
-            self._dept_risk("eng", "ENG", "Engineering", min(95, round(30 + state.attritionRate * 1.8 + (15 if state.aiLevel == 3 else 0)))),
-            self._dept_risk("sls", "SLS", "Sales", min(80, round(20 + state.attritionRate * 1.2))),
-            self._dept_risk("ops", "OPS", "Operations", round(10 + state.attritionRate * 0.6)),
-            self._dept_risk("fin", "FIN", "Finance", max(5, round(25 - state.hiringBudget * 2))),
+            self._dept_risk("production", "PRO", "Production", min(95, round(35 + state.attritionRate * 1.1 + state.aiLevel * 4))),
+            self._dept_risk("maintenance", "MAI", "Maintenance", min(95, round(48 + state.attritionRate * 1.4))),
+            self._dept_risk("quality", "QA", "Quality Assurance", min(90, round(34 + state.attritionRate * 1.0))),
+            self._dept_risk("supply-chain", "SC", "Supply Chain", min(85, round(32 + state.growthTarget * 1.1))),
+            self._dept_risk("marketing", "MKT", "Marketing", min(75, round(24 + state.growthTarget * 0.9))),
+            self._dept_risk("engineering", "ENG", "Engineering", min(95, round(46 + state.aiLevel * 9 + state.attritionRate * 0.7))),
         ]
 
         return SimulationResult(

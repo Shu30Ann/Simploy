@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
 } from "recharts";
+import { manufacturingDepartments, manufacturingRoleGaps } from "@/lib/mock-data";
 
 interface DeptData {
   id:    string;
@@ -33,58 +34,39 @@ interface DeptData {
   recommendedAction:   "Hire" | "Upskill" | "Redeploy" | "Automate";
 }
 
-const DEPT_DATA: DeptData[] = [
-  {
-    id: "eng", label: "Engineering", headcount: 420, color: "#E8197A",
-    avgAge: 34, retirementsThisYear: 2, pendingResignations: 1,
-    openRoles: 14, attritionRate: 18, avgTenure: 3.2,
-    withinTenYrsRetirement: 38, inUpskilling: 12, flightRiskCount: 22,
-    topSkills: ["React", "Python", "Kubernetes"],
-    projectedHeadcount: 280, projectedGap: -220, projectedRetirements: 34,
-    internalCandidates: 8, timeToCloseGap: "3.5 yrs at current velocity",
-    deptCostOfInaction: "$89.4M", recommendedAction: "Hire",
-  },
-  {
-    id: "sls", label: "Sales", headcount: 264, color: "#7F77DD",
-    avgAge: 31, retirementsThisYear: 0, pendingResignations: 3,
-    openRoles: 8, attritionRate: 22, avgTenure: 2.1,
-    withinTenYrsRetirement: 12, inUpskilling: 5, flightRiskCount: 31,
-    topSkills: ["CRM", "Negotiation", "SaaS Sales"],
-    projectedHeadcount: 198, projectedGap: -95, projectedRetirements: 10,
-    internalCandidates: 14, timeToCloseGap: "1.8 yrs at current velocity",
-    deptCostOfInaction: "$34.2M", recommendedAction: "Upskill",
-  },
-  {
-    id: "ops", label: "Operations", headcount: 240, color: "#06B6D4",
-    avgAge: 38, retirementsThisYear: 4, pendingResignations: 1,
-    openRoles: 5, attritionRate: 10, avgTenure: 5.8,
-    withinTenYrsRetirement: 64, inUpskilling: 3, flightRiskCount: 18,
-    topSkills: ["Logistics", "Process Design", "ERP"],
-    projectedHeadcount: 190, projectedGap: -70, projectedRetirements: 58,
-    internalCandidates: 22, timeToCloseGap: "2.2 yrs at current velocity",
-    deptCostOfInaction: "$22.8M", recommendedAction: "Redeploy",
-  },
-  {
-    id: "fin", label: "Finance", headcount: 156, color: "#F59E0B",
-    avgAge: 41, retirementsThisYear: 3, pendingResignations: 0,
-    openRoles: 3, attritionRate: 8, avgTenure: 7.4,
-    withinTenYrsRetirement: 52, inUpskilling: 8, flightRiskCount: 9,
-    topSkills: ["Financial Modeling", "SQL", "FP&A"],
-    projectedHeadcount: 120, projectedGap: -53, projectedRetirements: 48,
-    internalCandidates: 5, timeToCloseGap: "4.1 yrs at current velocity",
-    deptCostOfInaction: "$14.6M", recommendedAction: "Automate",
-  },
-  {
-    id: "hr", label: "HR", headcount: 120, color: "#10B981",
-    avgAge: 35, retirementsThisYear: 1, pendingResignations: 1,
-    openRoles: 2, attritionRate: 13, avgTenure: 4.1,
-    withinTenYrsRetirement: 18, inUpskilling: 6, flightRiskCount: 7,
-    topSkills: ["HRIS", "Talent Acquisition", "L&D"],
-    projectedHeadcount: 100, projectedGap: -35, projectedRetirements: 16,
-    internalCandidates: 4, timeToCloseGap: "1.5 yrs at current velocity",
-    deptCostOfInaction: "$8.2M", recommendedAction: "Upskill",
-  },
-];
+const DEPT_DATA: DeptData[] = ["#E8197A", "#7F77DD", "#06B6D4", "#F59E0B", "#10B981", "#C2410C"].map((color, index) => {
+  const dept = manufacturingDepartments[index];
+  const deptRoles = manufacturingRoleGaps.filter((role) => role.department === dept.name);
+  const largestShortage = deptRoles.reduce((min, role) => Math.min(min, role.gap), 0);
+  const recommendedAction = deptRoles.find((role) => role.gap < 0)?.recommendedAction ?? "Upskill";
+  const displayAction =
+    recommendedAction === "Mobility" ? "Redeploy" :
+    recommendedAction === "Retain" ? "Upskill" : recommendedAction;
+
+  return {
+    id: dept.id,
+    label: dept.name,
+    headcount: dept.currentHeadcount,
+    color,
+    avgAge: 34 + index,
+    retirementsThisYear: Math.round(dept.retirementRisk / 6),
+    pendingResignations: Math.round(dept.attritionRisk / 7),
+    openRoles: deptRoles.filter((role) => role.gap < 0).length * 3,
+    attritionRate: dept.attritionRisk,
+    avgTenure: Number((3.4 + index * 0.4).toFixed(1)),
+    withinTenYrsRetirement: Math.round(dept.currentHeadcount * dept.retirementRisk / 100),
+    inUpskilling: Math.round(dept.currentHeadcount * (100 - dept.skillReadiness) / 300),
+    flightRiskCount: Math.round(dept.currentHeadcount * dept.attritionRisk / 100),
+    topSkills: deptRoles.flatMap((role) => role.prioritySkills).slice(0, 3),
+    projectedHeadcount: dept.projectedDemand,
+    projectedGap: dept.currentHeadcount - dept.projectedDemand + largestShortage,
+    projectedRetirements: Math.round(dept.currentHeadcount * dept.retirementRisk / 100),
+    internalCandidates: deptRoles.filter((role) => role.recommendedAction === "Mobility" || role.recommendedAction === "Upskill").length * 12,
+    timeToCloseGap: largestShortage < -80 ? "18 months with active intervention" : "6-12 months with current pipeline",
+    deptCostOfInaction: `RM ${Math.max(0, Math.abs(largestShortage) * 120000).toLocaleString()}`,
+    recommendedAction: displayAction,
+  };
+});
 
 const TOTAL_HEADCOUNT = DEPT_DATA.reduce((s, d) => s + d.headcount, 0);
 

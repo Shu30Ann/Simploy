@@ -80,6 +80,10 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
     try {
       await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
       clearAuthSession();
+      window.localStorage.setItem("simploy-display-name", data.fullName);
+      if (role === "employer") {
+        window.localStorage.setItem("simploy-company-name", data.companyName);
+      }
       window.localStorage.setItem("simploy-role", role);
       window.location.replace(routes.home);
     } catch (error) {

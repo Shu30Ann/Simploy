@@ -6,6 +6,7 @@ import { UserPlus, GraduationCap, ArrowLeftRight, Bot, Zap } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion";
 import type { SimResult } from "@/lib/simulator/types";
 import { routes } from "@/lib/routes";
+import { manufacturingRecommendations } from "@/lib/mock-data";
 
 const ACTIONS = [
   {
@@ -14,7 +15,7 @@ const ACTIONS = [
     iconBg:    "#FFF0F8",
     iconColor: "#E8197A",
     title:     "Hire",
-    detail:    "Need 1,200 software engineers by 2030",
+    detail:    manufacturingRecommendations[0].problem,
   },
   {
     id:        "upskill",
@@ -22,7 +23,7 @@ const ACTIONS = [
     iconBg:    "#EEEDFE",
     iconColor: "#7F77DD",
     title:     "Upskill",
-    detail:    "Retrain 800 analysts into AI specialists",
+    detail:    manufacturingRecommendations[3].recommendation,
   },
   {
     id:        "mobility",
@@ -30,7 +31,7 @@ const ACTIONS = [
     iconBg:    "#FAEEDA",
     iconColor: "#BA7517",
     title:     "Internal Mobility",
-    detail:    "Move employees from low demand functions",
+    detail:    manufacturingRecommendations[2].recommendation,
   },
   {
     id:        "automate",
@@ -38,7 +39,7 @@ const ACTIONS = [
     iconBg:    "#E0F9FF",
     iconColor: "#06B6D4",
     title:     "Automate",
-    detail:    "Automate 15% of repetitive HR tasks",
+    detail:    manufacturingRecommendations[5].recommendation,
   },
 ];
 
