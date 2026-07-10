@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import worldCountries from "world-atlas/countries-110m.json";
 import {
@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import RiasecAssessment from "@/components/RiasecAssessment";
 import { getAuthToken, getJson, postJson } from "@/lib/api";
 import type { BackendApplication, BackendJob, EmployeeDashboardData } from "@/lib/backendTypes";
 import {
@@ -32,6 +33,13 @@ import {
   marketplaceCompanies,
   marketplaceJobs,
 } from "@/lib/mock-data";
+import {
+  loadRiasecResult,
+  markRiasecSkipped,
+  RIASEC_SKIPPED_KEY,
+  saveRiasecResult,
+  type RiasecResult,
+} from "@/lib/riasec";
 
 const careerCommandCenter = {
   readiness: demoEmployeeProfile.readinessScore,
@@ -892,12 +900,24 @@ export default function EmployeeDashboardPage() {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [dashboard, setDashboard] = useState<EmployeeDashboardData | null>(null);
   const [applyMessage, setApplyMessage] = useState<string | null>(null);
+  const [storedDisplayName, setStoredDisplayName] = useState("Alex");
+  const [interestResult, setInterestResult] = useState<RiasecResult | null>(null);
+  const [hasSkippedInterestTest, setHasSkippedInterestTest] = useState(false);
 
   useEffect(() => {
     if (!getAuthToken()) return;
     getJson<EmployeeDashboardData>("/dashboard/employee", { auth: true })
       .then(setDashboard)
       .catch(() => setDashboard(null));
+  }, []);
+
+  useEffect(() => {
+    const savedName = window.localStorage.getItem("simploy-display-name");
+    if (savedName) {
+      setStoredDisplayName(savedName);
+    }
+    setInterestResult(loadRiasecResult());
+    setHasSkippedInterestTest(window.localStorage.getItem(RIASEC_SKIPPED_KEY) === "true");
   }, []);
 
   const mockInternalOpportunities = opportunities.filter((job) => job.type === "Internal");
@@ -908,7 +928,27 @@ export default function EmployeeDashboardPage() {
   const dynamicOpportunities = [...mockInternalOpportunities, ...externalSource];
   const internalOpportunities = dynamicOpportunities.filter((job) => job.type === "Internal");
   const externalOpportunities = dynamicOpportunities.filter((job) => job.type === "External");
-  const displayName = dashboard?.full_name?.split(" ")[0] ?? "Alex";
+  const fullName = dashboard?.full_name ?? storedDisplayName;
+  const displayName = fullName.split(" ")[0] || "Alex";
+  const profileInitials = fullName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) => name[0]?.toUpperCase())
+    .join("") || "A";
+
+  const handleDashboardInterestResult = useCallback((result: RiasecResult | null) => {
+    if (!result) return;
+    saveRiasecResult(result);
+    setInterestResult(result);
+    setHasSkippedInterestTest(false);
+  }, []);
+
+  const handleDashboardInterestSkip = useCallback(() => {
+    markRiasecSkipped();
+    setInterestResult(null);
+    setHasSkippedInterestTest(true);
+  }, []);
 
   const handleApply = async (job: Opportunity) => {
     if (!job.jobId || job.applied || !getAuthToken()) return;
@@ -951,7 +991,7 @@ export default function EmployeeDashboardPage() {
               <Building2 size={16} />
               Switch Portal
             </a>
-            <ProfileMenu role="employee" initials="A" name="Alex" label="Open employee profile menu" />
+            <ProfileMenu role="employee" initials={profileInitials} name={fullName} label="Open employee profile menu" />
           </div>
         </div>
       </header>
@@ -973,9 +1013,19 @@ export default function EmployeeDashboardPage() {
           </div>
           <div className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
             <p className="text-xs font-semibold uppercase text-[#9CA3AF]">Profile Strength</p>
-            <p className="mt-1 text-2xl font-bold text-[#1A1033]">94%</p>
+            <div className="mt-1 flex items-center gap-3">
+              <p className="text-2xl font-bold text-[#1A1033]">94%</p>
+              {interestResult && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF0F8] px-2.5 py-1 text-sm font-bold text-[#E8197A]">
+                  <span aria-hidden="true">{interestResult.animal}</span>
+                  {interestResult.animalName}
+                </span>
+              )}
+            </div>
             <p className="mt-1 max-w-56 text-xs font-semibold leading-5 text-[#6B7280]">
-              Add leadership experience to unlock 8 more matches
+              {interestResult
+                ? `${interestResult.hollandCode} profile: ${interestResult.label}`
+                : "Add the career interest check to unlock an avatar"}
             </p>
           </div>
         </div>
@@ -1014,6 +1064,16 @@ export default function EmployeeDashboardPage() {
               <ArrowUpRight size={16} />
             </button>
           </div>
+        </section>
+
+        <section id="settings" className="mt-6 scroll-mt-24">
+          <RiasecAssessment
+            initialResult={interestResult}
+            skipped={hasSkippedInterestTest}
+            allowSkip
+            onResultChange={handleDashboardInterestResult}
+            onSkip={handleDashboardInterestSkip}
+          />
         </section>
 
         <SkillRoadmapModule onStartRoadmap={() => setIsRoadmapOpen(true)} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,8 @@ import StepIndicator from "./StepIndicator";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { clearAuthSession, postJson, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, routes } from "@/lib/routes";
+import RiasecAssessment from "@/components/RiasecAssessment";
+import { markRiasecSkipped, saveRiasecResult, type RiasecResult } from "@/lib/riasec";
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Please enter your full name"),
@@ -55,6 +57,8 @@ interface SignupFormProps {
 export default function SignupForm({ role, onBack }: SignupFormProps) {
   const schema = role === "employer" ? employerSchema : baseSchema;
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [interestResult, setInterestResult] = useState<RiasecResult | null>(null);
+  const [hasSkippedInterestTest, setHasSkippedInterestTest] = useState(false);
 
   const {
     register,
@@ -67,8 +71,25 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
 
   const passwordValue: string = useWatch({ control, name: "password", defaultValue: "" }) ?? "";
 
+  const handleInterestResult = useCallback((result: RiasecResult | null) => {
+    setInterestResult(result);
+    if (result) {
+      setHasSkippedInterestTest(false);
+    }
+  }, []);
+
+  const handleSkipInterestTest = useCallback(() => {
+    setInterestResult(null);
+    setHasSkippedInterestTest(true);
+  }, []);
+
   const onSubmit = async (data: FormData) => {
     setSubmitError(null);
+    if (role === "employee" && !interestResult && !hasSkippedInterestTest) {
+      setSubmitError("Please complete the career interest check or skip the test.");
+      return;
+    }
+
     const payload = {
       email: data.email,
       password: data.password,
@@ -83,6 +104,13 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
       window.localStorage.setItem("simploy-display-name", data.fullName);
       if (role === "employer") {
         window.localStorage.setItem("simploy-company-name", data.companyName);
+      }
+      if (role === "employee") {
+        if (interestResult) {
+          saveRiasecResult(interestResult);
+        } else {
+          markRiasecSkipped();
+        }
       }
       window.localStorage.setItem("simploy-role", role);
       window.location.replace(routes.home);
@@ -247,6 +275,16 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
           </div>
           <FormError error={errors.terms} />
         </div>
+
+        {role === "employee" && (
+          <RiasecAssessment
+            compact
+            allowSkip
+            skipped={hasSkippedInterestTest}
+            onResultChange={handleInterestResult}
+            onSkip={handleSkipInterestTest}
+          />
+        )}
 
         {/* Submit */}
         <button
