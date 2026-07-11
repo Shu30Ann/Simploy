@@ -59,30 +59,48 @@ class AuthService:
             "full_name": payload.full_name,
             "company_name": payload.company_name,
         }
-        auth_payload = supabase_auth().auth_signup(normalized_email, payload.password, metadata)
-        auth_user = auth_payload.get("user") or {}
+        admin_client = supabase()
+        auth_client = supabase_auth()
+
+        try:
+            auth_response = admin_client.auth_admin_create_user(normalized_email, payload.password, metadata)
+        except HTTPException as exc:
+            detail = str(exc.detail).lower()
+            if "already" in detail or "registered" in detail:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered") from exc
+            raise
+
+        auth_user = auth_response.get("user") or auth_response
         supabase_user_id = auth_user.get("id")
         if not supabase_user_id:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Supabase did not return a user")
 
-        user = supabase().insert(
-            "users",
-            {"email": normalized_email, "role": payload.role, "supabase_user_id": supabase_user_id},
-        )
-
-        if payload.role == "employee":
-            self.profiles.create_employee_profile(
-                user["id"],
-                full_name=payload.full_name or normalized_email.split("@")[0].title(),
-                skills=["communication", "analytics"],
-            )
-        elif payload.role == "employer":
-            self.profiles.create_employer_profile(
-                user["id"],
-                company_name=payload.company_name or f"{normalized_email.split('@')[0].title()} Company",
+        try:
+            user = admin_client.insert(
+                "users",
+                {"email": normalized_email, "role": payload.role, "supabase_user_id": supabase_user_id},
             )
 
-        return AuthResponse(access_token=auth_payload.get("access_token") or "", user=self._public_user(user))
+            if payload.role == "employee":
+                self.profiles.create_employee_profile(
+                    user["id"],
+                    full_name=payload.full_name or normalized_email.split("@")[0].title(),
+                    skills=["communication", "analytics"],
+                )
+            elif payload.role == "employer":
+                self.profiles.create_employer_profile(
+                    user["id"],
+                    company_name=payload.company_name or f"{normalized_email.split('@')[0].title()} Company",
+                )
+        except Exception:
+            try:
+                admin_client.auth_admin_delete_user(supabase_user_id)
+            except HTTPException:
+                pass
+            raise
+
+        auth_payload = auth_client.auth_login(normalized_email, payload.password)
+        return AuthResponse(access_token=auth_payload["access_token"], user=self._public_user(user))
 
     def _supabase_login(self, payload: LoginRequest) -> AuthResponse:
         auth_payload = supabase_auth().auth_login(payload.email.strip().lower(), payload.password)

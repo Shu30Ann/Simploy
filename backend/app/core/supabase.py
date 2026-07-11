@@ -1,3 +1,4 @@
+import base64
 import json
 from typing import Any
 from urllib.error import HTTPError
@@ -16,6 +17,11 @@ class SupabaseClient:
         key = settings.supabase_service_role_key if use_service_role else settings.supabase_anon_key
         if not key:
             raise RuntimeError("Supabase key is not configured")
+        if use_service_role and self._jwt_role(key) != "service_role":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="SUPABASE_SERVICE_ROLE_KEY must be the Supabase service_role key, not the anon public key",
+            )
         self.base_url = settings.supabase_url.rstrip("/")
         self.key = key
 
@@ -25,6 +31,22 @@ class SupabaseClient:
             f"{self.base_url}/auth/v1/signup",
             {"email": email, "password": password, "data": metadata},
         )
+
+    def auth_admin_create_user(self, email: str, password: str, metadata: dict[str, Any]) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"{self.base_url}/auth/v1/admin/users",
+            {
+                "email": email,
+                "password": password,
+                "email_confirm": True,
+                "user_metadata": metadata,
+                "app_metadata": {"role": metadata.get("role")},
+            },
+        )
+
+    def auth_admin_delete_user(self, user_id: str) -> None:
+        self._request("DELETE", f"{self.base_url}/auth/v1/admin/users/{quote(user_id)}")
 
     def auth_login(self, email: str, password: str) -> dict[str, Any]:
         return self._request(
@@ -125,9 +147,20 @@ class SupabaseClient:
     def _status_code(self, code: int) -> int:
         if code == 400:
             return status.HTTP_422_UNPROCESSABLE_ENTITY
+        if code == 429:
+            return status.HTTP_429_TOO_MANY_REQUESTS
         if code in {401, 403, 404, 409}:
             return code
         return status.HTTP_502_BAD_GATEWAY
+
+    def _jwt_role(self, token: str) -> str | None:
+        try:
+            payload = token.split(".", 2)[1]
+            padded = payload + "=" * (-len(payload) % 4)
+            decoded = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+            return decoded.get("role")
+        except Exception:
+            return None
 
 
 def supabase() -> SupabaseClient:

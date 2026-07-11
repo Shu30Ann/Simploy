@@ -10,8 +10,8 @@ import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
 import GoogleAuthButton from "./GoogleAuthButton";
-import { clearAuthSession, postJson, type AuthResponse } from "@/lib/api";
-import { authRouteWithRole, routes } from "@/lib/routes";
+import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
+import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
 import RiasecAssessment from "@/components/RiasecAssessment";
 import { markRiasecSkipped, saveRiasecResult, type RiasecResult } from "@/lib/riasec";
 
@@ -99,8 +99,8 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
     };
 
     try {
-      await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
-      clearAuthSession();
+      const session = await postJson<AuthResponse, typeof payload>("/auth/signup", payload);
+      storeAuthSession(session);
       window.localStorage.setItem("simploy-display-name", data.fullName);
       if (role === "employer") {
         window.localStorage.setItem("simploy-company-name", data.companyName);
@@ -113,7 +113,7 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
         }
       }
       window.localStorage.setItem("simploy-role", role);
-      window.location.replace(routes.home);
+      window.location.replace(dashboardRouteFor(role));
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create account. Please try again.");
     }
