@@ -3,7 +3,9 @@ import re
 import sqlite3
 from typing import Any
 
+from backend.app.core.config import settings
 from backend.app.core.database import get_connection
+from backend.app.core.supabase import supabase
 
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -13,11 +15,17 @@ def _row(row: sqlite3.Row | None) -> dict[str, Any] | None:
     return dict(row) if row is not None else None
 
 
+def _first(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    return rows[0] if rows else None
+
+
 class UserRepository:
     def create(self, email: str, password_hash: str, role: str) -> dict[str, Any]:
         normalized = email.strip().lower()
         if not EMAIL_RE.match(normalized):
             raise ValueError("A valid email address is required")
+        if settings.supabase_enabled:
+            return supabase().insert("users", {"email": normalized, "password_hash": password_hash, "role": role})
         with get_connection() as conn:
             cursor = conn.execute(
                 "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
@@ -27,12 +35,23 @@ class UserRepository:
         return dict(row)
 
     def get_by_email(self, email: str) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            return _first(supabase().select("users", {"email": email.strip().lower()}, limit=1))
         with get_connection() as conn:
             return _row(conn.execute("SELECT * FROM users WHERE email = ?", (email.strip().lower(),)).fetchone())
 
     def get_by_id(self, user_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            return _first(supabase().select("users", {"id": user_id}, limit=1))
         with get_connection() as conn:
             return _row(conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone())
+
+    def get_by_supabase_id(self, supabase_user_id: str | None) -> dict[str, Any] | None:
+        if not supabase_user_id:
+            return None
+        if settings.supabase_enabled:
+            return _first(supabase().select("users", {"supabase_user_id": supabase_user_id}, limit=1))
+        return None
 
 
 class ProfileRepository:
@@ -45,6 +64,20 @@ class ProfileRepository:
         experience_years: int = 0,
         skills: list[str] | None = None,
     ) -> dict[str, Any]:
+        if settings.supabase_enabled:
+            return self._employee_row(
+                supabase().insert(
+                    "employee_profiles",
+                    {
+                        "user_id": user_id,
+                        "full_name": full_name,
+                        "location": location,
+                        "target_role": target_role,
+                        "experience_years": experience_years,
+                        "skills_json": skills or [],
+                    },
+                )
+            )
         with get_connection() as conn:
             cursor = conn.execute(
                 """
@@ -65,6 +98,17 @@ class ProfileRepository:
         company_size: int | None = None,
         location: str | None = None,
     ) -> dict[str, Any]:
+        if settings.supabase_enabled:
+            return supabase().insert(
+                "employer_profiles",
+                {
+                    "user_id": user_id,
+                    "company_name": company_name,
+                    "industry": industry,
+                    "company_size": company_size,
+                    "location": location,
+                },
+            )
         with get_connection() as conn:
             cursor = conn.execute(
                 """
@@ -77,11 +121,16 @@ class ProfileRepository:
         return dict(row)
 
     def get_employee_by_user_id(self, user_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            row = _first(supabase().select("employee_profiles", {"user_id": user_id}, limit=1))
+            return self._employee_row(row) if row is not None else None
         with get_connection() as conn:
             row = conn.execute("SELECT * FROM employee_profiles WHERE user_id = ?", (user_id,)).fetchone()
         return self._employee_row(row) if row is not None else None
 
     def get_employer_by_user_id(self, user_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            return _first(supabase().select("employer_profiles", {"user_id": user_id}, limit=1))
         with get_connection() as conn:
             return _row(conn.execute("SELECT * FROM employer_profiles WHERE user_id = ?", (user_id,)).fetchone())
 
@@ -90,6 +139,19 @@ class ProfileRepository:
         if current is None:
             return None
         next_data = {**current, **data}
+        if settings.supabase_enabled:
+            row = supabase().update(
+                "employee_profiles",
+                {"user_id": user_id},
+                {
+                    "full_name": next_data["full_name"],
+                    "location": next_data.get("location"),
+                    "target_role": next_data.get("target_role"),
+                    "experience_years": next_data.get("experience_years", 0),
+                    "skills_json": next_data.get("skills", []),
+                },
+            )
+            return self._employee_row(row) if row is not None else None
         with get_connection() as conn:
             conn.execute(
                 """
@@ -113,6 +175,17 @@ class ProfileRepository:
         if current is None:
             return None
         next_data = {**current, **data}
+        if settings.supabase_enabled:
+            return supabase().update(
+                "employer_profiles",
+                {"user_id": user_id},
+                {
+                    "company_name": next_data["company_name"],
+                    "industry": next_data.get("industry"),
+                    "company_size": next_data.get("company_size"),
+                    "location": next_data.get("location"),
+                },
+            )
         with get_connection() as conn:
             conn.execute(
                 """
@@ -132,5 +205,6 @@ class ProfileRepository:
 
     def _employee_row(self, row: sqlite3.Row) -> dict[str, Any]:
         data = dict(row)
-        data["skills"] = json.loads(data.pop("skills_json") or "[]")
+        skills = data.pop("skills_json") or []
+        data["skills"] = skills if isinstance(skills, list) else json.loads(skills)
         return data

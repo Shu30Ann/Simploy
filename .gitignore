@@ -5,5 +5,8 @@ frontend-server.err.log
 __pycache__/
 *.pyc
 *.db
+.env
+.env.*
+!.env.example
 .venv/
 venv/

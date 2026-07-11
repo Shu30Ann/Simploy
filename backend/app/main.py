@@ -14,7 +14,7 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+        allow_origins=[origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()],
         allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
         allow_credentials=True,
         allow_methods=["*"],
@@ -23,7 +23,8 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def on_startup() -> None:
-        init_db()
+        if not settings.supabase_enabled:
+            init_db()
 
     @app.get("/", tags=["health"])
     def health() -> dict:
