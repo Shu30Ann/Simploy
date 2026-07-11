@@ -17,10 +17,10 @@ class SupabaseClient:
         key = settings.supabase_service_role_key if use_service_role else settings.supabase_anon_key
         if not key:
             raise RuntimeError("Supabase key is not configured")
-        if use_service_role and self._jwt_role(key) != "service_role":
+        if use_service_role and not self._is_service_key(key):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="SUPABASE_SERVICE_ROLE_KEY must be the Supabase service_role key, not the anon public key",
+                detail="SUPABASE_SERVICE_ROLE_KEY must be a Supabase secret key or legacy service_role key, not the anon public key",
             )
         self.base_url = settings.supabase_url.rstrip("/")
         self.key = key
@@ -161,6 +161,11 @@ class SupabaseClient:
             return decoded.get("role")
         except Exception:
             return None
+
+    def _is_service_key(self, token: str) -> bool:
+        if token.startswith("sb_secret_"):
+            return True
+        return self._jwt_role(token) == "service_role"
 
 
 def supabase() -> SupabaseClient:
