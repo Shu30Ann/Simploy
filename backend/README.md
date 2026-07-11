@@ -44,6 +44,7 @@ SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 SIMPLOY_CORS_ORIGINS=https://your-frontend.vercel.app,http://localhost:3000
+SIMPLOY_CORS_ORIGIN_REGEX=https://.*\.vercel\.app|http://(localhost|127\.0\.0\.1):\d+
 ```
 
 When all three Supabase variables are present, the API uses Supabase Auth and Supabase tables. Without them, it falls back to local SQLite for development.

@@ -32,6 +32,10 @@ class Settings:
     token_ttl_minutes: int = int(os.getenv("SIMPLOY_TOKEN_TTL_MINUTES", "1440"))
     ai_engine_url: str = os.getenv("SIMPLOY_AI_ENGINE_URL", "http://127.0.0.1:8010")
     cors_origins: str = os.getenv("SIMPLOY_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    cors_origin_regex: str = os.getenv(
+        "SIMPLOY_CORS_ORIGIN_REGEX",
+        r"https://.*\.vercel\.app|http://(localhost|127\.0\.0\.1):\d+",
+    )
     supabase_url: str | None = os.getenv("SUPABASE_URL")
     supabase_anon_key: str | None = os.getenv("SUPABASE_ANON_KEY")
     supabase_service_role_key: str | None = os.getenv("SUPABASE_SERVICE_ROLE_KEY")

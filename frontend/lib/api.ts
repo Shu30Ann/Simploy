@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
 
 const TOKEN_KEY = "simploy-token";
 const USER_KEY = "simploy-user";
@@ -36,6 +36,10 @@ export function clearAuthSession() {
   window.localStorage.removeItem(USER_KEY);
 }
 
+function apiUrl(path: string) {
+  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 export async function postJson<TResponse, TPayload>(
   path: string,
   payload: TPayload,
@@ -49,7 +53,7 @@ export async function postJson<TResponse, TPayload>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(apiUrl(path), {
     method: "POST",
     headers,
     body: JSON.stringify(payload),
@@ -76,7 +80,7 @@ export async function getJson<TResponse>(path: string, options: RequestOptions =
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { headers });
+  const response = await fetch(apiUrl(path), { headers });
 
   if (!response.ok) {
     let message = await response.text();
