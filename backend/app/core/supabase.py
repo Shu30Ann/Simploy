@@ -1,7 +1,7 @@
 import base64
 import json
 from typing import Any
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
@@ -142,9 +142,18 @@ class SupabaseClient:
                 message = parsed.get("msg") or parsed.get("message") or parsed.get("error_description") or raw
             except json.JSONDecodeError:
                 pass
-            raise HTTPException(status_code=self._status_code(exc.code), detail=message) from exc
+            raise HTTPException(status_code=self._status_code(exc.code, message), detail=message) from exc
+        except (TimeoutError, URLError) as exc:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Unable to reach Supabase") from exc
 
-    def _status_code(self, code: int) -> int:
+    def _status_code(self, code: int, message: str = "") -> int:
+        normalized = message.lower()
+        if "rate limit" in normalized:
+            return status.HTTP_429_TOO_MANY_REQUESTS
+        if "invalid login" in normalized or "invalid_credentials" in normalized:
+            return status.HTTP_401_UNAUTHORIZED
+        if "already" in normalized or "duplicate key" in normalized:
+            return status.HTTP_409_CONFLICT
         if code == 400:
             return status.HTTP_422_UNPROCESSABLE_ENTITY
         if code == 429:

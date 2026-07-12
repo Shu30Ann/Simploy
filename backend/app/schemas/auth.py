@@ -17,6 +17,7 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+    role: UserRole | None = None
 
 
 class UserPublic(BaseModel):

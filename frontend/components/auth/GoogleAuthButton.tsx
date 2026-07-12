@@ -1,10 +1,17 @@
 "use client";
 
+export function isGoogleAuthEnabled() {
+  return process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
+}
+
 export default function GoogleAuthButton() {
+  if (!isGoogleAuthEnabled()) {
+    return null;
+  }
+
   return (
     <button
       type="button"
-      onClick={() => console.log("Google OAuth")}
       className="w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3
         text-sm font-medium bg-white hover:bg-gray-50 transition-colors border"
       style={{ borderColor: "var(--google-border)", color: "var(--text-primary)" }}

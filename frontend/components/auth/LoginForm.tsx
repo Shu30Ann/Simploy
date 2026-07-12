@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import GoogleAuthButton from "./GoogleAuthButton";
+import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
@@ -18,6 +18,7 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type LoginPayload = FormData & { role: UserRole };
 
 const inputBase =
   "w-full px-4 py-3 rounded-xl border text-sm transition-all duration-150 focus:outline-none focus:ring-2";
@@ -46,6 +47,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
   const validInitialRole = initialRole === "employee" || initialRole === "employer" ? initialRole : null;
   const [role, setRole] = useState<UserRole>(validInitialRole ?? "employee");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const showGoogleAuth = isGoogleAuthEnabled();
   const {
     register,
     handleSubmit,
@@ -68,7 +70,8 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
   const onSubmit = async (data: FormData) => {
     setSubmitError(null);
     try {
-      const session = await postJson<AuthResponse, FormData>("/auth/login", data);
+      const payload: LoginPayload = { ...data, role };
+      const session = await postJson<AuthResponse, LoginPayload>("/auth/login", payload);
       if (session.user.role !== role) {
         setSubmitError(`This account is registered as ${session.user.role}. Switch portal and try again.`);
         return;
@@ -120,8 +123,12 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
         ))}
       </div>
 
-      <GoogleAuthButton />
-      <Divider />
+      {showGoogleAuth && (
+        <>
+          <GoogleAuthButton />
+          <Divider />
+        </>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {submitError && (

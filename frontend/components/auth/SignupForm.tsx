@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
-import GoogleAuthButton from "./GoogleAuthButton";
+import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
 import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
 import RiasecAssessment from "@/components/RiasecAssessment";
@@ -59,6 +59,7 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [interestResult, setInterestResult] = useState<RiasecResult | null>(null);
   const [hasSkippedInterestTest, setHasSkippedInterestTest] = useState(false);
+  const showGoogleAuth = isGoogleAuthEnabled();
 
   const {
     register,
@@ -154,8 +155,12 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
         </p>
       </div>
 
-      <GoogleAuthButton />
-      <Divider />
+      {showGoogleAuth && (
+        <>
+          <GoogleAuthButton />
+          <Divider />
+        </>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {submitError && (
