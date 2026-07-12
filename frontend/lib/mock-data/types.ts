@@ -170,24 +170,6 @@ export interface InternalGig {
   tone: DashboardTone;
 }
 
-export interface LearningPathMilestone {
-  id: string;
-  stage: string;
-  timeframe: string;
-  title: string;
-  description: string;
-  progress: number;
-  tasks: string[];
-}
-
-export interface CareerSkillGap {
-  skill: string;
-  progress: number;
-  impact: string;
-  rolesUnlocked: string[];
-  roadmapSteps: string[];
-}
-
 export interface EmployerDashboardMetric {
   label: string;
   value: string;

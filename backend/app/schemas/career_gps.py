@@ -5,6 +5,18 @@ from pydantic import BaseModel, Field, field_validator
 
 RiskTolerance = Literal["low", "moderate", "high"]
 CareerRouteType = Literal["recommended", "accelerated", "balanced"]
+CareerGpsScenarioCode = Literal[
+    "prioritise_salary",
+    "prioritise_work_life_balance",
+    "avoid_management",
+    "relocate_country",
+    "change_industry",
+    "retire_earlier",
+    "complete_masters_degree",
+    "focus_entrepreneurship",
+]
+CareerBuddySender = Literal["employee", "assistant", "system"]
+CareerBuddyConfidence = Literal["low", "medium", "high"]
 
 
 class EmployeeCareerProfile(BaseModel):
@@ -239,3 +251,146 @@ class CareerGpsRoadmap(BaseModel):
     score_components: list[CareerGpsStoredScoreComponent] = Field(default_factory=list)
     next_best_action: CareerGpsNextBestAction
     source_note: str
+
+
+class CareerGpsWhatIfScenarioIn(BaseModel):
+    scenario_name: str | None = Field(default=None, max_length=120)
+    adjustments: list[CareerGpsScenarioCode] = Field(min_length=1, max_length=8)
+    target_country: str | None = Field(default=None, max_length=80)
+    target_industry: str | None = Field(default=None, max_length=120)
+    target_retirement_age: int | None = Field(default=None, ge=45, le=80)
+    target_timeline_months: int | None = Field(default=None, ge=1, le=480)
+
+    @field_validator("adjustments")
+    @classmethod
+    def clean_adjustments(cls, value: list[CareerGpsScenarioCode]) -> list[CareerGpsScenarioCode]:
+        if len(value) != len(set(value)):
+            raise ValueError("adjustments must not contain duplicates")
+        return value
+
+    @field_validator("scenario_name", "target_country", "target_industry")
+    @classmethod
+    def strip_optional_scenario_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+
+class CareerGpsWhatIfScenarioSummary(BaseModel):
+    scenario_name: str
+    adjustments: list[CareerGpsScenarioCode]
+    applied_overrides: list[str] = Field(default_factory=list)
+
+
+class CareerGpsWhatIfChange(BaseModel):
+    category: str
+    label: str
+    before: str
+    after: str
+    changed: bool
+    explanation: str
+
+
+class CareerGpsWhatIfComparison(BaseModel):
+    current_roadmap_id: int
+    current_version: int
+    preview_version: int
+    changes: list[CareerGpsWhatIfChange]
+
+
+class CareerGpsWhatIfPreview(BaseModel):
+    scenario: CareerGpsWhatIfScenarioSummary
+    preview_roadmap: CareerGpsRoadmap
+    comparison: CareerGpsWhatIfComparison
+
+
+class CareerGpsWhatIfApplyResponse(BaseModel):
+    scenario: CareerGpsWhatIfScenarioSummary
+    applied_roadmap: CareerGpsRoadmap
+    comparison: CareerGpsWhatIfComparison
+    message: str
+
+
+class CareerBuddyStructuredResponse(BaseModel):
+    answer: str = Field(min_length=1, max_length=2400)
+    recommended_actions: list[str] = Field(default_factory=list, max_length=5)
+    referenced_route_type: CareerRouteType | None = None
+    confidence: CareerBuddyConfidence = "medium"
+    used_context: list[str] = Field(default_factory=list, max_length=8)
+    safety_notes: list[str] = Field(default_factory=list, max_length=5)
+
+    @field_validator("answer")
+    @classmethod
+    def strip_answer(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("answer must not be blank")
+        return cleaned
+
+    @field_validator("recommended_actions", "used_context", "safety_notes")
+    @classmethod
+    def clean_response_lists(cls, value: list[str]) -> list[str]:
+        return [str(item).strip()[:220] for item in value if str(item).strip()]
+
+
+class CareerBuddyConversationCreateIn(BaseModel):
+    roadmap_id: int | None = None
+    title: str | None = Field(default=None, max_length=120)
+
+    @field_validator("title")
+    @classmethod
+    def strip_optional_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+
+class CareerBuddyConversation(BaseModel):
+    id: int
+    employee_profile_id: int
+    roadmap_id: int | None = None
+    title: str
+    status: str
+    created_at: str
+    updated_at: str
+
+
+class CareerBuddyMessage(BaseModel):
+    id: int
+    conversation_id: int
+    sender: CareerBuddySender
+    content: str
+    structured_response: dict[str, Any] = Field(default_factory=dict)
+    provider: str
+    model: str | None = None
+    created_at: str
+
+
+class CareerBuddyConversationDetail(CareerBuddyConversation):
+    messages: list[CareerBuddyMessage] = Field(default_factory=list)
+
+
+class CareerBuddyMessageIn(BaseModel):
+    conversation_id: int | None = None
+    roadmap_id: int | None = None
+    route_type: CareerRouteType = "recommended"
+    message: str = Field(min_length=1, max_length=800)
+
+    @field_validator("message")
+    @classmethod
+    def strip_message(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("message must not be blank")
+        return cleaned
+
+
+class CareerBuddyReply(BaseModel):
+    conversation: CareerBuddyConversation
+    user_message: CareerBuddyMessage
+    assistant_message: CareerBuddyMessage
+    response: CareerBuddyStructuredResponse
+    provider: str
+    rate_limit_remaining: int

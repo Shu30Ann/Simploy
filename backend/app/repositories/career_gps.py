@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from backend.app.core.config import settings
@@ -289,17 +289,20 @@ class CareerGpsRepository:
         employee_profile_id: int,
         north_star_setting_id: int | None,
         generated: dict[str, Any],
+        change_summary: str = "Generated deterministic Career GPS routes.",
     ) -> dict[str, Any]:
         if settings.supabase_enabled:
             return self._save_generated_roadmap_supabase(
                 employee_profile_id=employee_profile_id,
                 north_star_setting_id=north_star_setting_id,
                 generated=generated,
+                change_summary=change_summary,
             )
         return self._save_generated_roadmap_sqlite(
             employee_profile_id=employee_profile_id,
             north_star_setting_id=north_star_setting_id,
             generated=generated,
+            change_summary=change_summary,
         )
 
     def get_latest_roadmap_snapshot(self, employee_profile_id: int) -> dict[str, Any] | None:
@@ -341,6 +344,167 @@ class CareerGpsRepository:
             snapshot.setdefault("roadmap_id", roadmap["id"])
             snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
         return snapshot
+
+    def list_buddy_conversations(self, employee_profile_id: int) -> list[dict[str, Any]]:
+        if settings.supabase_enabled:
+            rows = supabase().select(
+                "career_buddy_conversations",
+                {"employee_profile_id": employee_profile_id},
+                order="updated_at.desc",
+            )
+            return [self._buddy_conversation_row(row) for row in rows]
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM career_buddy_conversations
+                WHERE employee_profile_id = ?
+                ORDER BY updated_at DESC, id DESC
+                """,
+                (employee_profile_id,),
+            ).fetchall()
+        return [self._buddy_conversation_row(dict(row)) for row in rows]
+
+    def get_buddy_conversation(self, employee_profile_id: int, conversation_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            row = _first(
+                supabase().select(
+                    "career_buddy_conversations",
+                    {"id": conversation_id, "employee_profile_id": employee_profile_id},
+                    limit=1,
+                )
+            )
+            return self._buddy_conversation_row(row) if row else None
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM career_buddy_conversations
+                WHERE id = ? AND employee_profile_id = ?
+                """,
+                (conversation_id, employee_profile_id),
+            ).fetchone()
+        return self._buddy_conversation_row(dict(row)) if row else None
+
+    def create_buddy_conversation(
+        self,
+        *,
+        employee_profile_id: int,
+        roadmap_id: int | None,
+        title: str,
+    ) -> dict[str, Any]:
+        data = {
+            "employee_profile_id": employee_profile_id,
+            "roadmap_id": roadmap_id,
+            "title": title,
+            "status": "active",
+        }
+        if settings.supabase_enabled:
+            return self._buddy_conversation_row(supabase().insert("career_buddy_conversations", data))
+        with get_connection() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO career_buddy_conversations (employee_profile_id, roadmap_id, title, status)
+                VALUES (?, ?, ?, 'active')
+                """,
+                (employee_profile_id, roadmap_id, title),
+            )
+            row = conn.execute("SELECT * FROM career_buddy_conversations WHERE id = ?", (cursor.lastrowid,)).fetchone()
+        return self._buddy_conversation_row(dict(row))
+
+    def list_buddy_messages(self, employee_profile_id: int, conversation_id: int) -> list[dict[str, Any]]:
+        conversation = self.get_buddy_conversation(employee_profile_id, conversation_id)
+        if conversation is None:
+            return []
+        if settings.supabase_enabled:
+            rows = supabase().select(
+                "career_buddy_messages",
+                {"conversation_id": conversation_id},
+                order="created_at.asc",
+            )
+            return [self._buddy_message_row(row) for row in rows]
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM career_buddy_messages
+                WHERE conversation_id = ?
+                ORDER BY created_at ASC, id ASC
+                """,
+                (conversation_id,),
+            ).fetchall()
+        return [self._buddy_message_row(dict(row)) for row in rows]
+
+    def add_buddy_message(
+        self,
+        *,
+        employee_profile_id: int,
+        conversation_id: int,
+        sender: str,
+        content: str,
+        structured_response: dict[str, Any] | None = None,
+        provider: str = "template",
+        model: str | None = None,
+    ) -> dict[str, Any]:
+        conversation = self.get_buddy_conversation(employee_profile_id, conversation_id)
+        if conversation is None:
+            raise ValueError("Career Buddy conversation not found")
+        data = {
+            "conversation_id": conversation_id,
+            "sender": sender,
+            "content": content,
+            "structured_response_json": structured_response or {},
+            "provider": provider,
+            "model": model,
+        }
+        if settings.supabase_enabled:
+            row = supabase().insert("career_buddy_messages", data)
+            supabase().update("career_buddy_conversations", {"id": conversation_id}, {"updated_at": _now()})
+            return self._buddy_message_row(row)
+        with get_connection() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO career_buddy_messages
+                  (conversation_id, sender, content, structured_response_json, provider, model)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    conversation_id,
+                    sender,
+                    content,
+                    json.dumps(data["structured_response_json"]),
+                    provider,
+                    model,
+                ),
+            )
+            conn.execute(
+                "UPDATE career_buddy_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (conversation_id,),
+            )
+            row = conn.execute("SELECT * FROM career_buddy_messages WHERE id = ?", (cursor.lastrowid,)).fetchone()
+        return self._buddy_message_row(dict(row))
+
+    def count_recent_buddy_user_messages(self, employee_profile_id: int, within_minutes: int) -> int:
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=within_minutes)
+        if settings.supabase_enabled:
+            conversations = self.list_buddy_conversations(employee_profile_id)
+            total = 0
+            for conversation in conversations:
+                for message in self.list_buddy_messages(employee_profile_id, conversation["id"]):
+                    if message["sender"] == "employee" and self._parse_timestamp(message["created_at"]) >= cutoff:
+                        total += 1
+            return total
+        cutoff_sql = cutoff.strftime("%Y-%m-%d %H:%M:%S")
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(*) AS count
+                FROM career_buddy_messages m
+                JOIN career_buddy_conversations c ON c.id = m.conversation_id
+                WHERE c.employee_profile_id = ?
+                  AND m.sender = 'employee'
+                  AND m.created_at >= ?
+                """,
+                (employee_profile_id, cutoff_sql),
+            ).fetchone()
+        return int(row["count"])
 
     def _get_preferences(self, employee_profile_id: int) -> dict[str, Any] | None:
         if settings.supabase_enabled:
@@ -489,6 +653,24 @@ class CareerGpsRepository:
         data["is_blocking"] = _bool_value(data.get("is_blocking"))
         return data
 
+    def _buddy_conversation_row(self, row: dict[str, Any]) -> dict[str, Any]:
+        return dict(row)
+
+    def _buddy_message_row(self, row: dict[str, Any]) -> dict[str, Any]:
+        data = dict(row)
+        data["structured_response"] = _json_value(data.pop("structured_response_json", {}), {})
+        return data
+
+    def _parse_timestamp(self, value: str) -> datetime:
+        normalized = str(value).replace("Z", "+00:00")
+        try:
+            parsed = datetime.fromisoformat(normalized)
+        except ValueError:
+            parsed = datetime.strptime(str(value).split(".", 1)[0], "%Y-%m-%d %H:%M:%S")
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+
     def _get_active_roadmap(self, employee_profile_id: int) -> dict[str, Any] | None:
         if settings.supabase_enabled:
             return _first(
@@ -539,6 +721,7 @@ class CareerGpsRepository:
         employee_profile_id: int,
         north_star_setting_id: int | None,
         generated: dict[str, Any],
+        change_summary: str,
     ) -> dict[str, Any]:
         with get_connection() as conn:
             existing = conn.execute(
@@ -612,7 +795,7 @@ class CareerGpsRepository:
                 (
                     roadmap_id,
                     version_number,
-                    "Generated deterministic Career GPS routes.",
+                    change_summary,
                     json.dumps(snapshot),
                     employee_profile_id,
                 ),
@@ -701,6 +884,7 @@ class CareerGpsRepository:
         employee_profile_id: int,
         north_star_setting_id: int | None,
         generated: dict[str, Any],
+        change_summary: str,
     ) -> dict[str, Any]:
         client = supabase()
         existing = self._get_active_roadmap(employee_profile_id)
@@ -753,7 +937,7 @@ class CareerGpsRepository:
             {
                 "roadmap_id": roadmap_id,
                 "version_number": version_number,
-                "change_summary": "Generated deterministic Career GPS routes.",
+                "change_summary": change_summary,
                 "roadmap_snapshot_json": snapshot,
                 "created_by_employee_profile_id": employee_profile_id,
             },

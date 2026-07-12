@@ -300,6 +300,27 @@ def init_db() -> None:
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(roadmap_id, version_number)
             );
+
+            CREATE TABLE IF NOT EXISTS career_buddy_conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                roadmap_id INTEGER REFERENCES career_roadmaps(id) ON DELETE SET NULL,
+                title TEXT NOT NULL DEFAULT 'Career Buddy conversation',
+                status TEXT NOT NULL DEFAULT 'active',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS career_buddy_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                conversation_id INTEGER NOT NULL REFERENCES career_buddy_conversations(id) ON DELETE CASCADE,
+                sender TEXT NOT NULL,
+                content TEXT NOT NULL,
+                structured_response_json TEXT NOT NULL DEFAULT '{}',
+                provider TEXT NOT NULL DEFAULT 'template',
+                model TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
             """
         )
         ensure_sqlite_column(

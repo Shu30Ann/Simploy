@@ -31,6 +31,10 @@ class Settings:
     jwt_issuer: str = "simploy-api"
     token_ttl_minutes: int = int(os.getenv("SIMPLOY_TOKEN_TTL_MINUTES", "1440"))
     ai_engine_url: str = os.getenv("SIMPLOY_AI_ENGINE_URL", "http://127.0.0.1:8010")
+    career_buddy_ai_provider: str = os.getenv("SIMPLOY_CAREER_BUDDY_AI_PROVIDER", "auto")
+    career_buddy_model: str = os.getenv("SIMPLOY_CAREER_BUDDY_MODEL", "gpt-5.6")
+    career_buddy_rate_limit_per_hour: int = int(os.getenv("SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR", "20"))
+    openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
     cors_origins: str = os.getenv("SIMPLOY_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
     cors_origin_regex: str = os.getenv(
         "SIMPLOY_CORS_ORIGIN_REGEX",

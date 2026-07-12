@@ -8,10 +8,289 @@
 - Phase 3 - Career North Star onboarding and settings frontend: completed.
 - Phase 4 - Deterministic Career GPS route generation and scoring: completed.
 - Phase 5 - Employee Career GPS roadmap frontend: completed.
-- Runtime behavior changed: yes, backend Career GPS APIs, frontend Career North Star onboarding, deterministic route generation APIs, and a frontend roadmap viewer were added.
-- Frontend pages built: yes, Career North Star and Career GPS roadmap UI are mounted inside the existing employee dashboard.
-- AI implemented: no.
+- Phase 6 - What-If Career Simulator: completed.
+- Phase 7 - Career Buddy and AI Abstraction: completed.
+- Phase 8 - Integration Testing, Security Review, and Cleanup: completed.
+- Runtime behavior changed: yes, backend Career GPS APIs, frontend Career North Star onboarding, deterministic route generation APIs, a frontend roadmap viewer, the What-If Career Simulator, and Career Buddy were added. Phase 8 added tests/docs cleanup only.
+- Frontend pages built: yes, Career North Star, Career GPS roadmap UI, the what-if simulator, and Career Buddy are mounted inside the existing employee dashboard.
+- AI implemented: optional backend-only provider abstraction with deterministic template fallback.
 - Deterministic scoring engine implemented: yes.
+
+## Phase 8 - Integration Testing, Security Review, And Cleanup
+
+Completed integration testing, security review, and cleanup without adding new product features.
+
+Features completed:
+
+- Career North Star onboarding/settings flow is implemented and covered by local integration tests.
+- Deterministic roadmap generation is implemented and covered by unit/integration tests.
+- Roadmap versioning is implemented and covered by integration tests.
+- What-If preview/apply is implemented and covered by integration tests.
+- Career Buddy fallback mode is implemented and covered by integration tests.
+- Authenticated ownership checks for roadmaps and Career Buddy conversations are covered by integration tests.
+- Supabase RLS migrations for Career GPS and Career Buddy were statically checked for expected ownership policies.
+- Frontend loading/empty/error states compile and remain wired through the existing Career North Star, roadmap, what-if, and Career Buddy panels.
+- Environment-variable, setup, and deployment documentation was updated.
+
+Files changed in Phase 8:
+
+- `backend/tests/test_career_gps_integration.py`
+  - Adds full onboarding-to-roadmap integration tests, ownership checks, what-if tests, Career Buddy fallback checks, and RLS migration checks.
+- `frontend/lib/mock-data/dashboardData.ts`
+  - Removes unused old static roadmap mock exports after the backend-backed roadmap replacement.
+- `frontend/lib/mock-data/types.ts`
+  - Removes unused old static roadmap mock types.
+- `README.md`
+  - Adds Career GPS endpoints, migration order, and Career Buddy fallback notes.
+- `backend/README.md`
+  - Adds Career GPS endpoints, migration order, backend env vars, and AI-key safety notes.
+- `DOCS/SETUP.md`
+  - Adds backend startup, frontend API URL, Supabase migration order, Render/Vercel env guidance, and Career Buddy fallback notes.
+- `DOCS/career-gps-implementation.md`
+  - Adds this Phase 8 final report.
+
+Database migrations:
+
+- No new Phase 8 migration was added.
+- Production Supabase should run existing migrations in order:
+  - `backend/migrations/001_career_gps_foundation.sql`
+  - `backend/migrations/002_career_gps_rls.sql`
+  - `backend/migrations/003_career_gps_profile_api_fields.sql`
+  - `backend/migrations/004_career_gps_profile_api_rls.sql`
+  - `backend/migrations/005_career_buddy.sql`
+
+Backend endpoints verified:
+
+- `GET /career-gps/profile`
+- `PUT /career-gps/onboarding-progress`
+- `PUT /career-gps/goals`
+- `PUT /career-gps/lifestyle-priorities`
+- `PUT /career-gps/constraints`
+- `POST /career-gps/roadmaps/generate`
+- `GET /career-gps/roadmaps/latest`
+- `GET /career-gps/roadmaps/{roadmap_id}`
+- `POST /career-gps/roadmaps/what-if/preview`
+- `POST /career-gps/roadmaps/what-if/apply`
+- `GET /career-gps/career-buddy/conversations`
+- `POST /career-gps/career-buddy/conversations`
+- `GET /career-gps/career-buddy/conversations/{conversation_id}`
+- `POST /career-gps/career-buddy/messages`
+
+Environment variables:
+
+- Frontend:
+  - `NEXT_PUBLIC_API_URL`
+- Backend:
+  - `SUPABASE_URL`
+  - `SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SIMPLOY_DATABASE_PATH`
+  - `SIMPLOY_JWT_SECRET`
+  - `SIMPLOY_TOKEN_TTL_MINUTES`
+  - `SIMPLOY_AI_ENGINE_URL`
+  - `SIMPLOY_CAREER_BUDDY_AI_PROVIDER`
+  - `SIMPLOY_CAREER_BUDDY_MODEL`
+  - `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`
+  - `OPENAI_API_KEY`
+  - `SIMPLOY_CORS_ORIGINS`
+  - `SIMPLOY_CORS_ORIGIN_REGEX`
+
+Test results:
+
+- `python -m compileall backend\app` passed.
+- `python -m unittest discover backend\tests` passed.
+  - 7 tests passed.
+  - Covers route engine determinism, onboarding-to-roadmap integration, roadmap versioning, what-if preview/apply, ownership checks, Career Buddy template fallback, and static RLS migration coverage.
+  - Python emitted `TestClient` ResourceWarnings from AnyIO memory streams, but the suite completed successfully.
+- `npm run lint` passed.
+- `npx tsc --noEmit` passed.
+- `npm run build` passed.
+- Responsive layout check:
+  - Production build succeeded for the employee dashboard route.
+  - Static review confirmed responsive Tailwind breakpoints remain in the Career GPS roadmap, What-If Simulator, and Career Buddy panels.
+  - The in-app browser was unavailable in this session (`agent.browsers.list()` returned `[]`), so no screenshot-based responsive verification was captured.
+
+Security review:
+
+- Service-role Supabase access remains backend-only.
+- `OPENAI_API_KEY` is backend-only and not referenced by frontend code.
+- Career Buddy AI prompts and provider calls remain backend-only.
+- Roadmap, what-if, and Career Buddy access resolve the authenticated employee profile before reading or writing owned rows.
+- Integration tests verify another employee cannot read another employee's roadmap or Career Buddy conversation.
+- Supabase RLS migration text was checked for Career GPS employee-owned tables and Career Buddy conversation/message policies.
+
+Known limitations:
+
+- No live Supabase project was available for executing RLS policies end-to-end; RLS was statically checked from migration SQL.
+- No browser screenshot tool was available for visual responsive QA in this session.
+- Milestone/action progress controls remain frontend-local and reset on refresh; no backend progress persistence endpoint exists yet.
+- Career Buddy fallback is deterministic and roadmap-contextual, not a full AI coach.
+- Optional OpenAI provider was not live-tested because no API key was configured.
+
+Mock or seed data still in use:
+
+- Occupations, occupation skills, and career transitions from Career GPS migrations use `source_label = 'illustrative_seed'`.
+- Marketplace/demo dashboard data still powers non-Career-GPS employee marketplace surfaces.
+- Asia market signals on the employee dashboard remain illustrative frontend data and are not verified market data.
+- Career Buddy template fallback uses stored roadmap data and illustrative occupation references.
+
+Manual demonstration steps:
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend: `npm run dev --workspace frontend`.
+3. Sign up or log in as an employee.
+4. Open `/employee/dashboard`.
+5. Complete or edit Career North Star setup.
+6. Generate a Career GPS roadmap.
+7. Switch between Recommended, Accelerated, and Balanced route cards.
+8. Use local progress controls on roadmap milestones and note they are UI-local.
+9. Preview a what-if scenario, such as relocating to Singapore or prioritising work-life balance.
+10. Apply the scenario and confirm the roadmap version increments.
+11. Ask Career Buddy a quick prompt such as "What should I do in the next 90 days?"
+12. Confirm Career Buddy responds in template fallback mode when `OPENAI_API_KEY` is unset.
+
+## Phase 7 - Career Buddy And AI Abstraction
+
+Implemented Career Buddy as a backend-contextual coaching chat inside the existing Career GPS roadmap panel.
+
+Backend behavior added:
+
+- Adds backend-only AI provider abstraction in `backend/app/services/career_buddy_ai.py`.
+- Adds a deterministic template provider used when no AI provider/key is configured.
+- Adds an optional OpenAI Responses API provider when backend env configuration enables it.
+- Requests structured JSON output from the AI provider when configured.
+- Validates AI output with `CareerBuddyStructuredResponse`.
+- Rejects/falls back from AI output that includes disallowed salary or market figures.
+- Keeps AI prompts, provider calls, and keys entirely in the backend.
+- Uses the authenticated employee's stored roadmap, selected route, route scores, skill gaps, milestones, Next Best Action, goals, lifestyle priorities, and constraints as context.
+- Adds basic per-employee message rate protection using `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`.
+- Does not allow AI to change deterministic route scoring or generated route data.
+
+New backend endpoints:
+
+- `GET /career-gps/career-buddy/conversations`
+  - Lists the authenticated employee's Career Buddy conversations.
+- `POST /career-gps/career-buddy/conversations`
+  - Creates a conversation tied to a stored roadmap.
+- `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - Retrieves one owned conversation with messages.
+- `POST /career-gps/career-buddy/messages`
+  - Stores the employee message, builds backend roadmap context, generates a template or AI-backed assistant response, validates it, stores the assistant response, and returns both messages.
+
+Database additions:
+
+- `backend/migrations/005_career_buddy.sql`
+  - Adds `career_buddy_conversations`.
+  - Adds `career_buddy_messages`.
+  - Adds indexes for employee conversations and conversation messages.
+  - Adds ownership helper `public.is_career_buddy_conversation_owner`.
+  - Adds RLS policies for authenticated employee ownership.
+- Local SQLite fallback in `backend/app/core/database.py` now creates the same Career Buddy tables.
+
+Frontend behavior added:
+
+- Adds a Career Buddy panel below the selected roadmap's skills/readiness summary.
+- Shows the selected route used as context.
+- Loads existing Career Buddy conversations.
+- Sends messages through the backend only.
+- Shows persisted employee and assistant messages.
+- Adds quick prompts for:
+  - Why was this route recommended?
+  - What should I do in the next 90 days?
+  - What skill is holding me back?
+  - Can I reach the target without becoming a manager?
+  - What happens if I move to Singapore?
+  - Show me a more balanced route.
+- Shows provider and hourly remaining-message metadata returned by the backend.
+
+Design and safety decisions:
+
+- Career Buddy is advisory only and cannot overwrite roadmaps, scores, preferences, or constraints.
+- Template fallback answers are derived from selected route, scores, skill gaps, milestones, Next Best Action, and employee preferences.
+- AI provider failures, invalid structured output, or disallowed salary/market figures fall back to template responses.
+- The frontend never receives AI prompts or AI keys.
+- No external market, salary, hiring-probability, or relocation APIs were added.
+
+Not implemented in Phase 7:
+
+- No AI-generated scoring.
+- No AI-generated route replacement.
+- No streamed chat.
+- No assistant tool-calling.
+- No feedback ratings, conversation rename/archive UI, or admin moderation surface.
+
+## Phase 6 - What-If Career Simulator
+
+Implemented a deterministic what-if simulator for employees inside the existing Career GPS roadmap panel.
+
+Frontend behavior added:
+
+- Lets employees select one or more temporary scenario adjustments:
+  - Prioritise salary
+  - Prioritise work-life balance
+  - Avoid management
+  - Relocate to another country
+  - Change industry
+  - Retire earlier
+  - Complete a master's degree
+  - Focus on entrepreneurship
+- Adds optional scenario inputs for:
+  - Scenario name
+  - Relocation country
+  - Target industry
+  - Earlier retirement age
+  - Compressed target timeline
+- Generates a preview roadmap through `POST /career-gps/roadmaps/what-if/preview`.
+- Keeps preview results separate from the active roadmap until explicitly applied.
+- Compares the active recommended route against the preview recommendation.
+- Shows comparison categories for:
+  - Changed recommended route
+  - Changed target roles
+  - Changed timeline
+  - Changed skill priorities
+  - Changed trade-offs
+  - Changed scores
+- Shows scenario override explanations so employees can see why the preview changed.
+- Adds an Apply Scenario button that calls `POST /career-gps/roadmaps/what-if/apply`.
+- Refreshes the roadmap panel to the newly applied version after a successful apply.
+
+Backend behavior added:
+
+- Adds typed scenario payloads and comparison responses in `backend/app/schemas/career_gps.py`.
+- Adds `POST /career-gps/roadmaps/what-if/preview`.
+  - Requires an existing active roadmap for comparison.
+  - Loads the authenticated employee's current Career GPS profile, goals, lifestyle priorities, constraints, occupation reference data, occupation skills, and transitions.
+  - Applies scenario changes in memory only.
+  - Generates a preview roadmap using the existing deterministic route engine.
+  - Returns the preview with the next version number but does not write roadmap rows or version rows.
+- Adds `POST /career-gps/roadmaps/what-if/apply`.
+  - Recomputes the scenario server-side from the submitted scenario payload.
+  - Saves the generated scenario roadmap using the existing active-roadmap persistence path.
+  - Increments `career_roadmaps.current_version`.
+  - Inserts a new `roadmap_versions` snapshot with a what-if change summary.
+  - Preserves previous roadmap snapshots in `roadmap_versions`.
+- Reuses the Phase 4 deterministic route engine; no AI, Career Buddy, or external market API was added.
+- Reuses existing Career GPS tables; no new migration was added.
+
+Scenario transformation decisions:
+
+- Salary priority raises income priority and risk tolerance.
+- Work-life balance raises work-life, remote-work, and low-risk preferences.
+- Avoid management adds a blocking no-management constraint and lowers leadership priority.
+- Relocation enables relocation and international mobility and prepends the chosen country to preferred locations.
+- Industry change temporarily changes the target industry.
+- Earlier retirement compresses target timeline and raises income priority.
+- Completing a master's degree temporarily adds illustrative analytics/research evidence to the employee skill set for preview scoring only.
+- Entrepreneurship shifts preferences toward startup, ownership, leadership, income, and higher risk.
+
+Not implemented in Phase 6:
+
+- No Career Buddy.
+- No AI or LLM calls.
+- No external labor-market, salary, relocation, or education APIs.
+- No new database tables.
+- No persistent scenario library or saved named scenarios.
+- No frontend-direct Supabase access.
 
 ## Phase 5 - Employee Career GPS Roadmap Frontend
 
@@ -377,9 +656,8 @@ All seed records use `source_label = 'illustrative_seed'`.
   - `frontend/app/employee/applications/page.tsx` tracks submitted applications.
   - `frontend/app/employee/layout.tsx` wraps employee pages with `ChatWidget`.
 - Existing employee roadmap components:
-  - `SkillRoadmapModule` is defined inside `frontend/app/employee/dashboard/page.tsx`.
-  - The roadmap modal and milestones are also defined inline in the employee dashboard page.
-  - `demoLearningPath` and `demoCareerSkillGaps` in `frontend/lib/mock-data/dashboardData.ts` drive the current illustrative roadmap UI.
+  - The active roadmap surface is `frontend/components/career-gps/CareerGpsRoadmapPanel.tsx`.
+  - The old inline `SkillRoadmapModule`, modal, `demoLearningPath`, and `demoCareerSkillGaps` were removed during the Career GPS rebuild and Phase 8 cleanup.
 - Skills-related components and utilities:
   - `frontend/components/RiasecAssessment.tsx` provides a career interest assessment.
   - `frontend/lib/riasec.ts` contains RIASEC questions, scoring, result storage keys, and local-storage helpers.
@@ -549,7 +827,7 @@ The production schema is defined in `backend/supabase_schema.sql`. Local SQLite 
 ## 4. Existing Features That Can Be Reused
 
 - Employee dashboard shell, navigation, profile menu, and chat layout.
-- Inline Career Command Center and `SkillRoadmapModule` visual patterns.
+- Inline Career Command Center visual patterns.
 - RIASEC assessment and local result storage.
 - Employee profile API for profile basics, target role, experience years, and skills.
 - Prediction service for deterministic skill-gap and job-match scoring.
@@ -636,6 +914,24 @@ Implemented in Phase 4:
 - `GET /career-gps/roadmaps/{roadmap_id}`
   - Retrieve a generated roadmap snapshot by ID, scoped to the authenticated employee.
 
+Implemented in Phase 6:
+
+- `POST /career-gps/roadmaps/what-if/preview`
+  - Generate an in-memory scenario roadmap preview and compare it with the active recommended route without overwriting the active roadmap.
+- `POST /career-gps/roadmaps/what-if/apply`
+  - Recompute and save a scenario roadmap as the next active roadmap version while preserving prior snapshots in `roadmap_versions`.
+
+Implemented in Phase 7:
+
+- `GET /career-gps/career-buddy/conversations`
+  - List the authenticated employee's Career Buddy conversations.
+- `POST /career-gps/career-buddy/conversations`
+  - Create a Career Buddy conversation tied to a stored roadmap.
+- `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - Retrieve an owned Career Buddy conversation and messages.
+- `POST /career-gps/career-buddy/messages`
+  - Persist an employee message and validated assistant response generated from backend-only roadmap context.
+
 Candidate future endpoints:
 
 - `PATCH /career-gps/roadmaps/{roadmap_id}/steps/{step_id}`
@@ -698,9 +994,16 @@ Keep shared behavior in:
 6. Phase 5 - Employee Career GPS Roadmap Frontend
    - Completed as frontend roadmap loading/generation, route selection, metro roadmap, detail panels, readiness summaries, and local progress controls.
    - Does not include backend-persisted progress updates.
-7. Phase 6 - AI/Coach Integration
-   - Integrate AI only through the backend.
-   - Add auditability and avoid exposing AI keys to the frontend.
+7. Phase 6 - What-If Career Simulator
+   - Completed as deterministic scenario preview, comparison, and apply behavior.
+   - Preview does not overwrite the active roadmap; apply saves a new roadmap version.
+   - Does not include Career Buddy, AI, external market data, or saved scenario libraries.
+8. Phase 7 - AI/Coach Integration
+   - Completed as Career Buddy, backend-only AI provider abstraction, structured response validation, template fallback, and conversation/message persistence.
+   - Does not replace deterministic route scoring or add external market data.
+9. Phase 8 - Integration Testing, Security Review, And Cleanup
+   - Completed as integration tests, security review, cleanup, responsive-build verification, and setup/deployment documentation.
+   - Does not add new product features.
 
 ## 11. Risks And Assumptions
 
@@ -723,6 +1026,8 @@ Keep shared behavior in:
   - Adds fields and onboarding progress storage required by Phase 2 APIs.
 - `backend/migrations/004_career_gps_profile_api_rls.sql`
   - Adds RLS for `career_onboarding_progress`.
+- `backend/migrations/005_career_buddy.sql`
+  - Adds Career Buddy conversations/messages, indexes, ownership helper, and RLS policies.
 
 ## API Endpoints Added Or Changed
 
@@ -736,9 +1041,17 @@ Keep shared behavior in:
   - `POST /career-gps/roadmaps/generate`
   - `GET /career-gps/roadmaps/latest`
   - `GET /career-gps/roadmaps/{roadmap_id}`
+  - `POST /career-gps/roadmaps/what-if/preview`
+  - `POST /career-gps/roadmaps/what-if/apply`
+  - `GET /career-gps/career-buddy/conversations`
+  - `POST /career-gps/career-buddy/conversations`
+  - `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - `POST /career-gps/career-buddy/messages`
 - Changed:
   - `backend/app/main.py` now includes the Career GPS router.
   - `frontend/lib/api.ts` now includes `putJson` for authenticated PUT requests.
+  - `backend/app/repositories/career_gps.py` now accepts a custom roadmap version change summary when saving generated roadmaps.
+  - `backend/app/repositories/career_gps.py` now handles Career Buddy conversation and message persistence.
 
 ## Files Changed
 
@@ -750,12 +1063,15 @@ Keep shared behavior in:
 - `backend/app/routers/career_gps.py`
 - `backend/app/schemas/career_gps.py`
 - `backend/app/services/career_gps_service.py`
+- `backend/app/services/career_buddy_ai.py`
 - `backend/app/services/career_route_engine.py`
 - `backend/tests/test_career_route_engine.py`
 - `backend/migrations/001_career_gps_foundation.sql`
 - `backend/migrations/002_career_gps_rls.sql`
 - `backend/migrations/003_career_gps_profile_api_fields.sql`
 - `backend/migrations/004_career_gps_profile_api_rls.sql`
+- `backend/migrations/005_career_buddy.sql`
+- `backend/.env.example`
 - `frontend/components/career-gps/CareerGpsRoadmapPanel.tsx`
 - `frontend/app/employee/dashboard/page.tsx`
 - `frontend/components/career-gps/CareerNorthStarPanel.tsx`
@@ -774,6 +1090,10 @@ Keep shared behavior in:
   - `SIMPLOY_JWT_SECRET`
   - `SIMPLOY_TOKEN_TTL_MINUTES`
   - `SIMPLOY_AI_ENGINE_URL`
+  - `SIMPLOY_CAREER_BUDDY_AI_PROVIDER`
+  - `SIMPLOY_CAREER_BUDDY_MODEL`
+  - `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`
+  - `OPENAI_API_KEY`
   - `SIMPLOY_CORS_ORIGINS`
   - `SIMPLOY_CORS_ORIGIN_REGEX`
 
@@ -829,6 +1149,45 @@ Keep shared behavior in:
   - Removed the old static `SkillRoadmapModule` and modal from the employee dashboard.
   - Removed dead demo roadmap imports, transforms, and navigation anchor.
   - Re-ran `npm run lint`, `npx tsc --noEmit`, and `npm run build`; all passed.
+- Phase 6 checks:
+  - `python -m compileall backend\app` passed.
+  - `python -m unittest discover backend\tests` passed.
+  - FastAPI route registration check confirmed:
+    - `POST /career-gps/roadmaps/what-if/preview`
+    - `POST /career-gps/roadmaps/what-if/apply`
+  - Local SQLite smoke test passed using a temporary database:
+    - employee signup
+    - Career North Star goal save
+    - lifestyle priorities save
+    - active roadmap generation at version `1`
+    - what-if preview at version `2` without changing the active latest roadmap
+    - what-if apply saved version `2`
+    - latest roadmap returned version `2` after apply
+  - `npm run lint` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run build` passed.
+- Phase 7 checks:
+  - `python -m compileall backend\app` passed.
+  - `python -m unittest discover backend\tests` passed.
+  - FastAPI route registration check confirmed:
+    - `GET /career-gps/career-buddy/conversations`
+    - `POST /career-gps/career-buddy/conversations`
+    - `GET /career-gps/career-buddy/conversations/{conversation_id}`
+    - `POST /career-gps/career-buddy/messages`
+  - Local SQLite smoke test passed using a temporary database with `SIMPLOY_CAREER_BUDDY_AI_PROVIDER=template`:
+    - employee signup
+    - Career North Star goal save
+    - lifestyle priorities save
+    - no-management constraint save
+    - active roadmap generation
+    - empty Career Buddy conversation list
+    - first Career Buddy message created a conversation and stored user/assistant messages
+    - template fallback provider returned structured response with recommended actions
+    - conversation detail returned two messages after first send
+    - follow-up message appended two more messages
+  - `npm run lint` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run build` passed.
 
 ## Known Limitations
 
@@ -837,7 +1196,7 @@ Keep shared behavior in:
 - Some frontend RIASEC avatar strings appear mojibake-encoded in the source; this was observed but not changed in Phase 0.
 - The new Career GPS roadmap frontend is wired to the generated roadmap endpoints.
 - Local SQLite fallback now supports the Phase 2 Career GPS profile APIs, but Supabase production still requires migrations `001` through `004`.
-- A deterministic score-generation API exists, but no final roadmap UI consumes it yet.
+- The deterministic score-generation API is consumed by the Career GPS roadmap frontend and what-if simulator.
 - Seed occupations, skills, and transitions are illustrative prototype data, not verified labor-market data.
 - Career constraints are replaced as a list on update; partial constraint patching is not implemented.
 - Career North Star completion is a simple backend completeness check, not a score.
@@ -852,14 +1211,28 @@ Keep shared behavior in:
 - Phase 4 does not implement milestone/action completion or progress updates.
 - Phase 5 progress controls are local UI state only; they reset on refresh because no backend progress-update endpoint exists yet.
 - Phase 5 milestone-detail fields such as certifications and suggested projects are derived from the deterministic roadmap payload and conservative fallback text, not verified credential recommendations.
+- Phase 6 what-if previews require an existing active roadmap because comparison is against the current recommended route.
+- Phase 6 scenarios are recomputed from the submitted scenario payload when applied; previews are not stored as drafts.
+- Phase 6 scenario transformations are deterministic prototype rules over existing goals, lifestyle priorities, constraints, and illustrative occupation seed data.
+- Applying a Phase 6 scenario saves the generated roadmap as the next version; it does not overwrite the employee's saved Career North Star goals, lifestyle priorities, or constraints.
+- Some scenarios may change only scores rather than route targets because the current occupation reference set is intentionally small and illustrative.
+- The master's degree scenario uses temporary illustrative analytics/research evidence for scoring; it does not verify an actual credential.
+- Applied scenarios save a new roadmap version but do not persist the scenario name as a separate scenario record beyond the roadmap version change summary.
+- Phase 7 Career Buddy requires an existing stored roadmap.
+- Phase 7 AI integration is optional; without backend provider configuration it uses deterministic template responses.
+- Phase 7 OpenAI provider support was implemented behind backend environment variables, but no live AI provider call was executed in this environment.
+- Career Buddy validates structured responses and falls back from invalid output, but it is still prototype-quality and not a substitute for professional career advice.
+- Career Buddy does not use external market or salary APIs and must not present illustrative route data as verified labor-market data.
+- Career Buddy conversations can be listed and retrieved, but there is no rename/archive/delete UI yet.
+- Basic rate protection is per employee over the last hour and is intentionally simple for the hackathon prototype.
 
 ## Clear Instructions For The Next Phase
 
 1. Read this document before editing code.
-2. For the next phase, build only the requested progress persistence, personalization layer, or AI layer; do not implement unrelated surfaces.
+2. For the next phase, build only the requested progress persistence, saved-scenario layer, personalization layer, AI refinement, or conversation-management layer; do not implement unrelated surfaces.
 3. Reuse existing auth, API, prediction, profile, dashboard, marketplace, and styling conventions.
 4. Keep service-role Supabase access on the backend only.
 5. Do not create duplicate skills, roadmap, marketplace, or prediction surfaces.
 6. Keep illustrative data labelled as illustrative.
-7. Do not implement AI or the scoring engine until explicitly requested.
-8. The next phase should not duplicate the Career GPS roadmap frontend or deterministic route engine.
+7. Do not let AI replace deterministic scoring or invent market/salary facts.
+8. The next phase should not duplicate the Career GPS roadmap frontend, what-if simulator, Career Buddy, or deterministic route engine.

@@ -283,3 +283,110 @@ export interface CareerGpsRoadmap {
   next_best_action: CareerGpsNextBestAction;
   source_note: string;
 }
+
+export type CareerGpsScenarioCode =
+  | "prioritise_salary"
+  | "prioritise_work_life_balance"
+  | "avoid_management"
+  | "relocate_country"
+  | "change_industry"
+  | "retire_earlier"
+  | "complete_masters_degree"
+  | "focus_entrepreneurship";
+
+export interface CareerGpsWhatIfScenarioPayload {
+  scenario_name: string | null;
+  adjustments: CareerGpsScenarioCode[];
+  target_country: string | null;
+  target_industry: string | null;
+  target_retirement_age: number | null;
+  target_timeline_months: number | null;
+}
+
+export interface CareerGpsWhatIfScenarioSummary {
+  scenario_name: string;
+  adjustments: CareerGpsScenarioCode[];
+  applied_overrides: string[];
+}
+
+export interface CareerGpsWhatIfChange {
+  category: string;
+  label: string;
+  before: string;
+  after: string;
+  changed: boolean;
+  explanation: string;
+}
+
+export interface CareerGpsWhatIfComparison {
+  current_roadmap_id: number;
+  current_version: number;
+  preview_version: number;
+  changes: CareerGpsWhatIfChange[];
+}
+
+export interface CareerGpsWhatIfPreview {
+  scenario: CareerGpsWhatIfScenarioSummary;
+  preview_roadmap: CareerGpsRoadmap;
+  comparison: CareerGpsWhatIfComparison;
+}
+
+export interface CareerGpsWhatIfApplyResponse {
+  scenario: CareerGpsWhatIfScenarioSummary;
+  applied_roadmap: CareerGpsRoadmap;
+  comparison: CareerGpsWhatIfComparison;
+  message: string;
+}
+
+export type CareerBuddySender = "employee" | "assistant" | "system";
+export type CareerBuddyConfidence = "low" | "medium" | "high";
+
+export interface CareerBuddyStructuredResponse {
+  answer: string;
+  recommended_actions: string[];
+  referenced_route_type: CareerGpsRouteType | null;
+  confidence: CareerBuddyConfidence;
+  used_context: string[];
+  safety_notes: string[];
+}
+
+export interface CareerBuddyConversation {
+  id: number;
+  employee_profile_id: number;
+  roadmap_id: number | null;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CareerBuddyMessage {
+  id: number;
+  conversation_id: number;
+  sender: CareerBuddySender;
+  content: string;
+  structured_response: Record<string, unknown>;
+  provider: string;
+  model: string | null;
+  created_at: string;
+}
+
+export interface CareerBuddyConversationDetail extends CareerBuddyConversation {
+  messages: CareerBuddyMessage[];
+}
+
+export interface CareerBuddyMessagePayload {
+  conversation_id: number | null;
+  roadmap_id: number | null;
+  route_type: CareerGpsRouteType;
+  message: string;
+}
+
+export interface CareerBuddyReply {
+  conversation: CareerBuddyConversation;
+  user_message: CareerBuddyMessage;
+  assistant_message: CareerBuddyMessage;
+  response: CareerBuddyStructuredResponse;
+  provider: string;
+  rate_limit_remaining: number;
+}

@@ -1,11 +1,9 @@
 import type {
-  CareerSkillGap,
   EmployeeDemoProfile,
   EmployerAttentionItem,
   EmployerDashboardMetric,
   IndustrySignal,
   InternalGig,
-  LearningPathMilestone,
 } from "./types";
 
 export const demoEmployeeProfile: EmployeeDemoProfile = {
@@ -52,97 +50,6 @@ export const demoInternalGigs: InternalGig[] = [
     skills: ["Process Mapping", "Stakeholder Interviews", "Documentation"],
     businessNeed: "Map purchase request bottlenecks before automation rollout.",
     tone: "blue",
-  },
-];
-
-export const demoLearningPath: LearningPathMilestone[] = [
-  {
-    id: "path-001",
-    stage: "Foundation",
-    timeframe: "Weeks 1-3",
-    title: "Build business analysis foundations",
-    description: "Learn how to frame business problems, map stakeholders, and document requirements.",
-    progress: 42,
-    tasks: [
-      "Write one problem statement from a real job case",
-      "Map stakeholders for a finance or operations workflow",
-      "Create a simple business requirements document",
-    ],
-  },
-  {
-    id: "path-002",
-    stage: "Analytics",
-    timeframe: "Weeks 4-7",
-    title: "Turn raw data into decisions",
-    description: "Use Excel and Power BI to explain performance, trends, and risk signals.",
-    progress: 58,
-    tasks: [
-      "Clean a messy operational dataset",
-      "Build a Power BI dashboard with three decision metrics",
-      "Present one insight memo to a mock manager",
-    ],
-  },
-  {
-    id: "path-003",
-    stage: "Process",
-    timeframe: "Weeks 8-11",
-    title: "Practice process mapping",
-    description: "Connect user pain points, workflow steps, and automation opportunities.",
-    progress: 64,
-    tasks: [
-      "Create an as-is and to-be process map",
-      "Identify manual work that can be automated",
-      "Define acceptance criteria for one workflow change",
-    ],
-  },
-  {
-    id: "path-004",
-    stage: "Market Ready",
-    timeframe: "Weeks 12-16",
-    title: "Apply for analyst roles",
-    description: "Package projects and apply to roles that match current readiness.",
-    progress: 78,
-    tasks: [
-      "Publish two portfolio case studies",
-      "Apply to five analyst roles with match score above 80",
-      "Prepare for business case interviews",
-    ],
-  },
-];
-
-export const demoCareerSkillGaps: CareerSkillGap[] = [
-  {
-    skill: "Stakeholder Management",
-    progress: 46,
-    impact: "+6 analyst role matches",
-    rolesUnlocked: ["Business Analyst", "Project Coordinator", "Operations Analyst"],
-    roadmapSteps: [
-      "Identify decision makers in a sample project",
-      "Practice a stakeholder update script",
-      "Turn feedback into revised requirements",
-    ],
-  },
-  {
-    skill: "Process Mapping",
-    progress: 38,
-    impact: "+4 transformation roles",
-    rolesUnlocked: ["Business Analyst", "Process Analyst"],
-    roadmapSteps: [
-      "Map a manual workflow",
-      "Identify waste and repeated steps",
-      "Design one improved future-state process",
-    ],
-  },
-  {
-    skill: "SQL Basics",
-    progress: 52,
-    impact: "+5 data-heavy roles",
-    rolesUnlocked: ["Data Analyst", "BI Analyst", "Commercial Analyst"],
-    roadmapSteps: [
-      "Write select, filter, and join queries",
-      "Create a reusable analysis query",
-      "Explain query output in business language",
-    ],
   },
 ];
 

@@ -4,16 +4,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   BarChart3,
+  Bot,
   CheckCircle2,
   Compass,
   Flag,
   Gauge,
   GitBranch,
+  HelpCircle,
   Loader2,
   Map,
   Play,
   RefreshCw,
   Route,
+  Send,
+  SlidersHorizontal,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -25,6 +29,14 @@ import type {
   CareerGpsRoadmap,
   CareerGpsRoute,
   CareerGpsRouteType,
+  CareerGpsScenarioCode,
+  CareerGpsWhatIfPreview,
+  CareerGpsWhatIfScenarioPayload,
+  CareerBuddyConversation,
+  CareerBuddyConversationDetail,
+  CareerBuddyMessage,
+  CareerBuddyMessagePayload,
+  CareerBuddyReply,
 } from "@/lib/backendTypes";
 
 type ProgressStatus = "planned" | "in_progress" | "completed";
@@ -49,6 +61,49 @@ const routeTone: Record<CareerGpsRouteType, { label: string; accent: string; bg:
     border: "border-[#DDD0F8]",
   },
 };
+
+const scenarioOptions: { code: CareerGpsScenarioCode; label: string; description: string }[] = [
+  {
+    code: "prioritise_salary",
+    label: "Prioritise salary",
+    description: "Raises income priority and risk tolerance for higher-earning paths.",
+  },
+  {
+    code: "prioritise_work_life_balance",
+    label: "Prioritise work-life balance",
+    description: "Raises balance, remote-work, and lower-risk preferences.",
+  },
+  {
+    code: "avoid_management",
+    label: "Avoid management",
+    description: "Adds a blocking individual-contributor constraint.",
+  },
+  {
+    code: "relocate_country",
+    label: "Relocate country",
+    description: "Tests international mobility and a preferred relocation country.",
+  },
+  {
+    code: "change_industry",
+    label: "Change industry",
+    description: "Temporarily shifts the target industry.",
+  },
+  {
+    code: "retire_earlier",
+    label: "Retire earlier",
+    description: "Compresses timeline and raises income priority.",
+  },
+  {
+    code: "complete_masters_degree",
+    label: "Complete master's degree",
+    description: "Treats additional learning evidence as completed for the preview.",
+  },
+  {
+    code: "focus_entrepreneurship",
+    label: "Focus on entrepreneurship",
+    description: "Shifts toward startup, ownership, and higher-risk routes.",
+  },
+];
 
 const detailLabels = [
   "Why it is recommended",
@@ -88,6 +143,10 @@ function weakestComponent(route: CareerGpsRoute) {
 
 function metricValue(route: CareerGpsRoute, key: string) {
   return Math.round(component(route, key)?.score ?? route.score);
+}
+
+function recommendedRoute(roadmap: CareerGpsRoadmap) {
+  return roadmap.routes.find((route) => route.route_type === "recommended") ?? roadmap.routes[0] ?? null;
 }
 
 function readinessFromRoute(route: CareerGpsRoute) {
@@ -454,6 +513,465 @@ function SkillReadinessSummary({ route }: { route: CareerGpsRoute }) {
   );
 }
 
+function WhatIfSimulator({
+  roadmap,
+  preview,
+  isPreviewing,
+  isApplying,
+  onPreview,
+  onApply,
+  onClear,
+}: {
+  roadmap: CareerGpsRoadmap;
+  preview: CareerGpsWhatIfPreview | null;
+  isPreviewing: boolean;
+  isApplying: boolean;
+  onPreview: (payload: CareerGpsWhatIfScenarioPayload) => void;
+  onApply: (payload: CareerGpsWhatIfScenarioPayload) => void;
+  onClear: () => void;
+}) {
+  const [scenarioName, setScenarioName] = useState("");
+  const [adjustments, setAdjustments] = useState<CareerGpsScenarioCode[]>(["prioritise_salary"]);
+  const [targetCountry, setTargetCountry] = useState("Singapore");
+  const [targetIndustry, setTargetIndustry] = useState("data");
+  const [targetRetirementAge, setTargetRetirementAge] = useState("50");
+  const [targetTimelineMonths, setTargetTimelineMonths] = useState("18");
+
+  const currentRecommended = recommendedRoute(roadmap);
+  const previewRecommended = preview ? recommendedRoute(preview.preview_roadmap) : null;
+
+  const hasAdjustment = (code: CareerGpsScenarioCode) => adjustments.includes(code);
+  const toggleAdjustment = (code: CareerGpsScenarioCode) => {
+    setAdjustments((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
+  };
+  const numberOrNull = (value: string) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+  const payload = (): CareerGpsWhatIfScenarioPayload => ({
+    scenario_name: scenarioName.trim() || null,
+    adjustments,
+    target_country: hasAdjustment("relocate_country") ? targetCountry.trim() || null : null,
+    target_industry: hasAdjustment("change_industry") ? targetIndustry.trim() || null : null,
+    target_retirement_age: hasAdjustment("retire_earlier") ? numberOrNull(targetRetirementAge) : null,
+    target_timeline_months: hasAdjustment("retire_earlier") ? numberOrNull(targetTimelineMonths) : null,
+  });
+  const changedCount = preview?.comparison.changes.filter((change) => change.changed).length ?? 0;
+
+  return (
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+            <SlidersHorizontal size={14} />
+            What-if Career Simulator
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Preview a scenario before changing your roadmap</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Scenario previews use the deterministic Career GPS engine with temporary preference changes. Applying a scenario saves it as the next roadmap version.
+          </p>
+        </div>
+        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active version</p>
+          <p className="mt-1 text-lg font-bold text-[#1A1033]">Version {roadmap.version}</p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-4">
+          <label className="block">
+            <span className="text-xs font-bold uppercase text-[#9CA3AF]">Scenario name</span>
+            <input
+              value={scenarioName}
+              onChange={(event) => setScenarioName(event.target.value)}
+              placeholder="Optional"
+              className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+            />
+          </label>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {scenarioOptions.map((option) => {
+              const active = hasAdjustment(option.code);
+              return (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => toggleAdjustment(option.code)}
+                  className={`min-h-[118px] rounded-lg border p-3 text-left transition ${
+                    active ? "border-[#E8197A] bg-[#FFF0F8] ring-2 ring-[#E8197A]/15" : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8]"
+                  }`}
+                >
+                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#E8197A] bg-[#E8197A]" : "border-[#DDD0F8] bg-white"}`}>
+                    {active && <CheckCircle2 size={14} className="text-white" />}
+                  </span>
+                  <p className="mt-3 text-sm font-bold text-[#1A1033]">{option.label}</p>
+                  <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">{option.description}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {(hasAdjustment("relocate_country") || hasAdjustment("change_industry") || hasAdjustment("retire_earlier")) && (
+            <div className="grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 md:grid-cols-2 xl:grid-cols-4">
+              {hasAdjustment("relocate_country") && (
+                <label className="block">
+                  <span className="text-xs font-bold uppercase text-[#9CA3AF]">Relocation country</span>
+                  <input
+                    value={targetCountry}
+                    onChange={(event) => setTargetCountry(event.target.value)}
+                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                  />
+                </label>
+              )}
+              {hasAdjustment("change_industry") && (
+                <label className="block">
+                  <span className="text-xs font-bold uppercase text-[#9CA3AF]">Target industry</span>
+                  <select
+                    value={targetIndustry}
+                    onChange={(event) => setTargetIndustry(event.target.value)}
+                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                  >
+                    <option value="technology">Technology</option>
+                    <option value="data">Data</option>
+                    <option value="project-management">Project management</option>
+                  </select>
+                </label>
+              )}
+              {hasAdjustment("retire_earlier") && (
+                <>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase text-[#9CA3AF]">Retirement age</span>
+                    <input
+                      value={targetRetirementAge}
+                      type="number"
+                      min={45}
+                      max={80}
+                      onChange={(event) => setTargetRetirementAge(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase text-[#9CA3AF]">Timeline months</span>
+                    <input
+                      value={targetTimelineMonths}
+                      type="number"
+                      min={1}
+                      max={480}
+                      onChange={(event) => setTargetTimelineMonths(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <aside className="space-y-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#6B7280]">
+            <HelpCircle size={14} />
+            Current recommended route
+          </p>
+          <h3 className="text-lg font-bold text-[#1A1033]">{currentRecommended?.target_occupation.title ?? "No route"}</h3>
+          <ScoreBar label="Route score" score={currentRecommended?.score ?? 0} />
+          <ScoreBar label="Skill fit" score={currentRecommended ? metricValue(currentRecommended, "skill_fit") : 0} />
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => onPreview(payload())}
+              disabled={!adjustments.length || isPreviewing || isApplying}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isPreviewing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              Preview scenario
+            </button>
+            <button
+              type="button"
+              onClick={onClear}
+              disabled={!preview || isPreviewing || isApplying}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Clear preview
+            </button>
+          </div>
+        </aside>
+      </div>
+
+      {preview && (
+        <div className="mt-5 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
+            <p className="text-xs font-bold uppercase text-[#0891B2]">Preview recommended route</p>
+            <h3 className="mt-2 text-xl font-bold text-[#1A1033]">{previewRecommended?.target_occupation.title ?? "No route"}</h3>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#6B7280]">
+              {preview.scenario.scenario_name} previews version {preview.comparison.preview_version}.
+            </p>
+            <div className="mt-4 space-y-3">
+              <ScoreBar label="Preview route score" score={previewRecommended?.score ?? 0} />
+              <ScoreBar label="Preview roadmap fit" score={preview.preview_roadmap.fit_score} />
+            </div>
+            <p className="mt-4 rounded-lg bg-white p-3 text-xs font-bold text-[#087C7E]">
+              {changedCount} of {preview.comparison.changes.length} comparison areas changed.
+            </p>
+            <button
+              type="button"
+              onClick={() => onApply(payload())}
+              disabled={isApplying || isPreviewing}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isApplying ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+              Apply Scenario
+            </button>
+          </aside>
+
+          <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {preview.comparison.changes.map((change) => (
+                <article
+                  key={change.category}
+                  className={`rounded-lg border p-4 ${change.changed ? "border-[#FFD0E8] bg-[#FFF0F8]" : "border-[#F0EBF8] bg-white"}`}
+                >
+                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>
+                    {change.changed ? "Changed" : "No change"}
+                  </p>
+                  <h3 className="mt-2 text-sm font-bold text-[#1A1033]">{change.label}</h3>
+                  <div className="mt-3 grid gap-2 text-xs font-semibold leading-5 text-[#6B7280]">
+                    <p>
+                      <span className="font-bold text-[#1A1033]">Current:</span> {change.before}
+                    </p>
+                    <p>
+                      <span className="font-bold text-[#1A1033]">Preview:</span> {change.after}
+                    </p>
+                  </div>
+                  <p className="mt-3 text-xs font-semibold leading-5 text-[#6B7280]">{change.explanation}</p>
+                </article>
+              ))}
+            </div>
+            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+              <p className="text-xs font-bold uppercase text-[#9CA3AF]">Why the preview changed</p>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {preview.scenario.applied_overrides.map((override) => (
+                  <p key={override} className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
+                    {override}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+const careerBuddyPrompts = [
+  "Why was this route recommended?",
+  "What should I do in the next 90 days?",
+  "What skill is holding me back?",
+  "Can I reach the target without becoming a manager?",
+  "What happens if I move to Singapore?",
+  "Show me a more balanced route.",
+];
+
+function CareerBuddyPanel({
+  roadmap,
+  selectedRoute,
+}: {
+  roadmap: CareerGpsRoadmap;
+  selectedRoute: CareerGpsRoute;
+}) {
+  const [conversation, setConversation] = useState<CareerBuddyConversation | null>(null);
+  const [messages, setMessages] = useState<CareerBuddyMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+
+  const loadConversation = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const conversations = await getJson<CareerBuddyConversation[]>("/career-gps/career-buddy/conversations", {
+        auth: true,
+      });
+      const latest =
+        conversations.find((item) => item.roadmap_id === roadmap.roadmap_id && item.status === "active") ??
+        conversations[0] ??
+        null;
+      if (!latest) {
+        setConversation(null);
+        setMessages([]);
+        return;
+      }
+      const detail = await getJson<CareerBuddyConversationDetail>(
+        `/career-gps/career-buddy/conversations/${latest.id}`,
+        { auth: true },
+      );
+      setConversation(detail);
+      setMessages(detail.messages);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load Career Buddy conversation.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [roadmap.roadmap_id]);
+
+  useEffect(() => {
+    loadConversation();
+  }, [loadConversation]);
+
+  const sendCareerBuddyMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isSending) return;
+    setIsSending(true);
+    setError(null);
+    try {
+      const payload: CareerBuddyMessagePayload = {
+        conversation_id: conversation?.id ?? null,
+        roadmap_id: roadmap.roadmap_id,
+        route_type: selectedRoute.route_type,
+        message: trimmed,
+      };
+      const reply = await postJson<CareerBuddyReply, CareerBuddyMessagePayload>(
+        "/career-gps/career-buddy/messages",
+        payload,
+        { auth: true },
+      );
+      setConversation(reply.conversation);
+      setMessages((current) => [...current, reply.user_message, reply.assistant_message]);
+      setProvider(reply.provider);
+      setRemaining(reply.rate_limit_remaining);
+      setDraft("");
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : "Unable to send Career Buddy message.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-[#F5F0FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+            <Bot size={14} />
+            Career Buddy
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Ask about this roadmap</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Career Buddy uses your stored roadmap, selected route, skill gaps, milestones, and preferences. It does not replace deterministic Career GPS scoring.
+          </p>
+        </div>
+        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Context route</p>
+          <p className="mt-1 text-sm font-bold text-[#1A1033]">{selectedRoute.target_occupation.title}</p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4">
+          <InfoAlert tone="error">{error}</InfoAlert>
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_310px]">
+        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF]">
+          <div className="max-h-[430px] min-h-[280px] space-y-3 overflow-y-auto p-4">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm font-bold text-[#6B7280]">
+                <Loader2 size={16} className="animate-spin text-[#E8197A]" />
+                Loading Career Buddy...
+              </div>
+            ) : messages.length ? (
+              messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === "employee" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[86%] rounded-lg px-3 py-2 text-sm leading-6 ${
+                      message.sender === "employee"
+                        ? "bg-[#E8197A] text-white"
+                        : "border border-[#F0EBF8] bg-white text-[#1A1033]"
+                    }`}
+                  >
+                    <p>{message.content}</p>
+                    {message.sender === "assistant" && message.provider && (
+                      <p className="mt-2 text-[11px] font-bold uppercase text-[#9CA3AF]">Provider: {message.provider}</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
+                Ask Career Buddy about the recommended route, 90-day plan, skill blockers, management constraints, relocation, or balanced options.
+              </div>
+            )}
+            {isSending && (
+              <div className="flex justify-start">
+                <p className="inline-flex items-center gap-2 rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
+                  <Loader2 size={15} className="animate-spin text-[#E8197A]" />
+                  Career Buddy is thinking...
+                </p>
+              </div>
+            )}
+          </div>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              sendCareerBuddyMessage(draft);
+            }}
+            className="flex items-center gap-2 border-t border-[#F0EBF8] bg-white p-3"
+          >
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Ask about your route..."
+              className="min-h-11 flex-1 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+            />
+            <button
+              type="submit"
+              disabled={!draft.trim() || isSending}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#06B6D4] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="Send message to Career Buddy"
+            >
+              {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+            </button>
+          </form>
+        </div>
+
+        <aside className="space-y-3 rounded-lg border border-[#F0EBF8] bg-white p-4">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Quick questions</p>
+          <div className="grid gap-2">
+            {careerBuddyPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => sendCareerBuddyMessage(prompt)}
+                disabled={isSending}
+                className="rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#6B46C1] hover:border-[#E8197A] hover:text-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+          <div className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+            <p>
+              Provider: <span className="font-bold text-[#1A1033]">{provider ?? "template or configured backend AI"}</span>
+            </p>
+            {remaining !== null && (
+              <p className="mt-1">
+                Messages left this hour: <span className="font-bold text-[#1A1033]">{remaining}</span>
+              </p>
+            )}
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export default function CareerGpsRoadmapPanel() {
   const [profile, setProfile] = useState<CareerGpsProfile | null>(null);
   const [roadmap, setRoadmap] = useState<CareerGpsRoadmap | null>(null);
@@ -462,6 +980,9 @@ export default function CareerGpsRoadmapPanel() {
   const [progress, setProgress] = useState<Record<string, ProgressStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPreviewingScenario, setIsPreviewingScenario] = useState(false);
+  const [isApplyingScenario, setIsApplyingScenario] = useState(false);
+  const [whatIfPreview, setWhatIfPreview] = useState<CareerGpsWhatIfPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -490,10 +1011,12 @@ export default function CareerGpsRoadmapPanel() {
       try {
         const latest = await getJson<CareerGpsRoadmap>("/career-gps/roadmaps/latest", { auth: true });
         setRoadmap(latest);
+        setWhatIfPreview(null);
         setSelectedRouteType(latest.routes[0]?.route_type ?? "recommended");
         setSelectedMilestoneKey(latest.routes[0]?.milestones[0] ? `${latest.routes[0].route_type}-${latest.routes[0].milestones[0].sequence}` : null);
       } catch {
         setRoadmap(null);
+        setWhatIfPreview(null);
         setMessage("No generated roadmap yet.");
       }
     } catch (loadError) {
@@ -518,6 +1041,7 @@ export default function CareerGpsRoadmapPanel() {
         { auth: true },
       );
       setRoadmap(generated);
+      setWhatIfPreview(null);
       setSelectedRouteType(generated.routes[0]?.route_type ?? "recommended");
       setSelectedMilestoneKey(generated.routes[0]?.milestones[0] ? `${generated.routes[0].route_type}-${generated.routes[0].milestones[0].sequence}` : null);
       setProgress({});
@@ -534,6 +1058,51 @@ export default function CareerGpsRoadmapPanel() {
       ...current,
       [`${route.route_type}-${milestone.sequence}`]: status,
     }));
+  };
+
+  const previewScenario = async (payload: CareerGpsWhatIfScenarioPayload) => {
+    setIsPreviewingScenario(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const preview = await postJson<CareerGpsWhatIfPreview, CareerGpsWhatIfScenarioPayload>(
+        "/career-gps/roadmaps/what-if/preview",
+        payload,
+        { auth: true },
+      );
+      setWhatIfPreview(preview);
+      setMessage(`Preview ready for ${preview.scenario.scenario_name}.`);
+    } catch (previewError) {
+      setError(previewError instanceof Error ? previewError.message : "Unable to preview what-if scenario.");
+    } finally {
+      setIsPreviewingScenario(false);
+    }
+  };
+
+  const applyScenario = async (payload: CareerGpsWhatIfScenarioPayload) => {
+    setIsApplyingScenario(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await postJson<
+        { applied_roadmap: CareerGpsRoadmap; message: string },
+        CareerGpsWhatIfScenarioPayload
+      >("/career-gps/roadmaps/what-if/apply", payload, { auth: true });
+      setRoadmap(response.applied_roadmap);
+      setSelectedRouteType(response.applied_roadmap.routes[0]?.route_type ?? "recommended");
+      setSelectedMilestoneKey(
+        response.applied_roadmap.routes[0]?.milestones[0]
+          ? `${response.applied_roadmap.routes[0].route_type}-${response.applied_roadmap.routes[0].milestones[0].sequence}`
+          : null,
+      );
+      setProgress({});
+      setWhatIfPreview(null);
+      setMessage(response.message);
+    } catch (applyError) {
+      setError(applyError instanceof Error ? applyError.message : "Unable to apply what-if scenario.");
+    } finally {
+      setIsApplyingScenario(false);
+    }
   };
 
   if (isLoading) {
@@ -597,6 +1166,16 @@ export default function CareerGpsRoadmapPanel() {
 
           <NextBestActionCard roadmap={roadmap} />
 
+          <WhatIfSimulator
+            roadmap={roadmap}
+            preview={whatIfPreview}
+            isPreviewing={isPreviewingScenario}
+            isApplying={isApplyingScenario}
+            onPreview={previewScenario}
+            onApply={applyScenario}
+            onClear={() => setWhatIfPreview(null)}
+          />
+
           <section className="grid gap-4 xl:grid-cols-3">
             {roadmap.routes.map((route) => (
               <RouteCard
@@ -623,6 +1202,8 @@ export default function CareerGpsRoadmapPanel() {
           </div>
 
           <SkillReadinessSummary route={selectedRoute} />
+
+          <CareerBuddyPanel roadmap={roadmap} selectedRoute={selectedRoute} />
 
           <InfoAlert tone="info">{roadmap.source_note}</InfoAlert>
         </>
