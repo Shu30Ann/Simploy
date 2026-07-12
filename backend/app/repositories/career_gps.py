@@ -28,6 +28,29 @@ def _now() -> str:
 
 
 class CareerGpsRepository:
+    def list_occupations(self) -> list[dict[str, Any]]:
+        if settings.supabase_enabled:
+            return supabase().select("occupations", {"status": "active"}, order="title.asc")
+        with get_connection() as conn:
+            rows = conn.execute("SELECT * FROM occupations WHERE status = 'active' ORDER BY title ASC").fetchall()
+        return [dict(row) for row in rows]
+
+    def list_occupation_skills(self) -> list[dict[str, Any]]:
+        if settings.supabase_enabled:
+            return supabase().select("occupation_skills", order="occupation_id.asc,priority.desc,skill_name.asc")
+        with get_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM occupation_skills ORDER BY occupation_id ASC, priority DESC, skill_name ASC"
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def list_career_transitions(self) -> list[dict[str, Any]]:
+        if settings.supabase_enabled:
+            return supabase().select("career_transitions", order="estimated_months.asc,title.asc")
+        with get_connection() as conn:
+            rows = conn.execute("SELECT * FROM career_transitions ORDER BY estimated_months ASC, title ASC").fetchall()
+        return [dict(row) for row in rows]
+
     def get_onboarding_progress(self, employee_profile_id: int) -> dict[str, Any] | None:
         if settings.supabase_enabled:
             return self._onboarding_row(
@@ -260,6 +283,65 @@ class CareerGpsRepository:
                 )
         return self.list_constraints(employee_profile_id)
 
+    def save_generated_roadmap(
+        self,
+        *,
+        employee_profile_id: int,
+        north_star_setting_id: int | None,
+        generated: dict[str, Any],
+    ) -> dict[str, Any]:
+        if settings.supabase_enabled:
+            return self._save_generated_roadmap_supabase(
+                employee_profile_id=employee_profile_id,
+                north_star_setting_id=north_star_setting_id,
+                generated=generated,
+            )
+        return self._save_generated_roadmap_sqlite(
+            employee_profile_id=employee_profile_id,
+            north_star_setting_id=north_star_setting_id,
+            generated=generated,
+        )
+
+    def get_latest_roadmap_snapshot(self, employee_profile_id: int) -> dict[str, Any] | None:
+        roadmap = self._get_active_roadmap(employee_profile_id)
+        if roadmap is None:
+            return None
+        version = self._latest_roadmap_version(roadmap["id"])
+        if version is None:
+            return None
+        snapshot = _json_value(version.get("roadmap_snapshot_json"), {})
+        if isinstance(snapshot, dict):
+            snapshot.setdefault("roadmap_id", roadmap["id"])
+            snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
+        return snapshot
+
+    def get_roadmap_snapshot(self, employee_profile_id: int, roadmap_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            roadmap = _first(
+                supabase().select(
+                    "career_roadmaps",
+                    {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+                    limit=1,
+                )
+            )
+        else:
+            with get_connection() as conn:
+                row = conn.execute(
+                    "SELECT * FROM career_roadmaps WHERE id = ? AND employee_profile_id = ?",
+                    (roadmap_id, employee_profile_id),
+                ).fetchone()
+            roadmap = dict(row) if row is not None else None
+        if roadmap is None:
+            return None
+        version = self._latest_roadmap_version(roadmap["id"])
+        if version is None:
+            return None
+        snapshot = _json_value(version.get("roadmap_snapshot_json"), {})
+        if isinstance(snapshot, dict):
+            snapshot.setdefault("roadmap_id", roadmap["id"])
+            snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
+        return snapshot
+
     def _get_preferences(self, employee_profile_id: int) -> dict[str, Any] | None:
         if settings.supabase_enabled:
             return _first(supabase().select("career_preferences", {"employee_profile_id": employee_profile_id}, limit=1))
@@ -406,3 +488,328 @@ class CareerGpsRepository:
         data["value"] = _json_value(data.pop("constraint_value_json", {}), {})
         data["is_blocking"] = _bool_value(data.get("is_blocking"))
         return data
+
+    def _get_active_roadmap(self, employee_profile_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            return _first(
+                supabase().select(
+                    "career_roadmaps",
+                    {"employee_profile_id": employee_profile_id, "status": "active"},
+                    order="updated_at.desc",
+                    limit=1,
+                )
+            )
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM career_roadmaps
+                WHERE employee_profile_id = ? AND status = 'active'
+                ORDER BY updated_at DESC, id DESC
+                LIMIT 1
+                """,
+                (employee_profile_id,),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def _latest_roadmap_version(self, roadmap_id: int) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            return _first(
+                supabase().select(
+                    "roadmap_versions",
+                    {"roadmap_id": roadmap_id},
+                    order="version_number.desc",
+                    limit=1,
+                )
+            )
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM roadmap_versions
+                WHERE roadmap_id = ?
+                ORDER BY version_number DESC
+                LIMIT 1
+                """,
+                (roadmap_id,),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def _save_generated_roadmap_sqlite(
+        self,
+        *,
+        employee_profile_id: int,
+        north_star_setting_id: int | None,
+        generated: dict[str, Any],
+    ) -> dict[str, Any]:
+        with get_connection() as conn:
+            existing = conn.execute(
+                """
+                SELECT * FROM career_roadmaps
+                WHERE employee_profile_id = ? AND status = 'active'
+                ORDER BY updated_at DESC, id DESC
+                LIMIT 1
+                """,
+                (employee_profile_id,),
+            ).fetchone()
+            target_occupation_id = generated.get("target_occupation_id")
+            if existing:
+                roadmap_id = existing["id"]
+                version_number = int(existing["current_version"]) + 1
+                conn.execute("DELETE FROM roadmap_score_components WHERE roadmap_id = ?", (roadmap_id,))
+                conn.execute("DELETE FROM career_routes WHERE roadmap_id = ?", (roadmap_id,))
+                conn.execute(
+                    """
+                    UPDATE career_roadmaps
+                    SET north_star_setting_id = ?, target_occupation_id = ?, title = ?, summary = ?,
+                        status = 'active', current_version = ?, readiness_score_snapshot = ?,
+                        fit_score_snapshot = ?, scoring_version = ?, source_label = 'deterministic_engine',
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    """,
+                    (
+                        north_star_setting_id,
+                        target_occupation_id,
+                        generated["title"],
+                        generated["summary"],
+                        version_number,
+                        generated["fit_score"],
+                        generated["fit_score"],
+                        generated["scoring_version"],
+                        roadmap_id,
+                    ),
+                )
+            else:
+                version_number = 1
+                cursor = conn.execute(
+                    """
+                    INSERT INTO career_roadmaps
+                      (employee_profile_id, north_star_setting_id, target_occupation_id, title, summary,
+                       status, current_version, readiness_score_snapshot, fit_score_snapshot,
+                       scoring_version, source_label)
+                    VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, 'deterministic_engine')
+                    """,
+                    (
+                        employee_profile_id,
+                        north_star_setting_id,
+                        target_occupation_id,
+                        generated["title"],
+                        generated["summary"],
+                        version_number,
+                        generated["fit_score"],
+                        generated["fit_score"],
+                        generated["scoring_version"],
+                    ),
+                )
+                roadmap_id = cursor.lastrowid
+
+            self._insert_sqlite_generated_children(conn, roadmap_id, generated)
+            snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number}
+            conn.execute(
+                """
+                INSERT INTO roadmap_versions
+                  (roadmap_id, version_number, change_summary, roadmap_snapshot_json, created_by_employee_profile_id)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    roadmap_id,
+                    version_number,
+                    "Generated deterministic Career GPS routes.",
+                    json.dumps(snapshot),
+                    employee_profile_id,
+                ),
+            )
+        return snapshot
+
+    def _insert_sqlite_generated_children(
+        self,
+        conn,
+        roadmap_id: int,
+        generated: dict[str, Any],
+    ) -> None:
+        for sequence, route in enumerate(generated["routes"], start=1):
+            route_cursor = conn.execute(
+                """
+                INSERT INTO career_routes
+                  (roadmap_id, route_type, title, summary, sequence, estimated_months)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    roadmap_id,
+                    route["route_type"],
+                    route["title"],
+                    route["summary"],
+                    sequence,
+                    route["estimated_months"],
+                ),
+            )
+            route_id = route_cursor.lastrowid
+            for milestone in route["milestones"]:
+                milestone_cursor = conn.execute(
+                    """
+                    INSERT INTO roadmap_milestones
+                      (route_id, title, description, sequence, duration_weeks, focus_skill_name, status)
+                    VALUES (?, ?, ?, ?, ?, ?, 'planned')
+                    """,
+                    (
+                        route_id,
+                        milestone["title"],
+                        milestone["description"],
+                        milestone["sequence"],
+                        milestone["duration_weeks"],
+                        milestone.get("focus_skill_name"),
+                    ),
+                )
+                milestone_id = milestone_cursor.lastrowid
+                for action in milestone["actions"]:
+                    conn.execute(
+                        """
+                        INSERT INTO milestone_actions
+                          (milestone_id, action_type, title, description, sequence, estimated_hours, resource_url, status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'planned')
+                        """,
+                        (
+                            milestone_id,
+                            action["action_type"],
+                            action["title"],
+                            action.get("description"),
+                            action["sequence"],
+                            action.get("estimated_hours"),
+                            action.get("resource_url"),
+                        ),
+                    )
+
+        for component in generated["score_components"]:
+            conn.execute(
+                """
+                INSERT INTO roadmap_score_components
+                  (roadmap_id, component_key, label, score, weight, explanation, source_label)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    roadmap_id,
+                    f"{component['route_type']}.{component['component_key']}",
+                    component["label"],
+                    component["score"],
+                    component["weight"],
+                    component["explanation"],
+                    generated["scoring_version"],
+                ),
+            )
+
+    def _save_generated_roadmap_supabase(
+        self,
+        *,
+        employee_profile_id: int,
+        north_star_setting_id: int | None,
+        generated: dict[str, Any],
+    ) -> dict[str, Any]:
+        client = supabase()
+        existing = self._get_active_roadmap(employee_profile_id)
+        target_occupation_id = generated.get("target_occupation_id")
+        if existing:
+            roadmap_id = existing["id"]
+            version_number = int(existing["current_version"]) + 1
+            client.delete("roadmap_score_components", {"roadmap_id": roadmap_id})
+            client.delete("career_routes", {"roadmap_id": roadmap_id})
+            client.update(
+                "career_roadmaps",
+                {"id": roadmap_id},
+                {
+                    "north_star_setting_id": north_star_setting_id,
+                    "target_occupation_id": target_occupation_id,
+                    "title": generated["title"],
+                    "summary": generated["summary"],
+                    "status": "active",
+                    "current_version": version_number,
+                    "readiness_score_snapshot": generated["fit_score"],
+                    "fit_score_snapshot": generated["fit_score"],
+                    "scoring_version": generated["scoring_version"],
+                    "source_label": "deterministic_engine",
+                },
+            )
+        else:
+            version_number = 1
+            roadmap = client.insert(
+                "career_roadmaps",
+                {
+                    "employee_profile_id": employee_profile_id,
+                    "north_star_setting_id": north_star_setting_id,
+                    "target_occupation_id": target_occupation_id,
+                    "title": generated["title"],
+                    "summary": generated["summary"],
+                    "status": "active",
+                    "current_version": version_number,
+                    "readiness_score_snapshot": generated["fit_score"],
+                    "fit_score_snapshot": generated["fit_score"],
+                    "scoring_version": generated["scoring_version"],
+                    "source_label": "deterministic_engine",
+                },
+            )
+            roadmap_id = roadmap["id"]
+
+        self._insert_supabase_generated_children(client, roadmap_id, generated)
+        snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number}
+        client.insert(
+            "roadmap_versions",
+            {
+                "roadmap_id": roadmap_id,
+                "version_number": version_number,
+                "change_summary": "Generated deterministic Career GPS routes.",
+                "roadmap_snapshot_json": snapshot,
+                "created_by_employee_profile_id": employee_profile_id,
+            },
+        )
+        return snapshot
+
+    def _insert_supabase_generated_children(self, client, roadmap_id: int, generated: dict[str, Any]) -> None:
+        for sequence, route in enumerate(generated["routes"], start=1):
+            route_row = client.insert(
+                "career_routes",
+                {
+                    "roadmap_id": roadmap_id,
+                    "route_type": route["route_type"],
+                    "title": route["title"],
+                    "summary": route["summary"],
+                    "sequence": sequence,
+                    "estimated_months": route["estimated_months"],
+                },
+            )
+            for milestone in route["milestones"]:
+                milestone_row = client.insert(
+                    "roadmap_milestones",
+                    {
+                        "route_id": route_row["id"],
+                        "title": milestone["title"],
+                        "description": milestone["description"],
+                        "sequence": milestone["sequence"],
+                        "duration_weeks": milestone["duration_weeks"],
+                        "focus_skill_name": milestone.get("focus_skill_name"),
+                        "status": "planned",
+                    },
+                )
+                for action in milestone["actions"]:
+                    client.insert(
+                        "milestone_actions",
+                        {
+                            "milestone_id": milestone_row["id"],
+                            "action_type": action["action_type"],
+                            "title": action["title"],
+                            "description": action.get("description"),
+                            "sequence": action["sequence"],
+                            "estimated_hours": action.get("estimated_hours"),
+                            "resource_url": action.get("resource_url"),
+                            "status": "planned",
+                        },
+                    )
+        for component in generated["score_components"]:
+            client.insert(
+                "roadmap_score_components",
+                {
+                    "roadmap_id": roadmap_id,
+                    "component_key": f"{component['route_type']}.{component['component_key']}",
+                    "label": component["label"],
+                    "score": component["score"],
+                    "weight": component["weight"],
+                    "explanation": component["explanation"],
+                    "source_label": generated["scoring_version"],
+                },
+            )

@@ -7,6 +7,7 @@ from backend.app.schemas.career_gps import (
     CareerGoals,
     CareerGoalsIn,
     CareerGpsProfile,
+    CareerGpsRoadmap,
     CareerNorthStarSummary,
     LifestylePriorities,
     LifestylePrioritiesIn,
@@ -58,3 +59,18 @@ def update_constraints(
 @router.get("/north-star", response_model=CareerNorthStarSummary)
 def get_north_star_summary(user: dict = Depends(require_role("employee"))) -> CareerNorthStarSummary:
     return CareerGpsService().get_north_star_summary(user)
+
+
+@router.post("/roadmaps/generate", response_model=CareerGpsRoadmap)
+def generate_roadmap(user: dict = Depends(require_role("employee"))) -> CareerGpsRoadmap:
+    return CareerGpsService().generate_roadmap(user)
+
+
+@router.get("/roadmaps/latest", response_model=CareerGpsRoadmap)
+def get_latest_roadmap(user: dict = Depends(require_role("employee"))) -> CareerGpsRoadmap:
+    return CareerGpsService().get_latest_roadmap(user)
+
+
+@router.get("/roadmaps/{roadmap_id}", response_model=CareerGpsRoadmap)
+def get_roadmap(roadmap_id: int, user: dict = Depends(require_role("employee"))) -> CareerGpsRoadmap:
+    return CareerGpsService().get_roadmap(user, roadmap_id)

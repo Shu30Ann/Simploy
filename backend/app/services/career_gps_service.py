@@ -8,6 +8,7 @@ from backend.app.schemas.career_gps import (
     CareerGoals,
     CareerGoalsIn,
     CareerGpsProfile,
+    CareerGpsRoadmap,
     CareerNorthStarSummary,
     EmployeeCareerProfile,
     LifestylePriorities,
@@ -15,12 +16,14 @@ from backend.app.schemas.career_gps import (
     OnboardingProgress,
     OnboardingProgressIn,
 )
+from backend.app.services.career_route_engine import CareerRouteEngine
 
 
 class CareerGpsService:
     def __init__(self) -> None:
         self.profiles = ProfileRepository()
         self.career = CareerGpsRepository()
+        self.route_engine = CareerRouteEngine()
 
     def get_profile(self, user: dict) -> CareerGpsProfile:
         employee = self._employee(user)
@@ -66,6 +69,52 @@ class CareerGpsService:
         lifestyle = self._lifestyle_with_defaults(employee["id"], self.career.get_lifestyle_priorities(employee["id"]))
         onboarding = self._onboarding_with_defaults(employee["id"], self.career.get_onboarding_progress(employee["id"]))
         return self._north_star(employee["id"], goals, lifestyle, onboarding)
+
+    def generate_roadmap(self, user: dict) -> CareerGpsRoadmap:
+        employee = self._employee(user)
+        goals = self._goals_with_defaults(employee["id"], self.career.get_goals(employee["id"]), employee)
+        lifestyle = self._lifestyle_with_defaults(employee["id"], self.career.get_lifestyle_priorities(employee["id"]))
+        constraints = self.career.list_constraints(employee["id"])
+        occupations = self.career.list_occupations()
+        occupation_skills = self.career.list_occupation_skills()
+        transitions = self.career.list_career_transitions()
+        if not occupations:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Career GPS occupation reference data is not available.",
+            )
+        try:
+            generated = self.route_engine.generate(
+                employee=employee,
+                goals=goals,
+                lifestyle=lifestyle,
+                constraints=constraints,
+                occupations=occupations,
+                occupation_skills=occupation_skills,
+                transitions=transitions,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+        saved = self.career.save_generated_roadmap(
+            employee_profile_id=employee["id"],
+            north_star_setting_id=goals.get("id"),
+            generated=generated,
+        )
+        return CareerGpsRoadmap(**saved)
+
+    def get_latest_roadmap(self, user: dict) -> CareerGpsRoadmap:
+        employee = self._employee(user)
+        snapshot = self.career.get_latest_roadmap_snapshot(employee["id"])
+        if snapshot is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        return CareerGpsRoadmap(**snapshot)
+
+    def get_roadmap(self, user: dict, roadmap_id: int) -> CareerGpsRoadmap:
+        employee = self._employee(user)
+        snapshot = self.career.get_roadmap_snapshot(employee["id"], roadmap_id)
+        if snapshot is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        return CareerGpsRoadmap(**snapshot)
 
     def _profile_response(self, employee: dict) -> CareerGpsProfile:
         goals = self._goals_with_defaults(employee["id"], self.career.get_goals(employee["id"]), employee)

@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 RiskTolerance = Literal["low", "moderate", "high"]
+CareerRouteType = Literal["recommended", "accelerated", "balanced"]
 
 
 class EmployeeCareerProfile(BaseModel):
@@ -153,3 +154,88 @@ class CareerGpsProfile(BaseModel):
     lifestyle_priorities: LifestylePriorities
     constraints: list[CareerConstraint]
     north_star: CareerNorthStarSummary
+
+
+class CareerGpsOccupationSummary(BaseModel):
+    id: int
+    slug: str
+    title: str
+    family: str
+    seniority_level: str | None = None
+    source_label: str = "illustrative_seed"
+
+
+class CareerGpsSkillGap(BaseModel):
+    skill_name: str
+    skill_type: str
+    priority: int
+    proficiency_level: str
+
+
+class CareerGpsMilestoneAction(BaseModel):
+    action_type: str
+    title: str
+    description: str | None = None
+    sequence: int
+    estimated_hours: float | None = None
+    resource_url: str | None = None
+
+
+class CareerGpsMilestone(BaseModel):
+    title: str
+    description: str | None = None
+    sequence: int
+    duration_weeks: int | None = None
+    focus_skill_name: str | None = None
+    actions: list[CareerGpsMilestoneAction] = Field(default_factory=list)
+
+
+class CareerGpsRouteScoreComponent(BaseModel):
+    key: str
+    label: str
+    score: float = Field(ge=0, le=100)
+    weight: float = Field(ge=0, le=1)
+    explanation: str
+
+
+class CareerGpsStoredScoreComponent(BaseModel):
+    route_type: CareerRouteType
+    component_key: str
+    label: str
+    score: float = Field(ge=0, le=100)
+    weight: float = Field(ge=0, le=1)
+    explanation: str
+
+
+class CareerGpsRoute(BaseModel):
+    route_type: CareerRouteType
+    title: str
+    summary: str
+    score: float = Field(ge=0, le=100)
+    estimated_months: int = Field(gt=0)
+    target_occupation: CareerGpsOccupationSummary
+    transition: dict[str, Any] | None = None
+    skill_gaps: list[CareerGpsSkillGap] = Field(default_factory=list)
+    milestones: list[CareerGpsMilestone] = Field(default_factory=list)
+    score_components: list[CareerGpsRouteScoreComponent] = Field(default_factory=list)
+    explanation: str
+
+
+class CareerGpsNextBestAction(BaseModel):
+    title: str
+    description: str
+    route_type: CareerRouteType
+
+
+class CareerGpsRoadmap(BaseModel):
+    roadmap_id: int
+    version: int
+    scoring_version: str
+    title: str
+    summary: str
+    fit_score: float = Field(ge=0, le=100)
+    target_occupation_id: int | None = None
+    routes: list[CareerGpsRoute] = Field(default_factory=list)
+    score_components: list[CareerGpsStoredScoreComponent] = Field(default_factory=list)
+    next_best_action: CareerGpsNextBestAction
+    source_note: str
