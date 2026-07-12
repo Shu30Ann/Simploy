@@ -97,6 +97,10 @@ class SupabaseClient:
         )
         return rows[0] if rows else None
 
+    def delete(self, table: str, filters: dict[str, Any]) -> None:
+        query = {key: f"eq.{value}" for key, value in filters.items()}
+        self._request("DELETE", self._rest_url(table, query))
+
     def count(self, table: str, filters: dict[str, Any] | None = None) -> int:
         query = {"select": "id", **{key: f"eq.{value}" for key, value in (filters or {}).items()}}
         headers = self._headers(prefer="count=exact")

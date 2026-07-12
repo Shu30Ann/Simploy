@@ -107,9 +107,90 @@ def init_db() -> None:
                 model_version TEXT NOT NULL,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS career_north_star_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL UNIQUE REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                target_occupation_id INTEGER,
+                target_role TEXT,
+                target_industry TEXT,
+                career_ambition TEXT,
+                headline TEXT,
+                motivation TEXT,
+                target_timeline_months INTEGER,
+                target_retirement_age INTEGER,
+                status TEXT NOT NULL DEFAULT 'active',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS career_preferences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL UNIQUE REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                preferred_locations_json TEXT NOT NULL DEFAULT '[]',
+                preferred_work_styles_json TEXT NOT NULL DEFAULT '[]',
+                preferred_industries_json TEXT NOT NULL DEFAULT '[]',
+                salary_min INTEGER,
+                salary_currency TEXT NOT NULL DEFAULT 'MYR',
+                open_to_relocation INTEGER NOT NULL DEFAULT 0,
+                open_to_remote INTEGER NOT NULL DEFAULT 1,
+                risk_tolerance TEXT,
+                learning_budget INTEGER,
+                preferred_company_type TEXT,
+                international_mobility INTEGER NOT NULL DEFAULT 0,
+                top_priorities_json TEXT NOT NULL DEFAULT '[]',
+                notes TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS career_priority_weights (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                weight_key TEXT NOT NULL,
+                weight_value REAL NOT NULL,
+                label TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(employee_profile_id, weight_key)
+            );
+
+            CREATE TABLE IF NOT EXISTS career_constraints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                constraint_type TEXT NOT NULL,
+                label TEXT NOT NULL,
+                constraint_value_json TEXT NOT NULL DEFAULT '{}',
+                is_blocking INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS career_onboarding_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL UNIQUE REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                current_step TEXT NOT NULL DEFAULT 'north_star',
+                completed_steps_json TEXT NOT NULL DEFAULT '[]',
+                is_complete INTEGER NOT NULL DEFAULT 0,
+                last_completed_at TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
             """
         )
+        ensure_sqlite_column(
+            conn,
+            "career_preferences",
+            "international_mobility",
+            "INTEGER NOT NULL DEFAULT 0",
+        )
         seed_demo_data(conn)
+
+
+def ensure_sqlite_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
+    existing_columns = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in existing_columns:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
 
 def seed_demo_data(conn: sqlite3.Connection) -> None:
