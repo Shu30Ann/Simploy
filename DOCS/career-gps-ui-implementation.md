@@ -4,14 +4,43 @@ This file is the source of truth for the employee Career GPS redesign work. Read
 
 ## Current Phase Status
 
+- Phase 3K - Integration Testing and Cleanup: completed.
+- Phase 3J - Visual Polish and Hackathon Demo Mode: completed.
+- Phase 3I - Career Buddy with Gemini Free Tier: completed.
+- Phase 3H - What-If Career Simulator: completed.
+- Phase 3G - Skills and Readiness Section: completed.
 - Phase 3F - Next Best Action: completed.
 - Phase 3E - Milestone Details and Progress Tracking: completed.
 - Phase 3D - Visual Career Journey Map: completed.
 - Phase 3C - Route Selector and Comparison: completed.
 - Phase 3B - Career GPS Page Shell: completed.
 - Phase 3A - UI Audit and Visual Direction: completed.
-- Runtime behavior changed: yes, `/employee/career-gps` now loads a backend-selected deterministic Next Best Action, lets employees start, complete, skip, or request an alternative, and persists the status through ownership-checked progress updates.
-- Visible production UI changed: yes, the old static Next Best Action callout is now a prominent actionable panel directly after the Career North Star summary.
+- Runtime behavior changed: no new Career GPS runtime features in Phase 3K. Added one backend test for Gemini timeout/quota fallback behavior and cleaned environment/deployment documentation.
+- Visible production UI changed: no Phase 3K UI changes.
+- Files changed in Phase 3K:
+  - `backend/tests/test_career_buddy_ai.py`
+  - `backend/README.md`
+  - `docs/SETUP.md`
+  - `docs/career-gps-ui-implementation.md`
+- Files changed in Phase 3J:
+  - `frontend/app/employee/career-gps/page.tsx`
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Files changed in Phase 3I:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `backend/app/services/career_buddy_ai.py`
+  - `backend/tests/test_career_buddy_ai.py`
+  - `backend/.env.example`
+  - `backend/README.md`
+  - `docs/career-gps-ui-implementation.md`
+- Files changed in Phase 3H:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `backend/app/repositories/career_gps.py`
+  - `backend/tests/test_career_gps_integration.py`
+  - `docs/career-gps-ui-implementation.md`
+- Files changed in Phase 3G:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
 - Files changed in Phase 3F:
   - `frontend/components/career-gps/CareerGpsPageShell.tsx`
   - `frontend/lib/backendTypes.ts`
@@ -150,6 +179,53 @@ This file is the source of truth for the employee Career GPS redesign work. Read
   - Refreshes roadmap progress after status changes so the journey map and milestone detail panel remain in sync.
   - Uses deterministic backend selection based on selected route, active milestone, largest skill gap, incomplete action state, employee priorities, and route requirements.
   - Does not use Gemini for selection. Wording is template based, so the section still works when AI providers are unavailable.
+- Phase 3G Skills and Readiness behavior:
+  - Replaces the Skills and Readiness placeholder on `/employee/career-gps`.
+  - Uses the selected route, stored `skill_fit` score component, `route.skill_gaps`, milestone `focus_skill_name`, employee profile skills, and persisted `roadmap_progress`.
+  - Shows overall route readiness using the stored deterministic Skill fit score.
+  - Shows next milestone readiness using a reproducible formula: profile focus-skill match plus saved action progress.
+  - Shows compact skill chips for achieved, in-progress, and missing priority skills.
+  - Shows progress trend from completed/in-progress route actions and saved evidence-link count.
+  - Shows optional certification guidance only from stored milestone learning action text; it does not invent certification requirements.
+  - Shows expandable evidence and calculation details.
+  - Does not add a new backend endpoint or database migration because all required data already exists in profile, roadmap, and progress responses.
+- Phase 3H What-If Career Simulator behavior:
+  - Replaces the What-if simulator placeholder on `/employee/career-gps`.
+  - Supports the eight existing deterministic scenario codes: prioritise salary, prioritise work-life balance, avoid management, move to another country, change industry, retire earlier, complete a master's degree, and focus on entrepreneurship.
+  - Calls `POST /career-gps/roadmaps/what-if/preview` for preview-only simulation.
+  - Preview shows current route, preview route, changed destination, changed timeline, changed skill priorities, changed lifestyle score, changed trade-offs, and main reason for change.
+  - Preview does not overwrite the active roadmap version.
+  - Calls `POST /career-gps/roadmaps/what-if/apply` only when the employee clicks Apply This Scenario.
+  - Applying saves the scenario as the next roadmap version and preserves prior versions in `roadmap_versions`.
+  - Applying refreshes progress and Next Best Action on the page.
+  - Backend roadmap save now snapshots progress by route type, milestone sequence, and action sequence before route rows are rebuilt, then restores matching progress/evidence onto the new version's milestone/action rows.
+  - Gemini is not used for scoring or route decisions.
+- Phase 3I Career Buddy behavior:
+  - Replaces the Career Buddy placeholder on `/employee/career-gps` with a compact collapsible assistant panel below the What-if simulator.
+  - Uses the existing RIASEC avatar as the assistant icon when available and falls back to the neutral `Bot` icon.
+  - Shows suggested questions for route recommendation, next 90 days, skill blocker, avoiding management, Singapore relocation, and balanced-route comparison.
+  - Calls existing backend-only Career Buddy conversation/message endpoints; no Gemini key or model configuration is exposed in the frontend.
+  - Backend `auto` mode now prefers Gemini when `GEMINI_API_KEY` is configured and otherwise uses deterministic template fallback.
+  - OpenAI is not selected for Career Buddy in Phase 3I, including as a fallback, to avoid paid-model behavior in the hackathon demo path.
+  - `SIMPLOY_CAREER_BUDDY_MODEL` stores the Gemini model name on the backend; the local example uses `gemini-flash-latest`.
+  - Backend requests use `SIMPLOY_CAREER_BUDDY_TIMEOUT_SECONDS`, defaulting to 45 seconds, retry once for transient timeout/503 failures, and validate structured responses before saving assistant messages.
+  - Existing per-user hourly usage protection remains active through `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`.
+  - Useful responses are cached in process by provider, model, question, and sanitized roadmap context to reduce repeated provider calls.
+  - Gemini may explain recommendations, skill gaps, projects, trade-offs, and roadmap changes, but cannot override deterministic scores, generate salary figures, guarantee outcomes, invent certifications, or access another employee's data.
+  - If Gemini is unavailable, misconfigured, quota-limited, times out, or returns invalid output, the backend returns a template response from stored route, skill-gap, milestone, Next Best Action, and preference context.
+- Phase 3J polish and demo behavior:
+  - `/employee/career-gps?demo=1` activates safe demo mode through the server page `searchParams` prop and passes `demoMode` into `CareerGpsPageShell`.
+  - Demo mode uses negative IDs, `source_label = 'illustrative_demo'`, and a visible Safe demo mode banner to separate demo data from production user data.
+  - Demo mode shows one computer-science-to-engineering-leadership journey for "Aisha Demo" with Recommended, Accelerated, and Balanced routes; completed, active, future, and locked milestones; a branch decision between Engineering Manager and Principal Engineer; skill gaps; Next Best Action; work-life-balance what-if preview/apply; and local Career Buddy replies.
+  - Demo route switching, progress updates, what-if preview/apply, and Career Buddy messages are local React state only and do not call backend write endpoints.
+  - Production mode still loads profile, roadmap, progress, Next Best Action, what-if, and Career Buddy data from the existing backend APIs.
+  - Visual polish in this phase strengthens route-card selected/focus states, map route contrast, node labels, active avatar positioning, branch callout, demo-specific locked stops, panel hierarchy, and simulator default flow.
+- Phase 3K integration testing and cleanup behavior:
+  - No new user-facing features were added.
+  - Added backend unit coverage for Gemini timeout/quota-style provider failure falling back to deterministic template output.
+  - Confirmed Career Buddy `auto` mode selects Gemini when `GEMINI_API_KEY` exists and does not select OpenAI as a fallback.
+  - Cleaned active setup/deployment documentation to list migrations `006` and `007`, Gemini-only backend configuration, timeout configuration, and no paid fallback provider.
+  - Confirmed normal and demo Career GPS routes return HTTP 200 locally.
 
 ## Existing RIASEC Character Or Personality Assets
 
@@ -319,6 +395,11 @@ From `frontend/components/career-gps/CareerGpsPageShell.tsx`:
 - `PUT /career-gps/roadmaps/{roadmap_id}/progress/actions`
 - `PUT /career-gps/roadmaps/{roadmap_id}/progress/milestones`
 - `GET /career-gps/roadmaps/{roadmap_id}/milestones/{route_type}/{milestone_sequence}`
+- `POST /career-gps/roadmaps/what-if/preview`
+- `POST /career-gps/roadmaps/what-if/apply`
+- `GET /career-gps/career-buddy/conversations`
+- `GET /career-gps/career-buddy/conversations/{conversation_id}`
+- `POST /career-gps/career-buddy/messages`
 
 From `frontend/components/career-gps/CareerGpsRoadmapPanel.tsx`:
 
@@ -390,6 +471,46 @@ From `frontend/components/career-gps/CareerNorthStarPanel.tsx`:
   - Payload: `{}`.
   - Response: the next-ranked available action with `is_alternative: true` when at least two candidates are available.
   - Persistence: requesting an alternative does not itself change progress status.
+
+## Phase 3H API Contracts
+
+- `POST /career-gps/roadmaps/what-if/preview`
+  - Auth: employee only.
+  - Requires an active Career GPS roadmap.
+  - Payload: `{ scenario_name, adjustments, target_country, target_industry, target_retirement_age, target_timeline_months }`.
+  - Supported adjustments: `prioritise_salary`, `prioritise_work_life_balance`, `avoid_management`, `relocate_country`, `change_industry`, `retire_earlier`, `complete_masters_degree`, `focus_entrepreneurship`.
+  - Response: `{ scenario, preview_roadmap, comparison }`.
+  - Persistence: preview only; active roadmap version is not changed.
+
+- `POST /career-gps/roadmaps/what-if/apply`
+  - Auth: employee only.
+  - Requires an active Career GPS roadmap.
+  - Payload: same as preview.
+  - Response: `{ scenario, applied_roadmap, comparison, message }`.
+  - Persistence: saves a new roadmap version and keeps older versions in `roadmap_versions`.
+  - Progress handling: existing progress/evidence is preserved by route type, milestone sequence, and action sequence when matching new rows exist.
+
+## Phase 3I API Contracts
+
+- `GET /career-gps/career-buddy/conversations`
+  - Auth: employee only.
+  - Ownership: returns only conversations owned by the authenticated employee profile.
+  - Response: `CareerBuddyConversation[]`.
+
+- `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - Auth: employee only.
+  - Ownership: `conversation_id` must belong to the authenticated employee profile.
+  - Response: conversation metadata plus saved messages.
+
+- `POST /career-gps/career-buddy/messages`
+  - Auth: employee only.
+  - Ownership: `roadmap_id` and optional `conversation_id` must belong to the authenticated employee profile.
+  - Payload: `{ conversation_id, roadmap_id, route_type, message }`.
+  - Response: `{ conversation, user_message, assistant_message, response, provider, model, rate_limit_remaining }`.
+  - AI behavior: backend selects Gemini only from backend environment variables, validates structured output, rejects salary/market figures, and falls back to deterministic template text when Gemini is unavailable or invalid.
+  - Paid provider behavior: OpenAI is not selected by the Career Buddy provider resolver in Phase 3I.
+  - Usage protection: per-user hourly limit from `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`.
+  - Cache: in-process response cache keyed by provider, model, normalized question, and supplied roadmap context.
 
 ## Existing Employee Profile State
 
@@ -480,11 +601,13 @@ Recommended page structure for the polished Career GPS vertical slice:
    - Purpose: explain readiness and gaps for the selected route.
    - Data: `route.skill_gaps`, `route.score_components`, `skill_fit`, `lifestyle_fit`, `market_opportunity`, `work_life_balance_fit`.
    - Visual: compact readiness meters and prioritized gap chips connected to map stations.
+   - Phase 3G implementation: `SkillsReadinessSection` derives route readiness, next milestone readiness, achieved skills, in-progress skills, missing priority skills, progress trend, optional learning guidance, and evidence links from existing frontend data.
 
 8. What-if simulator
    - Purpose: explore deterministic scenarios after the baseline map is understood.
    - Data: scenario payload, preview roadmap, comparison changes.
    - Visual: collapsible simulator below the map or right-side utility panel; do not make it compete with the map.
+   - Phase 3H implementation: `WhatIfCareerSimulator` provides scenario selection, preview comparison, Apply This Scenario, and Discard Preview on `/employee/career-gps`.
 
 9. Career Buddy
    - Purpose: ask contextual questions about the selected route and roadmap.
@@ -509,7 +632,13 @@ Phase 3B implemented hierarchy:
     - `JourneyLegend`
     - `JourneyDetailPanel`
       - `ActionProgressEditor`
-  - placeholder panels for skills/readiness, what-if simulator, and Career Buddy
+  - `SkillsReadinessSection`
+    - `ReadinessRing`
+    - `SkillGroup`
+    - `SkillChip`
+  - `WhatIfCareerSimulator`
+    - `ComparisonTile`
+  - placeholder panel for Career Buddy
 
 Target hierarchy for a future implementation phase:
 
@@ -565,7 +694,8 @@ Production component added in Phase 3B:
   - Page-level shell for `/employee/career-gps`.
   - Handles loading, missing auth, profile fetch errors, latest-roadmap absence, and refresh/recalculate state.
   - Handles route selection and comparison as of Phase 3C.
-  - Keeps journey map, skills/readiness, what-if simulator, and Career Buddy as placeholders.
+  - Handles journey map, milestone details, Next Best Action, Skills and Readiness, and What-if simulator as of Phase 3H.
+  - Keeps Career Buddy as a placeholder.
 
 Production route selector pieces added in Phase 3C:
 
@@ -593,6 +723,29 @@ Production journey-map pieces added in Phase 3D inside `CareerGpsPageShell`:
   - Expanded in Phase 3E into an actionable milestone detail panel with progress controls.
 - `ActionProgressEditor`
   - Lets employees set action status, notes, evidence URL, and completion date.
+
+Production skills-readiness pieces added in Phase 3G inside `CareerGpsPageShell`:
+
+- `SkillsReadinessSection`
+  - Shows overall route readiness, next milestone readiness, skill chips, progress trend, optional certification guidance, evidence links, and calculation details.
+- `ReadinessRing`
+  - Compact SVG progress ring for whole-number readiness scores.
+- `SkillGroup` and `SkillChip`
+  - Compact achieved, in-progress, and missing-priority skill groups.
+
+Production what-if pieces added in Phase 3H inside `CareerGpsPageShell`:
+
+- `WhatIfCareerSimulator`
+  - Shows scenario controls, current route summary, preview route summary, changed destination, timeline, skills, lifestyle score, trade-offs, main reason, Apply This Scenario, and Discard Preview.
+  - Stores the payload used for the visible preview so Apply This Scenario applies the same scenario even if controls are changed after preview.
+- `ComparisonTile`
+  - Compact current-vs-preview comparison block.
+
+Production Career Buddy pieces added in Phase 3I inside `CareerGpsPageShell`:
+
+- `CareerBuddyPanel`
+  - Compact collapsible assistant panel with suggested questions, saved conversation loading, message sending, provider/model/rate-limit metadata, and RIASEC/fallback icon.
+  - Uses existing backend conversation/message types and does not expose AI provider keys or model configuration to the browser.
 
 No production component was created in Phase 3A. Proposed future components:
 
@@ -646,12 +799,17 @@ No production component was created in Phase 3A. Proposed future components:
 - `CareerSkillsReadiness`
   - selected `CareerGpsRoute.skill_gaps`
   - selected `CareerGpsRoute.score_components`
+  - `CareerGpsProfile.employee.skills`
+  - `CareerGpsProgressEntry[]`
+  - evidence URLs from `roadmap_progress`
 
 - `CareerWhatIfPanel`
   - active `CareerGpsRoadmap`
+  - selected `CareerGpsRoute`
   - preview `CareerGpsWhatIfPreview | null`
   - `CareerGpsWhatIfScenarioPayload`
   - preview/apply loading state
+  - discard preview action
 
 - `CareerBuddyPanel`
   - active roadmap ID
@@ -794,6 +952,35 @@ Phase 3E implemented states:
 - Milestone complete control gated by completed action requirements.
 - Backend ownership checks for every progress and milestone detail request.
 
+Phase 3F implemented states:
+
+- Next Best Action loading, empty, error, and actionable states.
+- Start, complete, skip, and request-alternative controls.
+- Persisted action status changes that refresh roadmap progress.
+- Deterministic backend action selection with template wording.
+
+Phase 3G implemented states:
+
+- Empty readiness state when no active route exists.
+- Overall route readiness ring using the stored Skill fit component.
+- Next milestone readiness ring using profile focus-skill match and saved action progress.
+- Skill chips for achieved, in-progress, and missing priority skills.
+- Progress trend bar from stored route action progress.
+- Evidence-link details from saved progress evidence URLs.
+- Expandable calculation details explaining the deterministic formula.
+- Optional certification guidance only from stored milestone learning action text.
+
+Phase 3H implemented states:
+
+- Empty simulator state when no active roadmap/route exists.
+- Scenario selection for all eight supported deterministic scenario codes.
+- Additional fields for relocation country, target industry, retirement age, and timeline when those scenario types are selected.
+- Preview loading, error, and success states.
+- Preview comparison for current route, preview route, changed destination, timeline, skill priorities, lifestyle score, trade-offs, and main reason.
+- Discard Preview resets local preview state without changing the active roadmap.
+- Apply This Scenario saves a new roadmap version, refreshes progress, refreshes Next Best Action, and clears preview state.
+- Backend progress preservation remaps existing progress/evidence onto matching new milestone/action rows.
+
 ## Responsive Approach
 
 - Desktop:
@@ -899,13 +1086,31 @@ Phase 3E implemented states:
    - Persisted Start, Mark complete, and Skip through existing roadmap progress storage.
    - Did not add AI-dependent selection, salary data, new database tables, or unrelated marketplace changes.
 
-7. Phase 3G - Responsive Polish And Accessibility, If Requested
-   - Improve route-color consistency, map spacing, mobile density, and browser screenshot verification.
-   - Further refine keyboard/focus states and accessible labels.
+7. Phase 3G - Skills and Readiness Section
+   - Completed.
+   - Replaced the Skills and Readiness placeholder with a real route readiness section.
+   - Used existing profile, roadmap skill gaps, route score components, milestone focus skills, progress rows, and evidence URLs.
+   - Did not add AI scoring, new backend endpoints, new database fields, or unrelated marketplace changes.
 
-8. Phase 3H - Optional Scenario/Buddy Placement Polish
-   - Reposition what-if and Career Buddy so they support the map rather than compete with it.
-   - Do not change backend AI/scoring rules.
+8. Phase 3H - What-If Career Simulator
+   - Completed.
+   - Replaced the What-if simulator placeholder with deterministic preview/apply workflow.
+   - Used existing preview/apply backend endpoints and existing route engine.
+   - Preserved completed achievements/evidence when applying a scenario by remapping progress onto matching new route rows.
+   - Did not use Gemini to decide scores and did not add salary data or paid APIs.
+
+9. Phase 3I - Career Buddy with Gemini Free Tier
+   - Completed.
+   - Replaced the Career Buddy placeholder with a compact collapsible assistant on `/employee/career-gps`.
+   - Used existing Career Buddy conversation/message endpoints and backend-only Gemini/template AI service.
+   - Added Gemini-first auto provider selection, explicit request timeout, in-process response cache, no paid fallback provider, and fallback behavior when Gemini is unavailable.
+   - Did not expose secrets in the frontend, add salary data, override deterministic scoring, or add paid fallback behavior.
+
+10. Phase 3J - Visual Polish and Hackathon Demo Mode
+   - Completed.
+   - Added explicit `/employee/career-gps?demo=1` safe demo mode with one polished computer-science-to-engineering-leadership journey.
+   - Improved route visibility, selected states, focus states, journey-map contrast, node readability, avatar positioning, branch callout, and demo-safe local interactions.
+   - Browser screenshot verification remains the main follow-up because no browser target was available in this session.
 
 ## Testing Completed In Phase 3A
 
@@ -1012,6 +1217,182 @@ Phase 3E implemented states:
 - `npm run build` passed in `frontend`.
 - Build output retained `/employee/career-gps`.
 
+## Testing Completed In Phase 3G
+
+- `npm run lint` passed in `frontend`.
+- `npx tsc --noEmit` passed in `frontend`.
+- `npm run build` passed in `frontend`.
+- `python -m compileall backend\app` passed.
+- `python -m unittest discover backend\tests` passed.
+  - 11 tests passed.
+  - Existing AnyIO `ResourceWarning` messages appeared from TestClient memory streams; the test suite still completed successfully.
+- Build output retained `/employee/career-gps`.
+
+## Testing Completed In Phase 3H
+
+- `python -m compileall backend\app` passed.
+- `python -m unittest discover backend\tests` passed.
+  - 11 tests passed.
+  - Extended what-if coverage to confirm preview does not change the active version and apply preserves saved progress/evidence.
+  - Existing AnyIO `ResourceWarning` messages appeared from TestClient memory streams; the test suite still completed successfully.
+- `npm run lint` passed in `frontend`.
+- `npx tsc --noEmit` passed in `frontend`.
+- `npm run build` passed in `frontend`.
+- Build output retained `/employee/career-gps`.
+
+## Testing Completed In Phase 3I
+
+- `python -m compileall backend\app` passed.
+- `python -m unittest discover backend\tests` passed.
+  - 13 tests passed.
+  - Added coverage for Gemini-first `auto` provider selection even when an OpenAI key exists, Gemini timeout wiring, cached provider responses, and missing-Gemini-key template fallback.
+  - Existing AnyIO `ResourceWarning` messages appeared from TestClient memory streams; the test suite still completed successfully.
+- `npm run lint` passed in `frontend`.
+- `npx tsc --noEmit` passed in `frontend`.
+- `npm run build` passed in `frontend`.
+- Build output retained `/employee/career-gps`.
+- Local route check passed: `curl.exe -I http://127.0.0.1:3002/employee/career-gps` returned `200 OK`.
+- Follow-up Gemini smoke test passed with `SIMPLOY_CAREER_BUDDY_MODEL=gemini-flash-latest` after increasing the backend timeout and adding one transient retry.
+
+## Testing Completed In Phase 3J
+
+- `npm run lint` passed in `frontend`.
+- `npx tsc --noEmit` passed in `frontend`.
+- `npm run build` passed in `frontend`.
+  - Build output marks `/employee/career-gps` as dynamic because the route reads `searchParams` to support `?demo=1`.
+- `python -m compileall backend\app` passed.
+- `python -m unittest discover backend\tests` passed.
+  - 14 tests passed.
+  - Existing AnyIO `ResourceWarning` messages appeared from TestClient memory streams; the test suite still completed successfully.
+- Started local frontend dev server on `http://127.0.0.1:3003`.
+- Route check passed: `curl.exe -I http://127.0.0.1:3003/employee/career-gps?demo=1` returned `200 OK`.
+- Server response inspection confirmed the page receives `demoMode: true` for `/employee/career-gps?demo=1`.
+- Browser screenshot verification was attempted through the available browser plugin, but no browser targets were exposed in this session (`agent.browsers.list()` returned an empty list). No Playwright package is installed locally, so visual screenshot QA could not be completed in this environment.
+
+## Testing Completed In Phase 3K
+
+- `npm run lint` passed in `frontend`.
+- `npx tsc --noEmit` passed in `frontend`.
+- `npm run build` passed in `frontend`.
+  - Build output keeps `/employee/career-gps` dynamic/server-rendered because the route reads `searchParams` for `?demo=1`.
+- `python -m compileall backend\app` passed.
+- `python -m unittest backend.tests.test_career_buddy_ai` passed.
+  - 5 tests passed, including the new Gemini timeout/quota fallback test.
+- `python -m unittest discover backend\tests` passed.
+  - 15 tests passed.
+  - Existing AnyIO `ResourceWarning` messages appeared from TestClient memory streams; the test suite still completed successfully.
+- FastAPI route registration check confirmed the current `/career-gps` endpoint list:
+  - `GET /career-gps/profile`
+  - `PUT /career-gps/onboarding-progress`
+  - `PUT /career-gps/goals`
+  - `PUT /career-gps/lifestyle-priorities`
+  - `PUT /career-gps/constraints`
+  - `GET /career-gps/north-star`
+  - `POST /career-gps/roadmaps/generate`
+  - `POST /career-gps/roadmaps/what-if/preview`
+  - `POST /career-gps/roadmaps/what-if/apply`
+  - `GET /career-gps/roadmaps/latest`
+  - `GET /career-gps/roadmaps/{roadmap_id}`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/selected-route`
+  - `GET /career-gps/roadmaps/{roadmap_id}/next-best-action`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/next-best-action/status`
+  - `POST /career-gps/roadmaps/{roadmap_id}/next-best-action/alternative`
+  - `GET /career-gps/roadmaps/{roadmap_id}/progress`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/progress/actions`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/progress/milestones`
+  - `GET /career-gps/roadmaps/{roadmap_id}/milestones/{route_type}/{milestone_sequence}`
+  - `GET /career-gps/career-buddy/conversations`
+  - `POST /career-gps/career-buddy/conversations`
+  - `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - `POST /career-gps/career-buddy/messages`
+- Local route checks passed:
+  - `curl.exe -I http://127.0.0.1:3004/employee/career-gps` returned `200 OK`.
+  - `curl.exe -I http://127.0.0.1:3004/employee/career-gps?demo=1` returned `200 OK`.
+- Cleanup checks:
+  - No `console.*` or `debugger` usage found in `frontend` or `backend` source, excluding the standalone Gemini smoke-test script.
+  - No committed frontend references to `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY` found outside generated build output.
+  - Active setup docs now use Gemini-only backend AI configuration and warn against frontend secret exposure.
+  - Active backend provider resolver does not select OpenAI; Gemini failures fall back to the template provider.
+- Browser-based mobile, tablet, desktop, and keyboard checks were attempted through the browser plugin, but no browser targets were exposed (`agent.browsers.list()` returned `[]`). These visual/interaction checks remain manual follow-up items.
+
+## Phase 3K Final Report
+
+1. Features completed
+   - Career GPS vertical slice includes Career North Star loading, route selector, selected route persistence, visual journey map, RIASEC/fallback marker, milestone details, progress updates, Next Best Action, Skills and Readiness, What-if preview/apply, Career Buddy Gemini/template behavior, and safe demo mode.
+   - Phase 3K added no new product features; it added integration test coverage for Gemini timeout/quota fallback and cleaned deployment docs.
+
+2. Files changed
+   - `frontend/app/employee/career-gps/page.tsx`
+   - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+   - `backend/app/services/career_buddy_ai.py`
+   - `backend/tests/test_career_buddy_ai.py`
+   - `backend/tests/test_career_gps_integration.py`
+   - `backend/app/repositories/career_gps.py`
+   - `backend/README.md`
+   - `backend/.env.example`
+   - `docs/SETUP.md`
+   - `docs/career-gps-ui-implementation.md`
+   - Earlier modified backend files listed in prior phase sections remain part of the current uncommitted worktree.
+
+3. Database migrations
+   - `backend/migrations/001_career_gps_foundation.sql`
+   - `backend/migrations/002_career_gps_rls.sql`
+   - `backend/migrations/003_career_gps_profile_api_fields.sql`
+   - `backend/migrations/004_career_gps_profile_api_rls.sql`
+   - `backend/migrations/005_career_buddy.sql`
+   - `backend/migrations/006_selected_route_type.sql`
+   - `backend/migrations/007_roadmap_progress_evidence.sql`
+   - No Phase 3K migration was added.
+
+4. Backend endpoints
+   - Current `/career-gps` endpoints are listed under "Testing Completed In Phase 3K".
+   - No unused Career GPS API route was removed in Phase 3K because the registered endpoints are either used by the current frontend, retained for dashboard compatibility, or documented as part of the Career GPS API contract.
+
+5. Frontend components
+   - Primary shell: `CareerGpsPageShell`.
+   - Existing dashboard components remain: `CareerNorthStarPanel`, `CareerGpsRoadmapPanel`.
+   - Shell-local pieces include `CareerGpsHeader`, `NorthStarSummary`, `NextBestAction`, `RouteSelectorShell`, `CareerJourneyMap`, `JourneyDetailPanel`, `ActionProgressEditor`, `SkillsReadinessSection`, `WhatIfCareerSimulator`, `CareerBuddyPanel`, and `DemoModeBanner`.
+
+6. Environment variables
+   - Frontend/Vercel: `NEXT_PUBLIC_API_URL`; optional `NEXT_PUBLIC_CAREER_GPS_DEMO_MODE=true` only for demo environments.
+   - Backend/Render: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SIMPLOY_CORS_ORIGINS`, `SIMPLOY_CORS_ORIGIN_REGEX`, `SIMPLOY_JWT_SECRET`, `SIMPLOY_CAREER_BUDDY_AI_PROVIDER`, `SIMPLOY_CAREER_BUDDY_MODEL`, `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR`, `SIMPLOY_CAREER_BUDDY_TIMEOUT_SECONDS`, and optional `GEMINI_API_KEY`.
+   - Do not set Supabase service-role keys, Gemini keys, or any AI provider keys in Vercel/frontend variables.
+   - Do not configure OpenAI or any paid provider as a Career Buddy fallback for the hackathon demo.
+
+7. Test results
+   - Frontend lint, TypeScript, and production build passed.
+   - Backend compile and test suite passed.
+   - Career Buddy Gemini mode is covered by mocked Gemini unit tests.
+   - Career Buddy fallback mode is covered by missing-key, timeout/quota-failure, and integration tests.
+   - Authentication ownership is covered by integration tests for roadmaps, conversations, selected route updates, progress, and Next Best Action.
+   - Supabase RLS is covered by static migration assertions for employee-owned Career GPS and Career Buddy tables.
+
+8. Known limitations
+   - Browser-based mobile, tablet, desktop, and keyboard checks could not be executed in this environment because no browser target was available through the browser plugin and Playwright is not installed.
+   - Live Gemini quota behavior was not tested against the real Gemini service; timeout/quota failure is covered by mocked provider exception tests.
+   - Demo mode is frontend-only and resets on refresh.
+   - Production roadmap APIs still do not return explicit lock/prerequisite metadata; locked milestones are demo-only.
+
+9. Illustrative data still in use
+   - Career GPS occupation, skill, and transition seeds use illustrative data.
+   - Phase 3J safe demo journey uses frontend-only `illustrative_demo` data.
+   - Employee dashboard market and marketplace demo surfaces still contain illustrative/mock values outside Career GPS.
+   - No real-time salary or labor-market data is presented as verified Career GPS data.
+
+10. Deployment steps
+   - Backend/Render: set backend environment variables, run `backend/supabase_schema.sql`, then migrations `001` through `007` in order, deploy the FastAPI backend, and verify `/career-gps/profile` requires employee auth.
+   - Frontend/Vercel: set `NEXT_PUBLIC_API_URL` to the Render backend URL, keep backend secrets out of Vercel, build/deploy frontend, and verify `/employee/career-gps` and `/employee/career-gps?demo=1`.
+   - Career Buddy: leave `GEMINI_API_KEY` empty for deterministic fallback or set it only on Render for Gemini mode.
+
+11. Hackathon demo instructions
+   - Open `/employee/career-gps?demo=1`.
+   - Show the Safe demo banner, North Star, and avatar on the active milestone.
+   - Switch Recommended, Accelerated, and Balanced routes.
+   - Click a milestone and update one progress action.
+   - Show Next Best Action and Skills and Readiness updating.
+   - Run "Prioritise work-life balance" in What-if Career Simulator and apply the local scenario.
+   - Open Career Buddy and ask a suggested question; confirm local demo response and no production write.
+
 ## Database Migrations Added
 
 - `backend/migrations/006_selected_route_type.sql`
@@ -1027,6 +1408,11 @@ Phase 3E implemented states:
 ## Mock Or Illustrative Data
 
 - Career GPS reference occupations, occupation skills, and transitions use `source_label = 'illustrative_seed'`.
+- Phase 3J adds a frontend-only safe demo dataset behind `/employee/career-gps?demo=1`.
+  - Demo employee: "Aisha Demo", a computer science student moving toward engineering leadership.
+  - Demo route family: Computer Science Student -> Software Engineering Intern -> Junior Software Engineer -> Software Engineer -> Senior Software Engineer -> Technical Lead -> Engineering Manager or Principal Engineer -> Head of Engineering or CTO.
+  - Demo dataset includes Recommended, Accelerated, and Balanced routes, completed/active/locked milestones, branch decision copy, skill gaps, Next Best Action, work-life-balance what-if preview/apply, and local Career Buddy template answers.
+  - Demo records use negative IDs and `source_label = 'illustrative_demo'`; they are not fetched from or saved to Supabase.
 - `roadmap.source_note` states that occupation and transition data is illustrative seed data, not verified labor-market data.
 - Employee dashboard Asia market signals include illustrative salary/market values and are not verified labor-market data.
 - Marketplace mock data remains used for demo surfaces outside Career GPS.
@@ -1047,7 +1433,7 @@ Phase 3E implemented states:
 - Phase 3B shell has no complete interactive roadmap.
 - Phase 3B Recalculate refreshes existing profile/latest-roadmap data only; it does not call route generation.
 - If no saved roadmap exists, Next Best Action and Route selector show empty states.
-- Career Buddy, what-if simulator, and skills/readiness are placeholders on `/employee/career-gps`.
+- Career Buddy is implemented on `/employee/career-gps`, but it uses an in-process cache only; cache entries are not shared across Render instances or process restarts.
 - Phase 3C route comparison is based on existing deterministic score components and route explanations; it does not introduce new scoring logic.
 - Phase 3C does not persist selected route in a separate history/audit table.
 - Phase 3D/3E map node selection is local React state only; it resets when the page reloads.
@@ -1059,6 +1445,20 @@ Phase 3E implemented states:
 - Phase 3F Next Best Action selection is deterministic template logic in the backend. Gemini wording improvement was not added because the phase required the action to work without AI.
 - Phase 3F Request alternative returns the next-ranked available action but does not persist a user preference or permanent dismissal by itself.
 - Phase 3F Skip persists as `skipped` in `roadmap_progress`; skipped actions do not satisfy the Phase 3E milestone-complete requirement.
+- Phase 3G Skills and Readiness does not create new proficiency scores. It displays stored route Skill fit and a reproducible milestone readiness indicator from profile skill match plus action progress.
+- Phase 3G cannot show a verified certification requirement unless one is added to stored roadmap data in a future phase.
+- Phase 3G evidence links depend on the user saving evidence URLs in milestone action progress; it does not upload files.
+- Phase 3H what-if preview/apply uses deterministic route generation only. Gemini explanations were not added.
+- Phase 3H progress preservation remaps progress by route type, milestone sequence, and action sequence. If a future scenario changes those structural keys, unmatched progress rows cannot be remapped automatically.
+- Phase 3H preview comparison uses stored deterministic comparison categories plus frontend-derived lifestyle score comparison.
+- Phase 3H applies the last successful preview payload, not unpreviewed control edits made after the preview result is shown.
+- Phase 3I Career Buddy still stores conversations in the existing `career_buddy_conversations` and `career_buddy_messages` tables; no new long-term AI cache table was added.
+- Phase 3I Career Buddy uses template fallback when Gemini is unavailable, over quota, misconfigured, times out, or returns invalid output.
+- Phase 3I Career Buddy context intentionally excludes full resumes and only sends compact profile, route, skill-gap, milestone, Next Best Action, and preference data.
+- Phase 3J demo mode is a presentation mode only. It does not persist local progress after a page refresh and does not create backend audit/history records.
+- Phase 3J demo mode uses locally generated Career Buddy responses instead of Gemini so the demo works when AI is unavailable.
+- Phase 3J locked milestones are shown only in demo mode because production roadmap APIs still do not return explicit prerequisite/lock metadata.
+- Phase 3J browser screenshot inspection could not be completed because no browser target was available through the installed browser plugin and local Playwright is not installed.
 - Supabase production must apply `backend/migrations/006_selected_route_type.sql` before using selected-route persistence against Supabase.
 - Supabase production must apply `backend/migrations/007_roadmap_progress_evidence.sql` before saving evidence URLs.
 
@@ -1119,6 +1519,66 @@ Phase 3E implemented states:
 11. Click Skip and confirm the skipped action remains skipped after refresh or login.
 12. Confirm another employee cannot read or update the roadmap action.
 
+## Manual Testing Steps For Phase 3G
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm Skills and Readiness appears below the journey map.
+6. Confirm overall route readiness matches the selected route Skill fit score rounded to a whole percent.
+7. Confirm next milestone readiness changes after starting or completing the milestone action.
+8. Confirm achieved skills show stored employee profile skills or completed route skills.
+9. Confirm in-progress skills appear after marking a related action in progress.
+10. Confirm missing priority skills are limited to a compact set of high-priority route gaps.
+11. Add an evidence URL through a milestone action, then confirm it appears in the expandable evidence details.
+12. Switch route choices and confirm readiness values and skill chips update without regenerating the roadmap.
+
+## Manual Testing Steps For Phase 3H
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm What-if Career Simulator appears below Skills and Readiness.
+6. Select one or more scenarios and click Preview Scenario.
+7. Confirm the active roadmap version does not change while preview is visible.
+8. Confirm preview displays current route, preview route, destination, timeline, skill priorities, lifestyle score, trade-offs, and main reason for change.
+9. Click Discard Preview and confirm the preview comparison disappears without changing route selection or roadmap version.
+10. Add or confirm existing completed action evidence, then preview and click Apply This Scenario.
+11. Confirm the applied roadmap version increments and previous versions are preserved by the backend.
+12. Confirm saved progress/evidence still appears after apply when matching route/milestone/action keys exist.
+
+## Manual Testing Steps For Phase 3I
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm Career Buddy appears as a compact collapsible panel below the What-if simulator and does not cover the journey map.
+6. Confirm the RIASEC avatar appears as the assistant icon when `simploy-riasec-result` exists; otherwise confirm the neutral bot icon appears.
+7. Click each suggested question and confirm a message is sent to `/career-gps/career-buddy/messages`.
+8. Confirm the assistant answer is saved in the conversation and reloads after refresh.
+9. Confirm provider metadata shows Gemini when `GEMINI_API_KEY` and `SIMPLOY_CAREER_BUDDY_MODEL` are configured on the backend.
+10. Clear or omit `GEMINI_API_KEY`, then confirm Career Buddy still returns a template fallback response.
+11. Send enough messages to exceed `SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR` and confirm the backend returns a rate-limit error.
+12. Confirm no salary figures, promotion guarantees, financial guarantees, or invented certifications appear in responses.
+
+## Manual Testing Steps For Phase 3J
+
+1. Start frontend from `frontend`: `npm run dev`.
+2. Open `/employee/career-gps?demo=1`.
+3. Confirm the Safe demo mode banner is visible and labels the data as illustrative.
+4. Confirm the North Star shows the demo employee journey and the current-position marker appears on the active milestone.
+5. Switch between Recommended, Accelerated, and Balanced routes; confirm the selected route state and journey map update without backend save calls.
+6. Click a visible milestone and confirm the detail panel updates with demo milestone details and actions.
+7. Update one action's progress and confirm Skills and Readiness reflects the local progress change.
+8. Confirm Your Next Best Action is visible and can be started, completed, skipped, or replaced locally.
+9. In What-if Career Simulator, keep or select "Prioritise work-life balance", click Preview Scenario, and confirm the preview route changes to the Balanced Route.
+10. Click Apply This Scenario and confirm the selected route updates locally with a message that production data was not changed.
+11. Open Career Buddy, ask one suggested question, and confirm a local demo answer appears with provider `demo_template`.
+12. Refresh the page and confirm demo data resets to the safe starting state, proving no production user record was overwritten.
+
 ## Clear Instructions For The Next Phase
 
 1. Read this file before editing.
@@ -1129,4 +1589,5 @@ Phase 3E implemented states:
 6. Keep all recommendation logic in the backend.
 7. Keep RIASEC avatar mapping unchanged unless explicitly requested.
 8. Do not add paid APIs or expose backend secrets in the frontend.
-9. If implementing the next polish phase, focus on responsive polish, route-color consistency, browser screenshot review, and accessibility refinement for the existing `CareerJourneyMap`, Phase 3E detail panel, and Phase 3F Next Best Action panel.
+9. If continuing after Phase 3J, first perform real browser screenshot review for `/employee/career-gps?demo=1` and responsive widths because browser targets were unavailable during Phase 3J validation.
+10. Keep demo mode behind `?demo=1` or `NEXT_PUBLIC_CAREER_GPS_DEMO_MODE=true`; do not merge demo data into production user data or Supabase tables.

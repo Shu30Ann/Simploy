@@ -2,13 +2,21 @@ from __future__ import annotations
 
 import json
 import re
+import time
+from collections import OrderedDict
 from dataclasses import dataclass
+from hashlib import sha256
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from backend.app.core.config import settings
 from backend.app.schemas.career_gps import CareerBuddyStructuredResponse
+
+CAREER_BUDDY_REQUEST_TIMEOUT_SECONDS = max(3, settings.career_buddy_timeout_seconds)
+CAREER_BUDDY_TRANSIENT_ATTEMPTS = 2
+CAREER_BUDDY_CACHE_LIMIT = 128
+_CAREER_BUDDY_CACHE: OrderedDict[str, CareerBuddyProviderResult] = OrderedDict()
 
 
 class CareerBuddyProvider(Protocol):
@@ -24,6 +32,28 @@ class CareerBuddyProviderResult:
     response: CareerBuddyStructuredResponse
     provider: str
     model: str | None
+
+
+def clear_career_buddy_cache() -> None:
+    _CAREER_BUDDY_CACHE.clear()
+
+
+def read_provider_response(request: Request) -> str:
+    last_error: Exception | None = None
+    for attempt in range(CAREER_BUDDY_TRANSIENT_ATTEMPTS):
+        try:
+            with urlopen(request, timeout=CAREER_BUDDY_REQUEST_TIMEOUT_SECONDS) as response:
+                return response.read().decode("utf-8")
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code not in {503} or attempt == CAREER_BUDDY_TRANSIENT_ATTEMPTS - 1:
+                raise
+        except (URLError, TimeoutError) as exc:
+            last_error = exc
+            if attempt == CAREER_BUDDY_TRANSIENT_ATTEMPTS - 1:
+                raise
+        time.sleep(0.8 * (attempt + 1))
+    raise RuntimeError("Provider response unavailable") from last_error
 
 
 def career_buddy_response_schema() -> dict[str, Any]:
@@ -116,7 +146,11 @@ def normalize_ai_response_payload(payload: dict[str, Any]) -> dict[str, Any]:
             normalized[key] = [value]
         elif isinstance(value, dict):
             normalized[key] = list(value.keys())
+        elif isinstance(value, list):
+            normalized[key] = value
         elif value is None:
+            normalized[key] = []
+        else:
             normalized[key] = []
 
     if normalized.get("referenced_route_type") not in {"recommended", "accelerated", "balanced", None}:
@@ -227,91 +261,13 @@ class TemplateCareerBuddyProvider:
         )
 
 
-class OpenAiCareerBuddyProvider:
-    provider_name = "openai"
-
-    def __init__(self) -> None:
-        if not settings.openai_api_key:
-            raise RuntimeError("OPENAI_API_KEY is not configured")
-        self.model_name = settings.career_buddy_model or "gpt-5.6"
-
-    def answer(self, *, question: str, context: dict[str, Any]) -> CareerBuddyStructuredResponse:
-        request_body = {
-            "model": self.model_name,
-            "input": [
-                {
-                    "role": "system",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": self._system_instructions(),
-                        }
-                    ],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": json.dumps({"question": question, "context": context}, separators=(",", ":")),
-                        }
-                    ],
-                },
-            ],
-            "text": {
-                "format": {
-                    "type": "json_schema",
-                    "name": "career_buddy_response",
-                    "strict": True,
-                    "schema": self._response_schema(),
-                }
-            },
-        }
-        request = Request(
-            "https://api.openai.com/v1/responses",
-            data=json.dumps(request_body).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {settings.openai_api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with urlopen(request, timeout=20) as response:
-                raw = response.read().decode("utf-8")
-        except (HTTPError, URLError, TimeoutError) as exc:
-            raise RuntimeError("OpenAI Career Buddy provider failed") from exc
-
-        parsed = json.loads(raw)
-        output_text = self._extract_output_text(parsed)
-        structured = CareerBuddyStructuredResponse(**normalize_ai_response_payload(json.loads(output_text)))
-        if disallowed_salary_or_market_figures(structured.answer):
-            raise ValueError("AI response included disallowed salary or market figures")
-        return structured
-
-    def _system_instructions(self) -> str:
-        return career_buddy_system_instructions()
-
-    def _response_schema(self) -> dict[str, Any]:
-        return career_buddy_response_schema()
-
-    def _extract_output_text(self, response: dict[str, Any]) -> str:
-        if isinstance(response.get("output_text"), str):
-            return response["output_text"]
-        for item in response.get("output", []):
-            for content in item.get("content", []):
-                if content.get("type") in {"output_text", "text"} and isinstance(content.get("text"), str):
-                    return content["text"]
-        raise ValueError("OpenAI response did not include output text")
-
-
 class GeminiCareerBuddyProvider:
     provider_name = "gemini"
 
     def __init__(self) -> None:
         if not settings.gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY is not configured")
-        self.model_name = settings.career_buddy_model or "gemini-3.5-flash"
+        self.model_name = settings.career_buddy_model or "gemini-flash-latest"
 
     def answer(self, *, question: str, context: dict[str, Any]) -> CareerBuddyStructuredResponse:
         request_body = {
@@ -350,9 +306,8 @@ class GeminiCareerBuddyProvider:
             method="POST",
         )
         try:
-            with urlopen(request, timeout=20) as response:
-                raw = response.read().decode("utf-8")
-        except (HTTPError, URLError, TimeoutError) as exc:
+            raw = read_provider_response(request)
+        except (HTTPError, URLError, TimeoutError, RuntimeError) as exc:
             raise RuntimeError("Gemini Career Buddy provider failed") from exc
 
         parsed = json.loads(raw)
@@ -383,21 +338,45 @@ class CareerBuddyAiService:
         self.template_provider = TemplateCareerBuddyProvider()
 
     def answer(self, *, question: str, context: dict[str, Any]) -> CareerBuddyProviderResult:
-        provider = self._configured_provider()
+        try:
+            provider = self._configured_provider()
+        except Exception:
+            provider = self.template_provider
+        cache_key = self._cache_key(provider=provider, question=question, context=context)
+        cached = _CAREER_BUDDY_CACHE.get(cache_key)
+        if cached is not None:
+            _CAREER_BUDDY_CACHE.move_to_end(cache_key)
+            return cached
         try:
             response = provider.answer(question=question, context=context)
             if disallowed_salary_or_market_figures(response.answer):
                 raise ValueError("Provider response included disallowed salary or market figures")
-            return CareerBuddyProviderResult(response=response, provider=provider.provider_name, model=provider.model_name)
+            result = CareerBuddyProviderResult(response=response, provider=provider.provider_name, model=provider.model_name)
         except Exception:
             fallback = self.template_provider.answer(question=question, context=context)
             fallback.safety_notes.append("Template fallback used because the AI provider was unavailable or returned invalid output.")
-            return CareerBuddyProviderResult(response=fallback, provider=self.template_provider.provider_name, model=None)
+            result = CareerBuddyProviderResult(response=fallback, provider=self.template_provider.provider_name, model=None)
+        self._cache_result(cache_key, result)
+        return result
 
     def _configured_provider(self) -> CareerBuddyProvider:
         provider = settings.career_buddy_ai_provider.lower().strip()
-        if provider == "openai" or (provider == "auto" and settings.openai_api_key):
-            return OpenAiCareerBuddyProvider()
         if provider == "gemini" or (provider == "auto" and settings.gemini_api_key):
             return GeminiCareerBuddyProvider()
         return self.template_provider
+
+    def _cache_key(self, *, provider: CareerBuddyProvider, question: str, context: dict[str, Any]) -> str:
+        payload = {
+            "provider": provider.provider_name,
+            "model": provider.model_name,
+            "question": " ".join(question.lower().split()),
+            "context": context,
+        }
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+        return sha256(raw.encode("utf-8")).hexdigest()
+
+    def _cache_result(self, key: str, result: CareerBuddyProviderResult) -> None:
+        _CAREER_BUDDY_CACHE[key] = result
+        _CAREER_BUDDY_CACHE.move_to_end(key)
+        while len(_CAREER_BUDDY_CACHE) > CAREER_BUDDY_CACHE_LIMIT:
+            _CAREER_BUDDY_CACHE.popitem(last=False)

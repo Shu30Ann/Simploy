@@ -7,10 +7,12 @@ import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
   ArrowRight,
+  Award,
   Bot,
   BriefcaseBusiness,
   Building2,
   CalendarCheck,
+  ChevronDown,
   CheckCircle2,
   Clock3,
   Compass,
@@ -27,19 +29,27 @@ import {
   RefreshCw,
   Route,
   Save,
+  Send,
   ShieldCheck,
   SkipForward,
   SlidersHorizontal,
   Sparkles,
   Target,
+  TrendingUp,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { getAuthToken, getJson, postJson, putJson } from "@/lib/api";
 import type {
   CareerGpsMilestone,
   CareerGpsMilestoneDetail,
+  CareerBuddyConversation,
+  CareerBuddyConversationDetail,
+  CareerBuddyMessage,
+  CareerBuddyMessagePayload,
+  CareerBuddyReply,
   CareerGpsNextBestActionDetail,
   CareerGpsNextBestActionStatusPayload,
+  CareerGpsOccupationSummary,
   CareerGpsProfile,
   CareerGpsProgressEntry,
   CareerGpsProgressResponse,
@@ -49,7 +59,11 @@ import type {
   CareerGpsRoute,
   CareerGpsRouteScoreComponent,
   CareerGpsRouteType,
+  CareerGpsScenarioCode,
   CareerGpsSelectedRoutePayload,
+  CareerGpsWhatIfApplyResponse,
+  CareerGpsWhatIfPreview,
+  CareerGpsWhatIfScenarioPayload,
 } from "@/lib/backendTypes";
 import { loadRiasecResult, type RiasecResult } from "@/lib/riasec";
 import { routes } from "@/lib/routes";
@@ -75,6 +89,16 @@ type JourneyNode = {
 };
 
 type ProgressEntriesByKey = Record<string, CareerGpsProgressEntry>;
+
+type SkillReadinessStatus = "achieved" | "in_progress" | "missing";
+
+type SkillReadinessItem = {
+  name: string;
+  status: SkillReadinessStatus;
+  priority: number;
+  label: string;
+  evidenceUrl: string | null;
+};
 
 type SaveProgressHandler = (
   kind: "action" | "milestone",
@@ -118,6 +142,444 @@ const routeHexColor: Record<CareerGpsRouteType, string> = {
   recommended: "#E8197A",
   accelerated: "#06B6D4",
   balanced: "#6B46C1",
+};
+
+const scenarioOptions: { code: CareerGpsScenarioCode; label: string; description: string }[] = [
+  {
+    code: "prioritise_salary",
+    label: "Prioritise salary",
+    description: "Raises income priority and risk tolerance for higher-earning paths.",
+  },
+  {
+    code: "prioritise_work_life_balance",
+    label: "Prioritise work-life balance",
+    description: "Raises balance, remote-work, and lower-risk preferences.",
+  },
+  {
+    code: "avoid_management",
+    label: "Avoid management",
+    description: "Adds a blocking individual-contributor constraint.",
+  },
+  {
+    code: "relocate_country",
+    label: "Move to another country",
+    description: "Tests relocation openness and international mobility.",
+  },
+  {
+    code: "change_industry",
+    label: "Change industry",
+    description: "Temporarily shifts the target industry before rescoring routes.",
+  },
+  {
+    code: "retire_earlier",
+    label: "Retire earlier",
+    description: "Compresses timeline and raises income priority.",
+  },
+  {
+    code: "complete_masters_degree",
+    label: "Complete a master's degree",
+    description: "Treats degree-related analytics and research evidence as complete.",
+  },
+  {
+    code: "focus_entrepreneurship",
+    label: "Focus on entrepreneurship",
+    description: "Shifts preference toward startup, ownership, and higher-risk routes.",
+  },
+];
+
+const careerBuddyPrompts = [
+  "Why was this route recommended?",
+  "What should I do in the next 90 days?",
+  "What skill is holding me back?",
+  "Can I achieve my goal without becoming a manager?",
+  "What changes if I move to Singapore?",
+  "Show me a more balanced route.",
+];
+
+const DEMO_ROADMAP_ID = -3100;
+
+const demoRiasecResult: RiasecResult = {
+  primaryCode: "I",
+  secondaryCode: "S",
+  hollandCode: "IS",
+  scores: { R: 4, I: 10, A: 6, S: 8, E: 5, C: 7 },
+  animal: "IS",
+  animalName: "Analyst Guide",
+  label: "Analytical Collaborator",
+  summary: "A demo career personality marker for a computer science student who enjoys evidence, systems, and team learning.",
+  jobThemes: ["Software engineering", "Data products", "Developer tooling", "Technical leadership"],
+};
+
+const demoProfile: CareerGpsProfile = {
+  employee: {
+    id: -101,
+    user_id: -101,
+    full_name: "Aisha Demo",
+    location: "Kuala Lumpur",
+    target_role: "Technical Lead",
+    experience_years: 1,
+    skills: ["Python", "JavaScript", "Git", "Data structures", "Team projects"],
+    created_at: "2026-07-13T00:00:00Z",
+  },
+  onboarding_progress: {
+    id: -101,
+    employee_profile_id: -101,
+    current_step: "complete",
+    completed_steps: ["career_ambition", "lifestyle_priorities", "constraints", "route_review"],
+    is_complete: true,
+    last_completed_at: "2026-07-13T00:00:00Z",
+  },
+  goals: {
+    id: -101,
+    employee_profile_id: -101,
+    career_ambition: "Grow from computer science student into a technical leader who builds reliable products and mentors engineers.",
+    target_role: "Technical Lead",
+    target_industry: "Technology",
+    target_retirement_age: 60,
+    target_timeline_months: 72,
+    motivation: "Build production software, gain leadership range, and keep learning sustainable.",
+    status: "active",
+  },
+  lifestyle_priorities: {
+    id: -101,
+    employee_profile_id: -101,
+    income_priority: 7,
+    work_life_balance_priority: 8,
+    leadership_priority: 7,
+    job_security_priority: 7,
+    remote_work_priority: 8,
+    international_mobility: true,
+    risk_tolerance: "moderate",
+    learning_budget: 1200,
+    preferred_company_type: "Product company",
+    willing_to_relocate: true,
+    preferred_locations: ["Kuala Lumpur", "Singapore", "Remote"],
+    preferred_work_styles: ["hybrid", "remote"],
+    top_two_non_negotiable_priorities: ["work_life_balance", "learning_growth"],
+  },
+  constraints: [
+    {
+      id: -101,
+      employee_profile_id: -101,
+      constraint_type: "demo_boundary",
+      label: "Use only illustrative demo data",
+      value: { demo: true },
+      is_blocking: true,
+    },
+  ],
+  north_star: {
+    employee_profile_id: -101,
+    career_ambition: "Become a technical leader who can choose between engineering management and principal IC leadership.",
+    target_role: "Technical Lead",
+    target_industry: "Technology",
+    target_retirement_age: 60,
+    target_timeline_months: 72,
+    income_priority: 7,
+    work_life_balance_priority: 8,
+    leadership_priority: 7,
+    job_security_priority: 7,
+    remote_work_priority: 8,
+    international_mobility: true,
+    risk_tolerance: "moderate",
+    learning_budget: 1200,
+    preferred_company_type: "Product company",
+    willing_to_relocate: true,
+    top_two_non_negotiable_priorities: ["work_life_balance", "learning_growth"],
+    is_onboarding_complete: true,
+    missing_sections: [],
+  },
+};
+
+function demoAction(action_type: string, title: string, sequence: number, description: string, estimated_hours = 6) {
+  return {
+    action_type,
+    title,
+    description,
+    sequence,
+    estimated_hours,
+    resource_url: null,
+  };
+}
+
+function demoMilestone(
+  sequence: number,
+  title: string,
+  focusSkill: string,
+  durationWeeks: number,
+  actions: CareerGpsMilestone["actions"],
+): CareerGpsMilestone {
+  return {
+    title,
+    description: `Illustrative demo milestone focused on ${focusSkill}.`,
+    sequence,
+    duration_weeks: durationWeeks,
+    focus_skill_name: focusSkill,
+    actions,
+  };
+}
+
+function demoScoreComponents(values: Partial<Record<string, number>>): CareerGpsRouteScoreComponent[] {
+  const defaults = {
+    skill_fit: 72,
+    lifestyle_fit: 76,
+    work_life_balance_fit: 78,
+    market_opportunity: 74,
+    transition_difficulty: 68,
+  };
+  return Object.entries({ ...defaults, ...values }).map(([key, score]) => ({
+    key,
+    label: key.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+    score,
+    weight: 0.2,
+    explanation: `Illustrative demo ${key.replace(/_/g, " ")} score based on the safe demo journey.`,
+  }));
+}
+
+function demoOccupation(id: number, slug: string, title: string, seniority: string): CareerGpsOccupationSummary {
+  return {
+    id,
+    slug,
+    title,
+    family: "Software Engineering",
+    seniority_level: seniority,
+    source_label: "illustrative_demo",
+  };
+}
+
+const demoRecommendedMilestones = [
+  demoMilestone(1, "Computer Science Student", "Data structures", 4, [
+    demoAction("learning", "Complete an algorithms revision sprint", 1, "Refresh arrays, graphs, complexity, and testing fundamentals.", 8),
+    demoAction("project", "Publish a small full-stack portfolio project", 2, "Show Git history, README quality, and deployed functionality.", 10),
+  ]),
+  demoMilestone(2, "Software Engineering Intern", "Code review", 6, [
+    demoAction("project", "Ship one reviewed feature in a team repo", 1, "Use pull requests, tests, and reviewer feedback as evidence.", 12),
+    demoAction("reflection", "Write a post-internship engineering journal", 2, "Capture debugging patterns, team rituals, and strengths to repeat.", 3),
+  ]),
+  demoMilestone(3, "Junior Software Engineer", "Testing", 8, [
+    demoAction("learning", "Add automated tests to two product areas", 1, "Practice unit, integration, and regression coverage on realistic code.", 10),
+    demoAction("project", "Own a small production bug fix cycle", 2, "Document reproduction, fix, rollout, and monitoring evidence.", 6),
+  ]),
+  demoMilestone(4, "Software Engineer", "System design", 10, [
+    demoAction("project", "Design and implement a service boundary", 1, "Create a concise design note and measure reliability after launch.", 14),
+    demoAction("mentoring", "Pair with a newer engineer for one sprint", 2, "Build coaching evidence before the branch decision.", 4),
+  ]),
+  demoMilestone(5, "Branch Decision: Tech Lead or Principal IC", "Technical leadership", 6, [
+    demoAction("decision", "Compare manager and principal-engineer evidence", 1, "Choose the leadership route using values, proof, and work-life fit.", 4),
+    demoAction("project", "Facilitate one architecture review", 2, "Practice influence without relying only on authority.", 6),
+  ]),
+  demoMilestone(6, "Technical Lead", "Architecture facilitation", 12, [
+    demoAction("project", "Lead a cross-team delivery plan", 1, "Coordinate roadmap, risks, and engineering trade-offs.", 16),
+    demoAction("mentoring", "Mentor two engineers through promotion packets", 2, "Collect evidence of coaching and delivery outcomes.", 8),
+  ]),
+  demoMilestone(7, "Engineering Manager or Principal Engineer", "People leadership", 16, [
+    demoAction("leadership", "Run a quarterly technical strategy review", 1, "Show decision quality, prioritisation, and stakeholder alignment.", 12),
+    demoAction("reflection", "Document leadership operating principles", 2, "Clarify whether management or principal IC is the better branch.", 4),
+  ]),
+  demoMilestone(8, "Head of Engineering or CTO", "Organisational strategy", 24, [
+    demoAction("strategy", "Create a three-year engineering capability plan", 1, "Connect hiring, architecture, delivery, and culture outcomes.", 18),
+  ]),
+];
+
+const demoRoutes: CareerGpsRoute[] = [
+  {
+    route_type: "recommended",
+    title: "Recommended route: Product Engineering Leadership",
+    summary: "A steady path from CS foundations to technical leadership with a branch point between Engineering Manager and Principal Engineer.",
+    score: 84,
+    estimated_months: 72,
+    target_occupation: demoOccupation(-201, "technical-lead", "Technical Lead", "Senior leadership track"),
+    transition: { source_label: "illustrative_demo", branch_decision: "Engineering Manager or Principal Engineer" },
+    skill_gaps: [
+      { skill_name: "Code review", skill_type: "engineering_practice", priority: 5, proficiency_level: "developing" },
+      { skill_name: "Testing", skill_type: "engineering_practice", priority: 5, proficiency_level: "developing" },
+      { skill_name: "System design", skill_type: "technical_leadership", priority: 4, proficiency_level: "early" },
+      { skill_name: "Technical leadership", skill_type: "leadership", priority: 4, proficiency_level: "early" },
+      { skill_name: "Architecture facilitation", skill_type: "leadership", priority: 3, proficiency_level: "future" },
+    ],
+    milestones: demoRecommendedMilestones,
+    score_components: demoScoreComponents({ skill_fit: 78, lifestyle_fit: 84, work_life_balance_fit: 82, market_opportunity: 76, transition_difficulty: 72 }),
+    explanation: "Recommended because it balances technical depth, leadership evidence, and sustainable pacing for the demo employee.",
+  },
+  {
+    route_type: "accelerated",
+    title: "Accelerated route: Startup Engineering Fast Track",
+    summary: "A faster path through internship, junior delivery, high-ownership product work, and early lead responsibilities.",
+    score: 79,
+    estimated_months: 48,
+    target_occupation: demoOccupation(-202, "startup-tech-lead", "Startup Technical Lead", "Fast-track leadership"),
+    transition: { source_label: "illustrative_demo", branch_decision: "Lead engineer in a high-growth team" },
+    skill_gaps: [
+      { skill_name: "Production ownership", skill_type: "delivery", priority: 5, proficiency_level: "developing" },
+      { skill_name: "System design", skill_type: "technical_leadership", priority: 5, proficiency_level: "early" },
+      { skill_name: "Incident response", skill_type: "operations", priority: 4, proficiency_level: "future" },
+      { skill_name: "Stakeholder communication", skill_type: "leadership", priority: 4, proficiency_level: "developing" },
+    ],
+    milestones: [
+      demoRecommendedMilestones[0],
+      demoRecommendedMilestones[1],
+      demoMilestone(3, "Junior Engineer With Production Ownership", "Production ownership", 6, [
+        demoAction("project", "Own a release with rollback notes", 1, "Build confidence with deployment, measurement, and recovery.", 10),
+        demoAction("learning", "Study incident reviews from mature engineering teams", 2, "Learn how fast teams protect reliability.", 5),
+      ]),
+      demoMilestone(4, "Software Engineer in a High-Growth Team", "Incident response", 8, [
+        demoAction("project", "Join one on-call or reliability improvement rotation", 1, "Collect evidence of calm production judgement.", 8),
+        demoAction("communication", "Present a post-launch learning review", 2, "Practice concise stakeholder updates.", 4),
+      ]),
+      demoMilestone(5, "Startup Technical Lead", "Stakeholder communication", 10, [
+        demoAction("leadership", "Lead a cross-functional feature discovery sprint", 1, "Turn ambiguity into a sequenced product and engineering plan.", 12),
+      ]),
+    ],
+    score_components: demoScoreComponents({ skill_fit: 70, lifestyle_fit: 61, work_life_balance_fit: 58, market_opportunity: 83, transition_difficulty: 60 }),
+    explanation: "Accelerated because it compresses leadership exposure, but the trade-off is higher ambiguity and lower work-life balance.",
+  },
+  {
+    route_type: "balanced",
+    title: "Balanced route: Sustainable Senior Engineer",
+    summary: "A slower route that protects learning quality, hybrid work preferences, and deep IC credibility before leadership branching.",
+    score: 82,
+    estimated_months: 84,
+    target_occupation: demoOccupation(-203, "senior-software-engineer", "Senior Software Engineer", "Senior individual contributor"),
+    transition: { source_label: "illustrative_demo", branch_decision: "Senior IC before management decision" },
+    skill_gaps: [
+      { skill_name: "Testing", skill_type: "engineering_practice", priority: 5, proficiency_level: "developing" },
+      { skill_name: "Maintainable architecture", skill_type: "technical_depth", priority: 4, proficiency_level: "early" },
+      { skill_name: "Mentoring", skill_type: "collaboration", priority: 4, proficiency_level: "early" },
+      { skill_name: "Workload planning", skill_type: "sustainability", priority: 3, proficiency_level: "developing" },
+    ],
+    milestones: [
+      demoRecommendedMilestones[0],
+      demoRecommendedMilestones[1],
+      demoRecommendedMilestones[2],
+      demoMilestone(4, "Software Engineer With Reliable Delivery Habits", "Workload planning", 12, [
+        demoAction("project", "Plan a six-week delivery cycle with clear scope", 1, "Practice sustainable commitments and stakeholder updates.", 8),
+        demoAction("reflection", "Review weekly energy and learning patterns", 2, "Make work-life balance measurable before taking on more scope.", 3),
+      ]),
+      demoMilestone(5, "Senior Software Engineer", "Maintainable architecture", 16, [
+        demoAction("project", "Refactor one high-change module with tests", 1, "Show senior-level quality without rushing leadership scope.", 14),
+        demoAction("mentoring", "Run a monthly code review clinic", 2, "Build mentoring evidence at a sustainable cadence.", 6),
+      ]),
+      demoMilestone(6, "Technical Lead Readiness Review", "Mentoring", 12, [
+        demoAction("decision", "Decide between Tech Lead and Principal IC readiness", 1, "Use evidence, preferences, and workload fit before branching.", 4),
+      ]),
+    ],
+    score_components: demoScoreComponents({ skill_fit: 76, lifestyle_fit: 90, work_life_balance_fit: 92, market_opportunity: 70, transition_difficulty: 78 }),
+    explanation: "Balanced because it preserves skill depth and work-life fit while keeping the technical leadership branch open.",
+  },
+];
+
+function buildDemoRoadmap(selectedRouteType: CareerGpsRouteType = "recommended", version = 1): CareerGpsRoadmap {
+  return {
+    roadmap_id: DEMO_ROADMAP_ID,
+    version,
+    scoring_version: "demo-phase-3j",
+    title: "Safe Demo Journey: Computer Science Student to Engineering Leadership",
+    summary: "Illustrative hackathon demo data only. This route is separate from production user records and is not written to the backend.",
+    fit_score: 84,
+    target_occupation_id: -201,
+    routes: demoRoutes,
+    score_components: demoRoutes.flatMap((route) =>
+      route.score_components.map((componentItem) => ({
+        route_type: route.route_type,
+        component_key: componentItem.key,
+        label: componentItem.label,
+        score: componentItem.score,
+        weight: componentItem.weight,
+        explanation: componentItem.explanation,
+      })),
+    ),
+    next_best_action: {
+      title: "Ship one reviewed feature in a team repo",
+      description: "Use pull requests, tests, and reviewer feedback as evidence for the active intern milestone.",
+      route_type: "recommended",
+    },
+    selected_route_type: selectedRouteType,
+    source_note: "Demo mode: all Career GPS data shown here is illustrative seed data for a hackathon presentation. It is not production user data and is not saved to Supabase.",
+  };
+}
+
+const demoProgressEntries: CareerGpsProgressEntry[] = [
+  {
+    id: -1,
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: "recommended",
+    milestone_sequence: 1,
+    action_sequence: 1,
+    status: "completed",
+    progress_percent: 100,
+    notes: "Completed algorithms revision for the demo journey.",
+    evidence_url: "https://example.com/demo-algorithms-notes",
+    completed_at: "2026-07-01",
+    updated_at: "2026-07-01T00:00:00Z",
+  },
+  {
+    id: -2,
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: "recommended",
+    milestone_sequence: 1,
+    action_sequence: 2,
+    status: "completed",
+    progress_percent: 100,
+    notes: "Portfolio project shipped with a README and deployment link.",
+    evidence_url: "https://example.com/demo-portfolio",
+    completed_at: "2026-07-05",
+    updated_at: "2026-07-05T00:00:00Z",
+  },
+  {
+    id: -3,
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: "recommended",
+    milestone_sequence: 1,
+    action_sequence: null,
+    status: "completed",
+    progress_percent: 100,
+    notes: "Completed foundation milestone.",
+    evidence_url: null,
+    completed_at: "2026-07-05",
+    updated_at: "2026-07-05T00:00:00Z",
+  },
+  {
+    id: -4,
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: "recommended",
+    milestone_sequence: 2,
+    action_sequence: 1,
+    status: "in_progress",
+    progress_percent: 50,
+    notes: "Feature branch is under review in the demo flow.",
+    evidence_url: null,
+    completed_at: null,
+    updated_at: "2026-07-13T00:00:00Z",
+  },
+  {
+    id: -5,
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: "recommended",
+    milestone_sequence: 2,
+    action_sequence: null,
+    status: "in_progress",
+    progress_percent: 50,
+    notes: "Active milestone for avatar positioning.",
+    evidence_url: null,
+    completed_at: null,
+    updated_at: "2026-07-13T00:00:00Z",
+  },
+];
+
+const demoNextBestAction: CareerGpsNextBestActionDetail = {
+  roadmap_id: DEMO_ROADMAP_ID,
+  route_type: "recommended",
+  milestone_sequence: 2,
+  action_sequence: 1,
+  action_title: "Ship one reviewed feature in a team repo",
+  why_it_matters: "This creates concrete internship-level evidence: a pull request, review feedback, tests, and a deployed or merged feature.",
+  estimated_effort: "6-12 focused hours",
+  target_completion_date: "2026-07-27",
+  expected_impact: "Moves the active milestone from planning to credible engineering proof.",
+  related_milestone: "Software Engineering Intern",
+  status: "in_progress",
+  recommended_skill_gained: "Code review",
+  selection_reason: "Demo mode selected the active milestone's highest-priority incomplete action.",
+  is_alternative: false,
 };
 
 function initialsFromName(name: string | null | undefined) {
@@ -212,6 +674,23 @@ function progressEntriesByKey(entries: CareerGpsProgressEntry[]) {
   }, {});
 }
 
+function normalizeSkill(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function employeeHasSkill(profile: CareerGpsProfile | null, skillName: string | null | undefined) {
+  const normalized = normalizeSkill(skillName);
+  if (!profile || !normalized) return false;
+  return profile.employee.skills.some((skill) => normalizeSkill(skill) === normalized);
+}
+
+function priorityLabel(priority: number) {
+  if (priority >= 5) return "Critical";
+  if (priority >= 4) return "High";
+  if (priority >= 3) return "Medium";
+  return "Low";
+}
+
 function missingRequirement(milestone: CareerGpsMilestone | null, route: CareerGpsRoute) {
   if (!milestone) return route.skill_gaps[0]?.skill_name ?? "Role evidence";
   const focus = milestone.focus_skill_name;
@@ -244,6 +723,156 @@ function formatActionDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(date);
+}
+
+function demoMilestoneDetail(
+  roadmap: CareerGpsRoadmap,
+  route: CareerGpsRoute,
+  milestone: CareerGpsMilestone,
+  progressByKey: ProgressEntriesByKey,
+): CareerGpsMilestoneDetail {
+  const missingSkills = route.skill_gaps
+    .filter((gap) => normalizeSkill(gap.skill_name) === normalizeSkill(milestone.focus_skill_name) || gap.priority >= 4)
+    .map((gap) => gap.skill_name)
+    .slice(0, 4);
+  const existingSkills = demoProfile.employee.skills.filter((skill) => normalizeSkill(skill) !== normalizeSkill(milestone.focus_skill_name));
+  return {
+    roadmap_id: roadmap.roadmap_id,
+    route_type: route.route_type,
+    milestone_sequence: milestone.sequence,
+    title: milestone.title,
+    why_recommended: `Demo detail: this stop builds ${milestone.focus_skill_name ?? "career evidence"} before the next route decision.`,
+    estimated_timeline: `${milestone.duration_weeks ?? 4} weeks`,
+    required_skills: [milestone.focus_skill_name ?? "Role evidence", ...missingSkills].filter(Boolean),
+    existing_skills: existingSkills.slice(0, 4),
+    missing_skills: missingSkills.length ? missingSkills : [milestone.focus_skill_name ?? "Role evidence"],
+    recommended_certification: "No mandatory certification is claimed in demo mode; use the stored learning action as practice evidence.",
+    recommended_experience: `Complete one applied ${milestone.focus_skill_name ?? "engineering"} activity and save proof before moving on.`,
+    suggested_project: milestone.actions.find((action) => action.action_type === "project")?.title ?? milestone.actions[0]?.title ?? "Create one evidence-backed work sample.",
+    relevant_target_roles: roadmap.routes.map((item) => item.target_occupation.title),
+    transition_difficulty: componentText(component(route, "transition_difficulty") ?? null),
+    lifestyle_impact: `${componentText(component(route, "lifestyle_fit") ?? null)} with ${componentText(component(route, "work_life_balance_fit") ?? null)}`,
+    confidence_level: confidenceLevel(route.score),
+    main_assumptions: [
+      "Demo mode uses illustrative route data only and does not represent live labor-market or salary data.",
+      "Progress updates in demo mode are local to the browser session and are not written to Supabase.",
+    ],
+    immediate_actions: milestone.actions.map((action) => ({
+      ...action,
+      progress: progressByKey[progressKey(route.route_type, milestone.sequence, action.sequence)] ?? null,
+    })),
+    milestone_progress: progressByKey[progressKey(route.route_type, milestone.sequence)] ?? null,
+  };
+}
+
+function demoProgressPercent(statusValue: CareerGpsProgressStatus) {
+  if (statusValue === "completed") return 100;
+  if (statusValue === "in_progress") return 50;
+  return 0;
+}
+
+function demoProgressEntry(payload: CareerGpsProgressUpdatePayload): CareerGpsProgressEntry {
+  return {
+    id: -Date.now(),
+    roadmap_id: DEMO_ROADMAP_ID,
+    route_type: payload.route_type,
+    milestone_sequence: payload.milestone_sequence,
+    action_sequence: payload.action_sequence ?? null,
+    status: payload.status,
+    progress_percent: demoProgressPercent(payload.status),
+    notes: payload.notes ?? null,
+    evidence_url: payload.evidence_url ?? null,
+    completed_at: payload.completed_at ?? null,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function demoWhatIfPreview(currentRoadmap: CareerGpsRoadmap, payload: CareerGpsWhatIfScenarioPayload): CareerGpsWhatIfPreview {
+  const workLife = payload.adjustments.includes("prioritise_work_life_balance");
+  const accelerated = payload.adjustments.includes("prioritise_salary") || payload.adjustments.includes("retire_earlier");
+  const selectedRouteType: CareerGpsRouteType = workLife ? "balanced" : accelerated ? "accelerated" : currentRoadmap.selected_route_type;
+  const previewRoadmap = buildDemoRoadmap(selectedRouteType, currentRoadmap.version + 1);
+  const currentRoute = selectedRoute(currentRoadmap, currentRoadmap.selected_route_type) ?? currentRoadmap.routes[0];
+  const previewRoute = selectedRoute(previewRoadmap, selectedRouteType) ?? previewRoadmap.routes[0];
+  const scenarioName =
+    payload.scenario_name ??
+    (workLife ? "Work-life balance scenario" : accelerated ? "Accelerated demo scenario" : "Demo scenario preview");
+
+  return {
+    scenario: {
+      scenario_name: scenarioName,
+      adjustments: payload.adjustments,
+      applied_overrides: [
+        workLife
+          ? "Raised work-life balance and remote-work priority in the demo preview."
+          : accelerated
+            ? "Raised timeline compression and opportunity priority in the demo preview."
+            : "Preview keeps the active route because no route-changing demo adjustment was selected.",
+      ],
+    },
+    preview_roadmap: previewRoadmap,
+    comparison: {
+      current_roadmap_id: currentRoadmap.roadmap_id,
+      current_version: currentRoadmap.version,
+      preview_version: previewRoadmap.version,
+      changes: [
+        {
+          category: "recommended_route",
+          label: "Recommended route",
+          before: routeLabels[currentRoadmap.selected_route_type],
+          after: routeLabels[selectedRouteType],
+          changed: currentRoadmap.selected_route_type !== selectedRouteType,
+          explanation: "Demo mode recalculates the route view locally from the selected scenario priority.",
+        },
+        {
+          category: "target_roles",
+          label: "Target role",
+          before: currentRoute?.target_occupation.title ?? "Current route",
+          after: previewRoute?.target_occupation.title ?? "Preview route",
+          changed: currentRoute?.target_occupation.title !== previewRoute?.target_occupation.title,
+          explanation: "The destination can shift when the scenario changes pace or lifestyle priority.",
+        },
+        {
+          category: "timeline",
+          label: "Timeline",
+          before: `${currentRoute?.estimated_months ?? 0} months`,
+          after: `${previewRoute?.estimated_months ?? 0} months`,
+          changed: currentRoute?.estimated_months !== previewRoute?.estimated_months,
+          explanation: "Balanced routes take longer; accelerated routes compress milestones.",
+        },
+        {
+          category: "skill_priorities",
+          label: "Skill priorities",
+          before: currentRoute?.skill_gaps.slice(0, 3).map((gap) => gap.skill_name).join(", ") ?? "No gaps",
+          after: previewRoute?.skill_gaps.slice(0, 3).map((gap) => gap.skill_name).join(", ") ?? "No gaps",
+          changed: currentRoute?.route_type !== previewRoute?.route_type,
+          explanation: "Skill priorities follow the selected route's stored illustrative gaps.",
+        },
+        {
+          category: "tradeoffs",
+          label: "Trade-offs",
+          before: componentText(currentRoute ? weakestComponent(currentRoute) : null),
+          after: componentText(previewRoute ? weakestComponent(previewRoute) : null),
+          changed: currentRoute?.route_type !== previewRoute?.route_type,
+          explanation: "Trade-offs are illustrative and deterministic in demo mode.",
+        },
+      ],
+    },
+  };
+}
+
+function demoBuddyReply(question: string, activeRoute: CareerGpsRoute): string {
+  const lower = question.toLowerCase();
+  if (lower.includes("balanced") || lower.includes("work-life") || lower.includes("work life")) {
+    return "In demo mode, the Balanced Route protects sustainable pacing. It keeps the leadership branch open while prioritising testing, maintainable architecture, mentoring, and workload planning.";
+  }
+  if (lower.includes("90") || lower.includes("next")) {
+    return "For the next 90 days, finish the active internship milestone: ship one reviewed feature, save the pull request as evidence, and write a short reflection on review feedback.";
+  }
+  if (lower.includes("skill")) {
+    return `The biggest demo blocker on ${routeLabels[activeRoute.route_type]} is ${activeRoute.skill_gaps[0]?.skill_name ?? "role evidence"}. Build one small proof artifact before moving to the next stop.`;
+  }
+  return `Demo answer: ${routeLabels[activeRoute.route_type]} is recommended because it connects the active milestone to visible engineering evidence without inventing salary or live-market claims.`;
 }
 
 function progressStatusTone(status: CareerGpsProgressStatus | null | undefined) {
@@ -334,15 +963,40 @@ function HeaderNav({ active = false }: { active?: boolean }) {
   );
 }
 
+function DemoModeBanner() {
+  return (
+    <section className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#E8197A]">
+            <ShieldCheck size={20} />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Safe demo mode</p>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[#1A1033]">
+              Showing one illustrative employee journey. Route switches, progress updates, what-if results, and Career Buddy replies stay local and do not overwrite real users.
+            </p>
+          </div>
+        </div>
+        <span className="inline-flex w-fit rounded-full border border-[#FFD0E8] bg-white px-3 py-1 text-xs font-bold text-[#E8197A]">
+          illustrative_demo
+        </span>
+      </div>
+    </section>
+  );
+}
+
 function CareerGpsHeader({
   profile,
   roadmap,
   isRefreshing,
+  isDemoMode,
   onRefresh,
 }: {
   profile: CareerGpsProfile;
   roadmap: CareerGpsRoadmap | null;
   isRefreshing: boolean;
+  isDemoMode: boolean;
   onRefresh: () => void;
 }) {
   const destination = profile.north_star.target_role ?? profile.employee.target_role ?? "Set a target role";
@@ -356,11 +1010,15 @@ function CareerGpsHeader({
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
             <Compass size={14} />
-            Career GPS
+            {isDemoMode ? "Career GPS Demo" : "Career GPS"}
           </p>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#1A1033] sm:text-4xl">Your Career GPS</h1>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#1A1033] sm:text-4xl">
+            {isDemoMode ? "Aisha's Career GPS" : "Your Career GPS"}
+          </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">
-            A focused planning workspace for your destination, next best action, and upcoming career journey map.
+            {isDemoMode
+              ? "A polished hackathon demo flow from computer science student to engineering leadership."
+              : "A focused planning workspace for your destination, next best action, and upcoming career journey map."}
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -374,7 +1032,7 @@ function CareerGpsHeader({
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isRefreshing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               Recalculate
@@ -744,8 +1402,8 @@ function RouteCard({
       onClick={onSelect}
       disabled={isSaving}
       aria-pressed={selected}
-      className={`flex h-full min-h-[420px] flex-col rounded-lg border bg-white p-4 text-left shadow-[0_4px_24px_rgba(232,25,122,0.08)] transition disabled:cursor-wait disabled:opacity-75 ${
-        selected ? `${tone.border} ring-2 ${tone.ring}` : "border-[#F0EBF8] hover:border-[#DDD0F8] hover:bg-[#FDFCFF]"
+      className={`flex h-full min-h-[400px] flex-col rounded-lg border bg-white p-4 text-left shadow-[0_4px_24px_rgba(232,25,122,0.08)] outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-wait disabled:opacity-75 ${
+        selected ? `${tone.border} ring-2 ${tone.ring}` : "border-[#F0EBF8] hover:-translate-y-0.5 hover:border-[#DDD0F8] hover:bg-[#FDFCFF] hover:shadow-[0_8px_32px_rgba(26,16,51,0.08)]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -760,7 +1418,7 @@ function RouteCard({
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-bold text-[#1A1033]">{route.target_occupation.title}</h3>
+          <h3 className="text-lg font-bold leading-tight text-[#1A1033]">{route.target_occupation.title}</h3>
           <p className="mt-2 text-sm leading-6 text-[#6B7280]">{route.summary}</p>
         </div>
         {selected && <CheckCircle2 size={22} className="shrink-0 text-[#10B981]" aria-label="Selected route" />}
@@ -947,7 +1605,7 @@ function RouteSelectorShell({
         </div>
       )}
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-3">
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
         {roadmap.routes.map((route) => (
           <RouteCard
             key={route.route_type}
@@ -977,7 +1635,7 @@ function nodePositions(milestoneCount: number) {
   };
 }
 
-function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntriesByKey) {
+function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntriesByKey, demoMode = false) {
   const positions = nodePositions(route.milestones.length);
   const readiness = readinessFromRoute(route);
   const activeProgressIndex = route.milestones.findIndex(
@@ -1003,6 +1661,8 @@ function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntries
         ? "completed"
         : index === activeIndex
           ? "active"
+          : demoMode && activeIndex >= 0 && index > activeIndex + 1
+            ? "locked"
           : "future",
     missingRequirement: missingRequirement(milestone, route),
     milestone,
@@ -1109,7 +1769,7 @@ function JourneyMilestoneButton({
       disabled={locked}
       aria-pressed={selected}
       aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${statusLabel(node.status)}, missing requirement ${node.missingRequirement}`}
-      className="group absolute z-10 flex w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed"
+      className="group absolute z-10 flex w-[158px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed"
       style={{ left: `${node.desktop.x}%`, top: `${node.desktop.y}%` }}
     >
       <span
@@ -1127,8 +1787,12 @@ function JourneyMilestoneButton({
           />
         )}
       </span>
-      <span className="mt-2 line-clamp-2 min-h-9 text-xs font-bold leading-[18px] text-[#1A1033]">{node.title}</span>
-      <span className="text-[11px] font-bold uppercase text-[#9CA3AF]">{node.timing}</span>
+      <span className="mt-2 line-clamp-2 min-h-9 rounded-md bg-white/90 px-2 text-xs font-bold leading-[18px] text-[#1A1033] shadow-sm">
+        {node.title}
+      </span>
+      <span className="mt-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold uppercase text-[#6B7280] shadow-sm">
+        {node.timing}
+      </span>
     </button>
   );
 }
@@ -1510,6 +2174,7 @@ function CareerJourneyMap({
   progressEntries,
   isSavingProgress,
   progressError,
+  isDemoMode,
   onSaveProgress,
 }: {
   roadmap: CareerGpsRoadmap | null;
@@ -1519,10 +2184,14 @@ function CareerJourneyMap({
   progressEntries: CareerGpsProgressEntry[];
   isSavingProgress: boolean;
   progressError: string | null;
+  isDemoMode: boolean;
   onSaveProgress: SaveProgressHandler;
 }) {
   const progressByKey = useMemo(() => progressEntriesByKey(progressEntries), [progressEntries]);
-  const nodes = useMemo(() => (activeRoute ? buildJourneyNodes(activeRoute, progressByKey) : []), [activeRoute, progressByKey]);
+  const nodes = useMemo(
+    () => (activeRoute ? buildJourneyNodes(activeRoute, progressByKey, isDemoMode) : []),
+    [activeRoute, progressByKey, isDemoMode],
+  );
   const activeNode = nodes.find((node) => node.status === "active") ?? nodes.find((node) => node.status === "destination") ?? nodes[0];
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [milestoneDetail, setMilestoneDetail] = useState<CareerGpsMilestoneDetail | null>(null);
@@ -1538,6 +2207,12 @@ function CareerJourneyMap({
   useEffect(() => {
     if (!roadmap || !activeRoute || !selectedNode?.milestone) {
       setMilestoneDetail(null);
+      setDetailError(null);
+      setIsDetailLoading(false);
+      return;
+    }
+    if (isDemoMode) {
+      setMilestoneDetail(demoMilestoneDetail(roadmap, activeRoute, selectedNode.milestone, progressByKey));
       setDetailError(null);
       setIsDetailLoading(false);
       return;
@@ -1564,7 +2239,7 @@ function CareerJourneyMap({
     return () => {
       cancelled = true;
     };
-  }, [roadmap, activeRoute, selectedNode?.id, selectedNode?.milestone]);
+  }, [roadmap, activeRoute, selectedNode?.id, selectedNode?.milestone, isDemoMode, progressByKey]);
 
   if (!roadmap || !activeRoute || !nodes.length || !activeNode) {
     return (
@@ -1584,19 +2259,19 @@ function CareerJourneyMap({
   const branchRoutes = roadmap.routes.filter((route) => route.route_type !== activeRoute.route_type);
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.10)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
             <Map size={14} />
             Journey map
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">{activeRoute.title}</h2>
+          <h2 className="mt-3 text-2xl font-bold leading-tight text-[#1A1033] sm:text-3xl">{activeRoute.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             A metro-style career route using stored milestones from the selected roadmap. Route branches show alternative views, not regenerated recommendations.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active route</p>
           <p className="mt-1 text-sm font-bold" style={{ color: routeColor }}>
             {routeLabels[activeRoute.route_type]}
@@ -1607,12 +2282,12 @@ function CareerJourneyMap({
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div>
           <div className="hidden lg:block">
-            <div className="relative min-h-[560px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#FDFCFF]">
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(226,217,243,0.32)_1px,transparent_1px),linear-gradient(0deg,rgba(226,217,243,0.32)_1px,transparent_1px)] bg-[size:44px_44px]" />
+            <div className="relative min-h-[590px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#FFFCFE]">
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(226,217,243,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(226,217,243,0.34)_1px,transparent_1px)] bg-[size:44px_44px]" />
               <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <path d={fullPath} fill="none" stroke="#E2D9F3" strokeWidth="1.2" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d={fullPath} fill="none" stroke="#D6C9EA" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
                 {activePath && (
-                  <path d={activePath} fill="none" stroke={routeColor} strokeWidth="1.5" strokeLinecap="round" />
+                  <path d={activePath} fill="none" stroke={routeColor} strokeWidth="2.2" strokeLinecap="round" />
                 )}
                 {branchRoutes.map((route, index) => {
                   const branchY = index === 0 ? 20 : 82;
@@ -1623,7 +2298,7 @@ function CareerJourneyMap({
                       d={`M ${start.desktop.x} ${start.desktop.y} C 45 ${branchY}, 68 ${branchY}, 84 ${branchY}`}
                       fill="none"
                       stroke={routeHexColor[route.route_type]}
-                      strokeWidth="0.75"
+                      strokeWidth="1"
                       strokeLinecap="round"
                       strokeDasharray="2 2"
                       opacity="0.55"
@@ -1631,7 +2306,13 @@ function CareerJourneyMap({
                   );
                 })}
               </svg>
-              <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+              <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap gap-2">
+                {isDemoMode && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-white px-3 py-1 text-xs font-bold text-[#E8197A]">
+                    <ShieldCheck size={13} />
+                    Safe demo route
+                  </span>
+                )}
                 {branchRoutes.map((route) => (
                   <span
                     key={route.route_type}
@@ -1654,6 +2335,11 @@ function CareerJourneyMap({
                   onSelect={() => setSelectedNodeId(node.id)}
                 />
               ))}
+              {isDemoMode && (
+                <div className="absolute bottom-4 left-4 max-w-[280px] rounded-lg border border-[#DDD0F8] bg-white/95 p-3 text-xs font-bold leading-5 text-[#6B46C1] shadow-sm">
+                  Branch decision: Engineering Manager or Principal Engineer after Technical Lead readiness.
+                </div>
+              )}
             </div>
           </div>
 
@@ -1709,7 +2395,1032 @@ function CareerJourneyMap({
   );
 }
 
-export default function CareerGpsPageShell() {
+function readinessScoreForStatus(statusValue: CareerGpsProgressStatus | null | undefined): number {
+  if (statusValue === "completed") return 100;
+  if (statusValue === "in_progress") return 50;
+  return 0;
+}
+
+function nextMilestone(route: CareerGpsRoute, progressByKey: ProgressEntriesByKey) {
+  const inProgress = route.milestones.find(
+    (milestone) => progressByKey[progressKey(route.route_type, milestone.sequence)]?.status === "in_progress",
+  );
+  if (inProgress) return inProgress;
+  return (
+    route.milestones.find(
+      (milestone) => progressByKey[progressKey(route.route_type, milestone.sequence)]?.status !== "completed",
+    ) ??
+    route.milestones[route.milestones.length - 1] ??
+    null
+  );
+}
+
+function milestoneEvidenceReadiness(
+  profile: CareerGpsProfile,
+  route: CareerGpsRoute,
+  milestone: CareerGpsMilestone | null,
+  progressByKey: ProgressEntriesByKey,
+) {
+  if (!milestone) return Math.round(route.score);
+  const milestoneProgress = progressByKey[progressKey(route.route_type, milestone.sequence)];
+  if (milestoneProgress?.status === "completed") return 100;
+  const skillScore = employeeHasSkill(profile, milestone.focus_skill_name) ? 100 : 0;
+  const actionScores = milestone.actions.map(
+    (action) => readinessScoreForStatus(progressByKey[progressKey(route.route_type, milestone.sequence, action.sequence)]?.status),
+  );
+  const actionScore = actionScores.length ? actionScores.reduce((total, value) => total + value, 0) / actionScores.length : skillScore;
+  return Math.round((skillScore + actionScore) / 2);
+}
+
+function routeProgressSummary(route: CareerGpsRoute, progressByKey: ProgressEntriesByKey) {
+  const actionRefs = route.milestones.flatMap((milestone) =>
+    milestone.actions.map((action) => ({
+      milestone,
+      action,
+      progress: progressByKey[progressKey(route.route_type, milestone.sequence, action.sequence)],
+    })),
+  );
+  const total = actionRefs.length;
+  const completed = actionRefs.filter((item) => item.progress?.status === "completed").length;
+  const inProgress = actionRefs.filter((item) => item.progress?.status === "in_progress").length;
+  const evidence = actionRefs.filter((item) => item.progress?.evidence_url).length;
+  return {
+    total,
+    completed,
+    inProgress,
+    evidence,
+    percent: total ? Math.round((completed / total) * 100) : 0,
+  };
+}
+
+function skillEvidenceLinks(route: CareerGpsRoute, progressEntries: CareerGpsProgressEntry[]) {
+  return progressEntries
+    .filter((entry) => entry.route_type === route.route_type && entry.evidence_url)
+    .map((entry) => {
+      const milestone = route.milestones.find((item) => item.sequence === entry.milestone_sequence);
+      return {
+        skill: milestone?.focus_skill_name ?? "Role evidence",
+        milestone: milestone?.title ?? `Milestone ${entry.milestone_sequence}`,
+        evidenceUrl: entry.evidence_url,
+        status: entry.status,
+      };
+    })
+    .slice(0, 4);
+}
+
+function skillReadinessItems(
+  profile: CareerGpsProfile,
+  route: CareerGpsRoute,
+  progressByKey: ProgressEntriesByKey,
+): SkillReadinessItem[] {
+  return route.skill_gaps
+    .map((gap) => {
+      const relatedMilestones = route.milestones.filter(
+        (milestone) => normalizeSkill(milestone.focus_skill_name) === normalizeSkill(gap.skill_name),
+      );
+      const relatedProgress = relatedMilestones.flatMap((milestone) =>
+        milestone.actions.map((action) => progressByKey[progressKey(route.route_type, milestone.sequence, action.sequence)]).filter(Boolean),
+      );
+      const completed = relatedProgress.some((entry) => entry.status === "completed");
+      const inProgress = relatedProgress.some((entry) => entry.status === "in_progress");
+      const evidenceUrl = relatedProgress.find((entry) => entry.evidence_url)?.evidence_url ?? null;
+      const achieved = employeeHasSkill(profile, gap.skill_name) || completed;
+      return {
+        name: gap.skill_name,
+        status: achieved ? "achieved" : inProgress ? "in_progress" : "missing",
+        priority: gap.priority,
+        label: priorityLabel(gap.priority),
+        evidenceUrl,
+      } satisfies SkillReadinessItem;
+    })
+    .sort((a, b) => b.priority - a.priority || a.name.localeCompare(b.name));
+}
+
+function ReadinessRing({
+  label,
+  value,
+  tone = "pink",
+}: {
+  label: string;
+  value: number;
+  tone?: "pink" | "teal" | "purple";
+}) {
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  const color = tone === "teal" ? "#06B6D4" : tone === "purple" ? "#6B46C1" : "#E8197A";
+  const circumference = 2 * Math.PI * 36;
+  const offset = circumference - (clamped / 100) * circumference;
+  return (
+    <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+      <div className="flex items-center gap-4">
+        <svg width="88" height="88" viewBox="0 0 88 88" role="img" aria-label={`${label}: ${clamped}%`}>
+          <circle cx="44" cy="44" r="36" fill="none" stroke="#F0EBF8" strokeWidth="8" />
+          <circle
+            cx="44"
+            cy="44"
+            r="36"
+            fill="none"
+            stroke={color}
+            strokeLinecap="round"
+            strokeWidth="8"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            transform="rotate(-90 44 44)"
+          />
+          <text x="44" y="48" textAnchor="middle" className="fill-[#1A1033] text-xl font-black">
+            {clamped}%
+          </text>
+        </svg>
+        <div>
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
+          <p className="mt-1 text-sm font-semibold leading-5 text-[#6B7280]">
+            {clamped >= 75 ? "Ready to move with evidence" : clamped >= 45 ? "Building enough proof" : "Needs more evidence"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillChip({ item }: { item: SkillReadinessItem }) {
+  const tone =
+    item.status === "achieved"
+      ? "border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]"
+      : item.status === "in_progress"
+        ? "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]"
+        : "border-[#FFD0E8] bg-[#FFF8FC] text-[#E8197A]";
+  return (
+    <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${tone}`}>
+      {item.name}
+      <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] uppercase">{item.label}</span>
+    </span>
+  );
+}
+
+function SkillsReadinessSection({
+  profile,
+  activeRoute,
+  progressEntries,
+}: {
+  profile: CareerGpsProfile;
+  activeRoute: CareerGpsRoute | null;
+  progressEntries: CareerGpsProgressEntry[];
+}) {
+  if (!activeRoute) {
+    return (
+      <EmptyPanel
+        icon={Gauge}
+        label="Skills and readiness"
+        title="Generate a roadmap to see readiness"
+        description="Readiness needs a stored route, employee skills, and roadmap milestones."
+      />
+    );
+  }
+
+  const progressByKey = progressEntriesByKey(progressEntries);
+  const milestone = nextMilestone(activeRoute, progressByKey);
+  const routeReadiness = readinessFromRoute(activeRoute);
+  const milestoneReadiness = milestoneEvidenceReadiness(profile, activeRoute, milestone, progressByKey);
+  const skillItems = skillReadinessItems(profile, activeRoute, progressByKey);
+  const achievedRouteSkills = skillItems.filter((item) => item.status === "achieved").slice(0, 5);
+  const inProgressSkills = skillItems.filter((item) => item.status === "in_progress").slice(0, 5);
+  const missingPrioritySkills = skillItems.filter((item) => item.status === "missing").slice(0, 5);
+  const profileSkills = profile.employee.skills.slice(0, 6).map((skill) => ({
+    name: skill,
+    status: "achieved" as const,
+    priority: 2,
+    label: "Profile",
+    evidenceUrl: null,
+  }));
+  const achievedSkills = achievedRouteSkills.length ? achievedRouteSkills : profileSkills;
+  const progress = routeProgressSummary(activeRoute, progressByKey);
+  const evidenceLinks = skillEvidenceLinks(activeRoute, progressEntries);
+  const learningAction = milestone?.actions.find((action) => action.action_type === "learning");
+  const certificationText = learningAction
+    ? `${learningAction.description ?? "Use the stored learning action"} for ${milestone?.focus_skill_name ?? "the next milestone"}.`
+    : "No mandatory certification is stored for this route.";
+
+  return (
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+            <Gauge size={14} />
+            Skills and readiness
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Why you are ready for the next stop</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Readiness uses your saved employee skills, stored route skill gaps, milestone focus skills, and persisted evidence.
+          </p>
+        </div>
+        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Next milestone</p>
+          <p className="mt-1 text-sm font-bold text-[#1A1033]">{milestone?.title ?? activeRoute.target_occupation.title}</p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <ReadinessRing label="Overall route readiness" value={routeReadiness} tone="pink" />
+          <ReadinessRing label="Next milestone readiness" value={milestoneReadiness} tone="teal" />
+        </div>
+
+        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
+                <TrendingUp size={14} />
+                Progress trend
+              </p>
+              <p className="mt-2 text-lg font-bold text-[#1A1033]">
+                {progress.completed} of {progress.total || activeRoute.milestones.length} stored actions complete
+              </p>
+              <p className="mt-1 text-sm font-semibold leading-5 text-[#6B7280]">
+                {progress.inProgress} in progress / {progress.evidence} with evidence links
+              </p>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#6B46C1]">
+              {routeLabels[activeRoute.route_type]}
+            </span>
+          </div>
+          <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-[#10B981]" style={{ width: `${progress.percent}%` }} />
+          </div>
+          <p className="mt-3 text-xs font-semibold leading-5 text-[#9CA3AF]">
+            Route readiness is the stored deterministic Skill fit score. Milestone readiness is recalculated from focus-skill match and action progress.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <SkillGroup
+          icon={CheckCircle2}
+          title="Skills already achieved"
+          emptyText="No matching profile skills are stored yet."
+          items={achievedSkills}
+        />
+        <SkillGroup
+          icon={Clock3}
+          title="Skills in progress"
+          emptyText="Start or complete an action to move a priority skill here."
+          items={inProgressSkills}
+        />
+        <SkillGroup
+          icon={AlertCircle}
+          title="Missing priority skills"
+          emptyText="No priority gaps remain on this route."
+          items={missingPrioritySkills}
+        />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] p-4">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#6B46C1]">
+            <Award size={14} />
+            Optional certification recommendation
+          </p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{certificationText}</p>
+          <p className="mt-2 text-xs font-semibold leading-5 text-[#9CA3AF]">
+            No certification requirement is invented here; this uses the stored milestone learning action when available.
+          </p>
+        </div>
+
+        <details className="group rounded-lg border border-[#F0EBF8] bg-white p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+            Evidence linked to skills
+            <ChevronDown size={16} className="transition group-open:rotate-180" />
+          </summary>
+          {evidenceLinks.length ? (
+            <div className="mt-3 grid gap-2">
+              {evidenceLinks.map((item) => (
+                <a
+                  key={`${item.milestone}-${item.evidenceUrl}`}
+                  href={item.evidenceUrl ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col gap-1 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3 text-sm font-semibold text-[#1A1033] hover:border-[#BAF3FF]"
+                >
+                  <span>{item.skill}</span>
+                  <span className="text-xs text-[#6B7280]">
+                    {item.milestone} / {progressStatusLabel(item.status)}
+                  </span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm font-semibold leading-6 text-[#6B7280]">
+              No evidence links are saved yet. Add an evidence URL in a milestone action to connect proof to a skill.
+            </p>
+          )}
+        </details>
+      </div>
+
+      <details className="group mt-4 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+          How readiness is calculated
+          <ChevronDown size={16} className="transition group-open:rotate-180" />
+        </summary>
+        <div className="mt-3 grid gap-2 text-sm font-semibold leading-6 text-[#6B7280]">
+          <p>Overall route readiness uses the stored deterministic Skill fit component from the selected route.</p>
+          <p>
+            Next milestone readiness averages focus-skill match from the employee profile and saved action progress
+            where not started is 0%, in progress is 50%, and complete is 100%.
+          </p>
+          <p>Skill chips are limited to the highest-priority stored gaps and saved profile skills to avoid a long list.</p>
+        </div>
+      </details>
+    </section>
+  );
+}
+
+function SkillGroup({
+  icon: Icon,
+  title,
+  items,
+  emptyText,
+}: {
+  icon: LucideIcon;
+  title: string;
+  items: SkillReadinessItem[];
+  emptyText: string;
+}) {
+  return (
+    <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+      <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
+        <Icon size={14} />
+        {title}
+      </p>
+      {items.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <SkillChip key={`${title}-${item.name}`} item={item} />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm font-semibold leading-6 text-[#6B7280]">{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
+function changeByCategory(preview: CareerGpsWhatIfPreview | null, category: string) {
+  return preview?.comparison.changes.find((change) => change.category === category) ?? null;
+}
+
+function WhatIfCareerSimulator({
+  roadmap,
+  activeRoute,
+  preview,
+  isPreviewing,
+  isApplying,
+  error,
+  message,
+  onPreview,
+  onApply,
+  onDiscard,
+}: {
+  roadmap: CareerGpsRoadmap | null;
+  activeRoute: CareerGpsRoute | null;
+  preview: CareerGpsWhatIfPreview | null;
+  isPreviewing: boolean;
+  isApplying: boolean;
+  error: string | null;
+  message: string | null;
+  onPreview: (payload: CareerGpsWhatIfScenarioPayload) => Promise<void>;
+  onApply: (payload: CareerGpsWhatIfScenarioPayload) => Promise<void>;
+  onDiscard: () => void;
+}) {
+  const [scenarioName, setScenarioName] = useState("");
+  const [adjustments, setAdjustments] = useState<CareerGpsScenarioCode[]>(["prioritise_work_life_balance"]);
+  const [targetCountry, setTargetCountry] = useState("Singapore");
+  const [targetIndustry, setTargetIndustry] = useState("data");
+  const [targetRetirementAge, setTargetRetirementAge] = useState("50");
+  const [targetTimelineMonths, setTargetTimelineMonths] = useState("18");
+
+  if (!roadmap || !activeRoute) {
+    return (
+      <EmptyPanel
+        icon={SlidersHorizontal}
+        label="What-if simulator"
+        title="Generate a roadmap to run scenarios"
+        description="Scenario previews need a stored roadmap so the deterministic route engine has a baseline to compare."
+      />
+    );
+  }
+
+  const hasAdjustment = (code: CareerGpsScenarioCode) => adjustments.includes(code);
+  const toggleAdjustment = (code: CareerGpsScenarioCode) => {
+    setAdjustments((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
+  };
+  const numberOrNull = (value: string) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+  const payload = (): CareerGpsWhatIfScenarioPayload => ({
+    scenario_name: scenarioName.trim() || null,
+    adjustments,
+    target_country: hasAdjustment("relocate_country") ? targetCountry.trim() || null : null,
+    target_industry: hasAdjustment("change_industry") ? targetIndustry.trim() || null : null,
+    target_retirement_age: hasAdjustment("retire_earlier") ? numberOrNull(targetRetirementAge) : null,
+    target_timeline_months: hasAdjustment("retire_earlier") ? numberOrNull(targetTimelineMonths) : null,
+  });
+
+  const previewRoute = preview ? selectedRoute(preview.preview_roadmap, preview.preview_roadmap.selected_route_type) : null;
+  const changedCount = preview?.comparison.changes.filter((change) => change.changed).length ?? 0;
+  const destinationChange = changeByCategory(preview, "target_roles");
+  const timelineChange = changeByCategory(preview, "timeline");
+  const skillsChange = changeByCategory(preview, "skill_priorities");
+  const tradeoffChange = changeByCategory(preview, "tradeoffs");
+  const routeChange = changeByCategory(preview, "recommended_route");
+  const lifestyleBefore = `${metricValue(activeRoute, "lifestyle_fit")}% lifestyle fit`;
+  const lifestyleAfter = previewRoute ? `${metricValue(previewRoute, "lifestyle_fit")}% lifestyle fit` : "No preview";
+  const mainReason = preview?.scenario.applied_overrides[0] ?? routeChange?.explanation ?? "Run a preview to compare deterministic route changes.";
+  const currentSkillSummary = activeRoute.skill_gaps.slice(0, 4).map((gap) => gap.skill_name).join(", ") || "No major gaps";
+  const previewSkillSummary = previewRoute?.skill_gaps.slice(0, 4).map((gap) => gap.skill_name).join(", ") || "No major gaps";
+
+  return (
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+            <SlidersHorizontal size={14} />
+            What-if Career Simulator
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Preview a priority shift before applying it</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Preview uses the deterministic Career GPS engine with temporary profile changes. It does not overwrite your active roadmap until you apply it.
+          </p>
+        </div>
+        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active version</p>
+          <p className="mt-1 text-sm font-bold text-[#1A1033]">Version {roadmap.version}</p>
+        </div>
+      </div>
+
+      {(error || message) && (
+        <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-bold ${error ? "border-[#FECACA] bg-[#FFF5F5] text-[#DC2626]" : "border-[#BAF3FF] bg-[#F0FDFF] text-[#087C7E]"}`}>
+          {error ?? message}
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-4">
+          <label className="block">
+            <span className="text-xs font-bold uppercase text-[#9CA3AF]">Scenario name</span>
+            <input
+              value={scenarioName}
+              onChange={(event) => setScenarioName(event.target.value)}
+              placeholder="Optional name for this preview"
+              className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+            />
+          </label>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {scenarioOptions.map((option) => {
+              const active = hasAdjustment(option.code);
+              return (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => toggleAdjustment(option.code)}
+                  className={`min-h-[118px] rounded-lg border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8197A] ${
+                    active ? "border-[#E8197A] bg-[#FFF0F8] ring-2 ring-[#E8197A]/15" : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8]"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#E8197A] bg-[#E8197A]" : "border-[#DDD0F8] bg-white"}`}>
+                    {active && <CheckCircle2 size={14} className="text-white" />}
+                  </span>
+                  <span className="mt-3 block text-sm font-bold text-[#1A1033]">{option.label}</span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[#6B7280]">{option.description}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {(hasAdjustment("relocate_country") || hasAdjustment("change_industry") || hasAdjustment("retire_earlier")) && (
+            <div className="grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 md:grid-cols-2 xl:grid-cols-4">
+              {hasAdjustment("relocate_country") && (
+                <label className="block">
+                  <span className="text-xs font-bold uppercase text-[#9CA3AF]">Target country</span>
+                  <input
+                    value={targetCountry}
+                    onChange={(event) => setTargetCountry(event.target.value)}
+                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                  />
+                </label>
+              )}
+              {hasAdjustment("change_industry") && (
+                <label className="block">
+                  <span className="text-xs font-bold uppercase text-[#9CA3AF]">Target industry</span>
+                  <select
+                    value={targetIndustry}
+                    onChange={(event) => setTargetIndustry(event.target.value)}
+                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                  >
+                    <option value="technology">Technology</option>
+                    <option value="data">Data</option>
+                    <option value="project-management">Project management</option>
+                  </select>
+                </label>
+              )}
+              {hasAdjustment("retire_earlier") && (
+                <>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase text-[#9CA3AF]">Retirement age</span>
+                    <input
+                      value={targetRetirementAge}
+                      type="number"
+                      min={45}
+                      max={80}
+                      onChange={(event) => setTargetRetirementAge(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase text-[#9CA3AF]">Timeline months</span>
+                    <input
+                      value={targetTimelineMonths}
+                      type="number"
+                      min={1}
+                      max={480}
+                      onChange={(event) => setTargetTimelineMonths(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <aside className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Current route</p>
+          <h3 className="mt-2 text-lg font-bold text-[#1A1033]">{activeRoute.title}</h3>
+          <p className="mt-1 text-sm font-semibold text-[#6B7280]">{activeRoute.target_occupation.title}</p>
+          <div className="mt-4 space-y-3">
+            <MetricBar label="Route readiness" value={Math.round(activeRoute.score)} />
+            <MetricBar label="Lifestyle score" value={metricValue(activeRoute, "lifestyle_fit")} />
+          </div>
+          <div className="mt-4 grid gap-2">
+            <button
+              type="button"
+              onClick={() => onPreview(payload())}
+              disabled={!adjustments.length || isPreviewing || isApplying}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isPreviewing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              Preview Scenario
+            </button>
+            <button
+              type="button"
+              onClick={onDiscard}
+              disabled={!preview || isPreviewing || isApplying}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Discard Preview
+            </button>
+          </div>
+        </aside>
+      </div>
+
+      {preview && previewRoute && (
+        <div className="mt-5 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase text-[#0891B2]">Preview route</p>
+              <h3 className="mt-2 text-xl font-bold text-[#1A1033]">{previewRoute.title}</h3>
+              <p className="mt-1 text-sm font-semibold text-[#6B7280]">
+                {preview.scenario.scenario_name} previews version {preview.comparison.preview_version}; active roadmap remains version {preview.comparison.current_version}.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => onApply(payload())}
+                disabled={isApplying || isPreviewing}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#1A1033] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isApplying ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                Apply This Scenario
+              </button>
+              <button
+                type="button"
+                onClick={onDiscard}
+                disabled={isApplying || isPreviewing}
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Discard Preview
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <ComparisonTile label="Changed destination" before={destinationChange?.before ?? activeRoute.target_occupation.title} after={destinationChange?.after ?? previewRoute.target_occupation.title} changed={destinationChange?.changed ?? false} />
+            <ComparisonTile label="Changed timeline" before={timelineChange?.before ?? `${activeRoute.estimated_months} months`} after={timelineChange?.after ?? `${previewRoute.estimated_months} months`} changed={timelineChange?.changed ?? false} />
+            <ComparisonTile label="Lifestyle score" before={lifestyleBefore} after={lifestyleAfter} changed={lifestyleBefore !== lifestyleAfter} />
+            <ComparisonTile label="Changed trade-offs" before={tradeoffChange?.before ?? componentText(weakestComponent(activeRoute))} after={tradeoffChange?.after ?? componentText(weakestComponent(previewRoute))} changed={tradeoffChange?.changed ?? false} />
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="rounded-lg bg-white p-4">
+              <p className="text-xs font-bold uppercase text-[#9CA3AF]">Changed skill priorities</p>
+              <div className="mt-3 grid gap-2 text-sm font-semibold leading-6 text-[#6B7280] md:grid-cols-2">
+                <p>
+                  <span className="font-bold text-[#1A1033]">Current:</span> {skillsChange?.before ?? currentSkillSummary}
+                </p>
+                <p>
+                  <span className="font-bold text-[#1A1033]">Preview:</span> {skillsChange?.after ?? previewSkillSummary}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-lg bg-white p-4">
+              <p className="text-xs font-bold uppercase text-[#9CA3AF]">Main reason for change</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{mainReason}</p>
+              <p className="mt-3 text-xs font-bold text-[#0891B2]">
+                {changedCount} of {preview.comparison.changes.length} route signals changed.
+              </p>
+            </div>
+          </div>
+
+          <details className="group mt-4 rounded-lg bg-white p-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+              Scenario overrides and full comparison
+              <ChevronDown size={16} className="transition group-open:rotate-180" />
+            </summary>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              {preview.scenario.applied_overrides.map((override) => (
+                <p key={override} className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
+                  {override}
+                </p>
+              ))}
+              {preview.comparison.changes.map((change) => (
+                <div key={change.category} className="rounded-lg border border-[#F0EBF8] p-3">
+                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>
+                    {change.changed ? "Changed" : "No change"}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#1A1033]">{change.label}</p>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[#6B7280]">{change.explanation}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ComparisonTile({
+  label,
+  before,
+  after,
+  changed,
+}: {
+  label: string;
+  before: string;
+  after: string;
+  changed: boolean;
+}) {
+  return (
+    <div className={`rounded-lg border p-4 ${changed ? "border-[#FFD0E8] bg-[#FFF8FC]" : "border-[#F0EBF8] bg-white"}`}>
+      <p className={`text-xs font-bold uppercase ${changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>{label}</p>
+      <div className="mt-3 grid gap-2 text-xs font-semibold leading-5 text-[#6B7280]">
+        <p>
+          <span className="font-bold text-[#1A1033]">Current:</span> {before}
+        </p>
+        <p>
+          <span className="font-bold text-[#1A1033]">Preview:</span> {after}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CareerBuddyPanel({
+  roadmap,
+  activeRoute,
+  riasecResult,
+  isDemoMode,
+}: {
+  roadmap: CareerGpsRoadmap | null;
+  activeRoute: CareerGpsRoute | null;
+  riasecResult: RiasecResult | null;
+  isDemoMode: boolean;
+}) {
+  const [conversation, setConversation] = useState<CareerBuddyConversation | null>(null);
+  const [messages, setMessages] = useState<CareerBuddyMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+
+  const loadConversation = useCallback(async () => {
+    if (!roadmap) return;
+    if (isDemoMode) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const conversations = await getJson<CareerBuddyConversation[]>("/career-gps/career-buddy/conversations", {
+        auth: true,
+      });
+      const latest =
+        conversations.find((item) => item.roadmap_id === roadmap.roadmap_id && item.status === "active") ??
+        null;
+      if (!latest) {
+        setConversation(null);
+        setMessages([]);
+        setProvider(null);
+        setModel(null);
+        setRemaining(null);
+        return;
+      }
+      const detail = await getJson<CareerBuddyConversationDetail>(
+        `/career-gps/career-buddy/conversations/${latest.id}`,
+        { auth: true },
+      );
+      setConversation(detail);
+      setMessages(detail.messages);
+      const latestAssistant = [...detail.messages].reverse().find((message) => message.sender === "assistant");
+      setProvider(latestAssistant?.provider ?? null);
+      setModel(latestAssistant?.model ?? null);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load Career Buddy conversation.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [roadmap, isDemoMode]);
+
+  useEffect(() => {
+    setConversation(null);
+    setMessages([]);
+    setProvider(null);
+    setModel(null);
+    setRemaining(null);
+    setError(null);
+    loadConversation();
+  }, [loadConversation]);
+
+  const sendCareerBuddyMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || !roadmap || !activeRoute || isSending) return;
+    setIsOpen(true);
+    setIsSending(true);
+    setError(null);
+    if (isDemoMode) {
+      const now = new Date().toISOString();
+      const userMessage: CareerBuddyMessage = {
+        id: -Date.now(),
+        conversation_id: -1,
+        sender: "employee",
+        content: trimmed,
+        structured_response: {},
+        provider: "demo",
+        model: null,
+        created_at: now,
+      };
+      const assistantMessage: CareerBuddyMessage = {
+        id: -Date.now() - 1,
+        conversation_id: -1,
+        sender: "assistant",
+        content: demoBuddyReply(trimmed, activeRoute),
+        structured_response: {
+          confidence: "high",
+          referenced_route_type: activeRoute.route_type,
+          safety_notes: ["Demo mode uses illustrative stored context only."],
+        },
+        provider: "demo_template",
+        model: "local-demo",
+        created_at: now,
+      };
+      setConversation({
+        id: -1,
+        employee_profile_id: -101,
+        roadmap_id: roadmap.roadmap_id,
+        title: "Demo Career Buddy conversation",
+        status: "active",
+        created_at: now,
+        updated_at: now,
+      });
+      setMessages((current) => [...current, userMessage, assistantMessage]);
+      setProvider("demo_template");
+      setModel("local-demo");
+      setRemaining(null);
+      setDraft("");
+      setIsSending(false);
+      return;
+    }
+    try {
+      const payload: CareerBuddyMessagePayload = {
+        conversation_id: conversation?.id ?? null,
+        roadmap_id: roadmap.roadmap_id,
+        route_type: activeRoute.route_type,
+        message: trimmed,
+      };
+      const reply = await postJson<CareerBuddyReply, CareerBuddyMessagePayload>(
+        "/career-gps/career-buddy/messages",
+        payload,
+        { auth: true },
+      );
+      setConversation(reply.conversation);
+      setMessages((current) => [...current, reply.user_message, reply.assistant_message]);
+      setProvider(reply.provider);
+      setModel(reply.model ?? reply.assistant_message.model);
+      setRemaining(reply.rate_limit_remaining);
+      setDraft("");
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : "Unable to send Career Buddy message.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  if (!roadmap || !activeRoute) {
+    return (
+      <EmptyPanel
+        icon={Bot}
+        label="Career Buddy"
+        title="Generate a roadmap to ask Career Buddy"
+        description="Career Buddy needs a stored roadmap so it can answer from deterministic route, milestone, and skill-gap context."
+      />
+    );
+  }
+
+  const assistantAvatar = riasecResult?.animal || null;
+  const providerLabel = isDemoMode
+    ? "Demo template"
+    : provider === "template"
+      ? "Template fallback"
+      : provider ?? "Backend AI or fallback";
+  const latestAssistant = [...messages].reverse().find((message) => message.sender === "assistant");
+
+  return (
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]">
+            {assistantAvatar ? (
+              <span className="text-xl" aria-hidden="true">
+                {assistantAvatar}
+              </span>
+            ) : (
+              <Bot size={20} />
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#6B46C1]">Career Buddy</p>
+            <h2 className="mt-1 text-lg font-bold text-[#1A1033]">Ask about this roadmap</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
+              {isDemoMode
+                ? "Demo replies are generated locally from the illustrative route and do not call Gemini or save a conversation."
+                : "Answers use the selected route, skill gaps, milestones, Next Best Action, and saved preferences. Scoring stays deterministic."}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] px-4 py-2 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A]"
+          aria-expanded={isOpen}
+        >
+          {isOpen ? "Hide Buddy" : "Open Buddy"}
+          <ChevronDown size={16} className={`transition ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+        {careerBuddyPrompts.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => sendCareerBuddyMessage(prompt)}
+            disabled={isSending}
+            className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#1A1033] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
+
+      {error && (
+        <div className="mt-4 rounded-lg border border-[#FECACA] bg-[#FFF5F5] px-4 py-3 text-sm font-bold text-[#DC2626]">
+          {error}
+        </div>
+      )}
+
+      {isOpen && (
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF]">
+            <div className="max-h-[320px] min-h-[180px] space-y-3 overflow-y-auto p-4">
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-sm font-bold text-[#6B7280]">
+                  <Loader2 size={16} className="animate-spin text-[#E8197A]" />
+                  Loading Career Buddy...
+                </div>
+              ) : messages.length ? (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.sender === "employee" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[88%] rounded-lg px-3 py-2 text-sm leading-6 ${
+                        message.sender === "employee"
+                          ? "bg-[#E8197A] text-white"
+                          : "border border-[#F0EBF8] bg-white text-[#1A1033]"
+                      }`}
+                    >
+                      <p>{message.content}</p>
+                      {message.sender === "assistant" && message.provider && (
+                        <p className="mt-2 text-[11px] font-bold uppercase text-[#9CA3AF]">
+                          Provider: {message.provider}
+                          {message.model ? ` / ${message.model}` : ""}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
+                  {isDemoMode
+                    ? "Choose a suggested question or ask your own. Demo answers stay local to this browser session."
+                    : "Choose a suggested question or ask your own. Career Buddy will use only stored Career GPS context."}
+                </div>
+              )}
+              {isSending && (
+                <p className="inline-flex items-center gap-2 rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
+                  <Loader2 size={15} className="animate-spin text-[#E8197A]" />
+                  Career Buddy is thinking...
+                </p>
+              )}
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                sendCareerBuddyMessage(draft);
+              }}
+              className="flex items-center gap-2 border-t border-[#F0EBF8] bg-white p-3"
+            >
+              <input
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Ask about your route..."
+                className="min-h-11 flex-1 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim() || isSending}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#06B6D4] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Send message to Career Buddy"
+              >
+                {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              </button>
+            </form>
+          </div>
+
+          <aside className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <p className="text-xs font-bold uppercase text-[#9CA3AF]">Context</p>
+            <p className="mt-2 text-sm font-bold text-[#1A1033]">{activeRoute.title}</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">
+              {activeRoute.target_occupation.title} - version {roadmap.version}
+            </p>
+            <div className="mt-4 rounded-lg bg-[#FDFCFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+              <p>
+                Provider: <span className="font-bold text-[#1A1033]">{providerLabel}</span>
+              </p>
+              {model && (
+                <p className="mt-1">
+                  Model: <span className="font-bold text-[#1A1033]">{model}</span>
+                </p>
+              )}
+              {remaining !== null && (
+                <p className="mt-1">
+                  Messages left this hour: <span className="font-bold text-[#1A1033]">{remaining}</span>
+                </p>
+              )}
+            </div>
+            {latestAssistant && (
+              <p className="mt-3 rounded-lg bg-[#FFF0F8] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+                {isDemoMode
+                  ? "Latest answer is part of the local demo conversation and is not saved to production data."
+                  : "Latest answer is saved in your Career Buddy conversation and can be reloaded after refresh."}
+              </p>
+            )}
+          </aside>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: boolean }) {
+  const isDemoMode = demoMode || process.env.NEXT_PUBLIC_CAREER_GPS_DEMO_MODE === "true";
   const [state, setState] = useState<ShellState>({ profile: null, roadmap: null });
   const [selectedRouteType, setSelectedRouteType] = useState<CareerGpsRouteType>("recommended");
   const [isLoading, setIsLoading] = useState(true);
@@ -1725,6 +3436,12 @@ export default function CareerGpsPageShell() {
   const [nextBestActionError, setNextBestActionError] = useState<string | null>(null);
   const [isNextBestActionLoading, setIsNextBestActionLoading] = useState(false);
   const [isUpdatingNextBestAction, setIsUpdatingNextBestAction] = useState(false);
+  const [whatIfPreview, setWhatIfPreview] = useState<CareerGpsWhatIfPreview | null>(null);
+  const [whatIfPreviewPayload, setWhatIfPreviewPayload] = useState<CareerGpsWhatIfScenarioPayload | null>(null);
+  const [whatIfError, setWhatIfError] = useState<string | null>(null);
+  const [whatIfMessage, setWhatIfMessage] = useState<string | null>(null);
+  const [isPreviewingScenario, setIsPreviewingScenario] = useState(false);
+  const [isApplyingScenario, setIsApplyingScenario] = useState(false);
 
   const loadProgress = useCallback(async (roadmapId: number) => {
     try {
@@ -1762,6 +3479,31 @@ export default function CareerGpsPageShell() {
   }, []);
 
   const loadShell = useCallback(async (refreshing = false) => {
+    if (isDemoMode) {
+      if (refreshing) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      const demoRoadmap = buildDemoRoadmap("recommended", 1);
+      setState({ profile: demoProfile, roadmap: demoRoadmap });
+      setSelectedRouteType("recommended");
+      setProgressEntries(demoProgressEntries);
+      setProgressError(null);
+      setNextBestAction(demoNextBestAction);
+      setNextBestActionError(null);
+      setIsNextBestActionLoading(false);
+      setRouteSelectionError(null);
+      setWhatIfPreview(null);
+      setWhatIfPreviewPayload(null);
+      setWhatIfError(null);
+      setWhatIfMessage(null);
+      setError(null);
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
+
     if (!getAuthToken()) {
       setIsLoading(false);
       setError("Sign in as an employee to view your Career GPS.");
@@ -1791,6 +3533,10 @@ export default function CareerGpsPageShell() {
         setNextBestAction(null);
         setNextBestActionError(null);
         setIsNextBestActionLoading(false);
+        setWhatIfPreview(null);
+        setWhatIfPreviewPayload(null);
+        setWhatIfError(null);
+        setWhatIfMessage(null);
       }
       setState({ profile, roadmap });
       setSelectedRouteType(roadmap?.selected_route_type ?? "recommended");
@@ -1801,15 +3547,15 @@ export default function CareerGpsPageShell() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [loadNextBestAction, loadProgress]);
+  }, [isDemoMode, loadNextBestAction, loadProgress]);
 
   useEffect(() => {
     loadShell();
   }, [loadShell]);
 
   useEffect(() => {
-    setRiasecResult(loadRiasecResult());
-  }, []);
+    setRiasecResult(loadRiasecResult() ?? (isDemoMode ? demoRiasecResult : null));
+  }, [isDemoMode]);
 
   const profileName = state.profile?.employee.full_name ?? "Employee";
   const profileInitials = useMemo(() => initialsFromName(profileName), [profileName]);
@@ -1827,6 +3573,22 @@ export default function CareerGpsPageShell() {
       ...current,
       roadmap: current.roadmap ? { ...current.roadmap, selected_route_type: routeType } : current.roadmap,
     }));
+    if (isDemoMode) {
+      setNextBestAction((current) =>
+        current
+          ? {
+              ...current,
+              route_type: routeType,
+              selection_reason: `Demo mode switched to ${routeLabels[routeType]} without saving to production data.`,
+            }
+          : current,
+      );
+      setRouteSelectionError(null);
+      setWhatIfPreview(null);
+      setWhatIfPreviewPayload(null);
+      setWhatIfMessage(null);
+      return;
+    }
     setIsSavingSelectedRoute(true);
     setRouteSelectionError(null);
     try {
@@ -1838,6 +3600,9 @@ export default function CareerGpsPageShell() {
       setState((current) => ({ ...current, roadmap: updatedRoadmap }));
       setSelectedRouteType(updatedRoadmap.selected_route_type);
       await loadNextBestAction(updatedRoadmap.roadmap_id);
+      setWhatIfPreview(null);
+      setWhatIfPreviewPayload(null);
+      setWhatIfMessage(null);
     } catch (selectionError) {
       setSelectedRouteType(previousRouteType);
       setState((current) => ({ ...current, roadmap: previousRoadmap }));
@@ -1856,6 +3621,28 @@ export default function CareerGpsPageShell() {
     if (!state.roadmap || isUpdatingNextBestAction) return;
     setIsUpdatingNextBestAction(true);
     setNextBestActionError(null);
+    if (isDemoMode) {
+      const updatedAction = { ...action, status: statusValue };
+      const updatedProgress = demoProgressEntry({
+        route_type: action.route_type,
+        milestone_sequence: action.milestone_sequence,
+        action_sequence: action.action_sequence,
+        status: statusValue,
+        notes: `Demo mode marked this action ${progressStatusLabel(statusValue).toLowerCase()}.`,
+        evidence_url: statusValue === "completed" ? "https://example.com/demo-reviewed-feature" : null,
+        completed_at: statusValue === "completed" ? todayIsoDate() : null,
+      });
+      setNextBestAction(updatedAction);
+      setProgressEntries((current) => {
+        const key = progressKey(updatedProgress.route_type, updatedProgress.milestone_sequence, updatedProgress.action_sequence);
+        const filtered = current.filter(
+          (entry) => progressKey(entry.route_type, entry.milestone_sequence, entry.action_sequence) !== key,
+        );
+        return [...filtered, updatedProgress];
+      });
+      setIsUpdatingNextBestAction(false);
+      return;
+    }
     try {
       const updatedAction = await putJson<CareerGpsNextBestActionDetail, CareerGpsNextBestActionStatusPayload>(
         `/career-gps/roadmaps/${state.roadmap.roadmap_id}/next-best-action/status`,
@@ -1883,6 +3670,27 @@ export default function CareerGpsPageShell() {
     if (!state.roadmap || isUpdatingNextBestAction) return;
     setIsUpdatingNextBestAction(true);
     setNextBestActionError(null);
+    if (isDemoMode) {
+      setNextBestAction((current) =>
+        current
+          ? {
+              ...current,
+              action_sequence: 2,
+              action_title: "Write a post-internship engineering journal",
+              why_it_matters:
+                "This alternative builds reflective evidence about debugging, collaboration, and review feedback from the same active milestone.",
+              estimated_effort: "2-3 focused hours",
+              expected_impact: "Gives the demo employee a concise story for interviews and mentor discussions.",
+              recommended_skill_gained: "Reflection",
+              status: "not_started",
+              selection_reason: "Demo mode selected the second incomplete action from the active milestone.",
+              is_alternative: true,
+            }
+          : current,
+      );
+      setIsUpdatingNextBestAction(false);
+      return;
+    }
     try {
       const alternative = await postJson<CareerGpsNextBestActionDetail, Record<string, never>>(
         `/career-gps/roadmaps/${state.roadmap.roadmap_id}/next-best-action/alternative`,
@@ -1899,10 +3707,103 @@ export default function CareerGpsPageShell() {
     }
   };
 
+  const handlePreviewScenario = async (payload: CareerGpsWhatIfScenarioPayload) => {
+    if (isPreviewingScenario || isApplyingScenario) return;
+    setIsPreviewingScenario(true);
+    setWhatIfError(null);
+    setWhatIfMessage(null);
+    if (isDemoMode && state.roadmap) {
+      const preview = demoWhatIfPreview(state.roadmap, payload);
+      setWhatIfPreview(preview);
+      setWhatIfPreviewPayload(payload);
+      setWhatIfMessage(`Demo preview ready for ${preview.scenario.scenario_name}.`);
+      setIsPreviewingScenario(false);
+      return;
+    }
+    try {
+      const preview = await postJson<CareerGpsWhatIfPreview, CareerGpsWhatIfScenarioPayload>(
+        "/career-gps/roadmaps/what-if/preview",
+        payload,
+        { auth: true },
+      );
+      setWhatIfPreview(preview);
+      setWhatIfPreviewPayload(payload);
+      setWhatIfMessage(`Preview ready for ${preview.scenario.scenario_name}.`);
+    } catch (previewError) {
+      setWhatIfError(previewError instanceof Error ? previewError.message : "Unable to preview what-if scenario.");
+    } finally {
+      setIsPreviewingScenario(false);
+    }
+  };
+
+  const handleApplyScenario = async (payload: CareerGpsWhatIfScenarioPayload) => {
+    if (isPreviewingScenario || isApplyingScenario) return;
+    const applyPayload = whatIfPreviewPayload ?? payload;
+    setIsApplyingScenario(true);
+    setWhatIfError(null);
+    setWhatIfMessage(null);
+    if (isDemoMode && state.roadmap) {
+      const preview = whatIfPreview ?? demoWhatIfPreview(state.roadmap, applyPayload);
+      const appliedRoadmap = {
+        ...preview.preview_roadmap,
+        version: state.roadmap.version + 1,
+      };
+      setState((current) => ({ ...current, roadmap: appliedRoadmap }));
+      setSelectedRouteType(appliedRoadmap.selected_route_type);
+      setWhatIfPreview(null);
+      setWhatIfPreviewPayload(null);
+      setWhatIfMessage("Demo scenario applied locally. Production roadmap data was not changed.");
+      setIsApplyingScenario(false);
+      return;
+    }
+    try {
+      const response = await postJson<CareerGpsWhatIfApplyResponse, CareerGpsWhatIfScenarioPayload>(
+        "/career-gps/roadmaps/what-if/apply",
+        applyPayload,
+        { auth: true },
+      );
+      setState((current) => ({ ...current, roadmap: response.applied_roadmap }));
+      setSelectedRouteType(response.applied_roadmap.selected_route_type ?? "recommended");
+      setWhatIfPreview(null);
+      setWhatIfPreviewPayload(null);
+      setWhatIfMessage(response.message);
+      await Promise.all([
+        loadProgress(response.applied_roadmap.roadmap_id),
+        loadNextBestAction(response.applied_roadmap.roadmap_id),
+      ]);
+    } catch (applyError) {
+      setWhatIfError(applyError instanceof Error ? applyError.message : "Unable to apply what-if scenario.");
+    } finally {
+      setIsApplyingScenario(false);
+    }
+  };
+
+  const handleDiscardScenario = () => {
+    setWhatIfPreview(null);
+    setWhatIfPreviewPayload(null);
+    setWhatIfError(null);
+    setWhatIfMessage(null);
+  };
+
   const handleSaveProgress: SaveProgressHandler = async (kind, payload) => {
     if (!state.roadmap || isSavingProgress) return;
     setIsSavingProgress(true);
     setProgressError(null);
+    if (isDemoMode) {
+      const updated = demoProgressEntry(payload);
+      setProgressEntries((current) => {
+        const key = progressKey(updated.route_type, updated.milestone_sequence, updated.action_sequence);
+        const filtered = current.filter(
+          (entry) => progressKey(entry.route_type, entry.milestone_sequence, entry.action_sequence) !== key,
+        );
+        return [...filtered, updated];
+      });
+      if (nextBestAction && payload.route_type === nextBestAction.route_type && payload.milestone_sequence === nextBestAction.milestone_sequence && payload.action_sequence === nextBestAction.action_sequence) {
+        setNextBestAction({ ...nextBestAction, status: payload.status });
+      }
+      setIsSavingProgress(false);
+      return;
+    }
     try {
       const updated = await putJson<CareerGpsProgressEntry, CareerGpsProgressUpdatePayload>(
         `/career-gps/roadmaps/${state.roadmap.roadmap_id}/progress/${kind === "action" ? "actions" : "milestones"}`,
@@ -1967,8 +3868,10 @@ export default function CareerGpsPageShell() {
               profile={state.profile}
               roadmap={state.roadmap}
               isRefreshing={isRefreshing}
+              isDemoMode={isDemoMode}
               onRefresh={() => loadShell(true)}
             />
+            {isDemoMode && <DemoModeBanner />}
             <NorthStarSummary profile={state.profile} />
             <NextBestAction
               roadmap={state.roadmap}
@@ -1994,28 +3897,32 @@ export default function CareerGpsPageShell() {
               progressEntries={progressEntries}
               isSavingProgress={isSavingProgress}
               progressError={progressError}
+              isDemoMode={isDemoMode}
               onSaveProgress={handleSaveProgress}
             />
-            <section className="grid gap-4 lg:grid-cols-3">
-              <EmptyPanel
-                icon={Gauge}
-                label="Skills and readiness"
-                title="Readiness detail will connect to the map"
-                description="Skill gaps and readiness meters will be placed here after the journey map shell is approved."
-              />
-              <EmptyPanel
-                icon={SlidersHorizontal}
-                label="What-if simulator"
-                title="Scenario controls are parked for now"
-                description="The existing what-if APIs remain available, but this shell does not run scenario previews yet."
-              />
-              <EmptyPanel
-                icon={Bot}
-                label="Career Buddy"
-                title="Contextual coaching will return here"
-                description="Career Buddy stays backend-powered. This phase only reserves a polished location for it."
-              />
-            </section>
+            <SkillsReadinessSection
+              profile={state.profile}
+              activeRoute={activeRoute}
+              progressEntries={progressEntries}
+            />
+            <WhatIfCareerSimulator
+              roadmap={state.roadmap}
+              activeRoute={activeRoute}
+              preview={whatIfPreview}
+              isPreviewing={isPreviewingScenario}
+              isApplying={isApplyingScenario}
+              error={whatIfError}
+              message={whatIfMessage}
+              onPreview={handlePreviewScenario}
+              onApply={handleApplyScenario}
+              onDiscard={handleDiscardScenario}
+            />
+            <CareerBuddyPanel
+              roadmap={state.roadmap}
+              activeRoute={activeRoute}
+              riasecResult={riasecResult}
+              isDemoMode={isDemoMode}
+            />
             <section className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
               <div className="flex items-start gap-2">
                 <Sparkles size={17} className="mt-0.5 shrink-0" />

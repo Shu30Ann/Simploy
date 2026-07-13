@@ -127,6 +127,20 @@ class CareerGpsIntegrationTest(unittest.TestCase):
         second = self.generate_roadmap(headers)
         self.assertEqual(second["version"], 2)
         self.assertEqual(second["roadmap_id"], first["roadmap_id"])
+        progress_before_preview = self.client.put(
+            f"/career-gps/roadmaps/{second['roadmap_id']}/progress/actions",
+            headers=headers,
+            json={
+                "route_type": "recommended",
+                "milestone_sequence": 1,
+                "action_sequence": 1,
+                "status": "completed",
+                "notes": "Evidence should survive scenario apply.",
+                "evidence_url": "https://example.com/scenario-evidence",
+                "completed_at": "2026-07-13",
+            },
+        )
+        self.assertEqual(progress_before_preview.status_code, 200, progress_before_preview.text)
 
         preview = self.client.post(
             "/career-gps/roadmaps/what-if/preview",
@@ -146,6 +160,9 @@ class CareerGpsIntegrationTest(unittest.TestCase):
         latest_after_preview = self.client.get("/career-gps/roadmaps/latest", headers=headers)
         self.assertEqual(latest_after_preview.status_code, 200, latest_after_preview.text)
         self.assertEqual(latest_after_preview.json()["version"], 2)
+        progress_after_preview = self.client.get(f"/career-gps/roadmaps/{second['roadmap_id']}/progress", headers=headers)
+        self.assertEqual(progress_after_preview.status_code, 200, progress_after_preview.text)
+        self.assertEqual(len(progress_after_preview.json()["entries"]), 1)
 
         applied = self.client.post(
             "/career-gps/roadmaps/what-if/apply",
@@ -161,6 +178,15 @@ class CareerGpsIntegrationTest(unittest.TestCase):
         )
         self.assertEqual(applied.status_code, 200, applied.text)
         self.assertEqual(applied.json()["applied_roadmap"]["version"], 3)
+        latest_after_apply = self.client.get("/career-gps/roadmaps/latest", headers=headers)
+        self.assertEqual(latest_after_apply.status_code, 200, latest_after_apply.text)
+        self.assertEqual(latest_after_apply.json()["version"], 3)
+        progress_after_apply = self.client.get(f"/career-gps/roadmaps/{second['roadmap_id']}/progress", headers=headers)
+        self.assertEqual(progress_after_apply.status_code, 200, progress_after_apply.text)
+        applied_progress_entries = progress_after_apply.json()["entries"]
+        self.assertEqual(len(applied_progress_entries), 1)
+        self.assertEqual(applied_progress_entries[0]["status"], "completed")
+        self.assertEqual(applied_progress_entries[0]["evidence_url"], "https://example.com/scenario-evidence")
 
         reply = self.client.post(
             "/career-gps/career-buddy/messages",

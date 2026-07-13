@@ -1202,9 +1202,11 @@ class CareerGpsRepository:
                 (employee_profile_id,),
             ).fetchone()
             target_occupation_id = generated.get("target_occupation_id")
+            preserved_progress: list[dict[str, Any]] = []
             if existing:
                 roadmap_id = existing["id"]
                 version_number = int(existing["current_version"]) + 1
+                preserved_progress = self._progress_snapshot_for_remap_sqlite(conn, employee_profile_id, roadmap_id)
                 conn.execute("DELETE FROM roadmap_score_components WHERE roadmap_id = ?", (roadmap_id,))
                 conn.execute("DELETE FROM career_routes WHERE roadmap_id = ?", (roadmap_id,))
                 conn.execute(
@@ -1253,6 +1255,8 @@ class CareerGpsRepository:
                 roadmap_id = cursor.lastrowid
 
             self._insert_sqlite_generated_children(conn, roadmap_id, generated)
+            if preserved_progress:
+                self._restore_progress_snapshot_sqlite(conn, employee_profile_id, roadmap_id, preserved_progress)
             snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number, "selected_route_type": "recommended"}
             conn.execute(
                 """
@@ -1346,6 +1350,105 @@ class CareerGpsRepository:
                 ),
             )
 
+    def _progress_snapshot_for_remap_sqlite(
+        self,
+        conn,
+        employee_profile_id: int,
+        roadmap_id: int,
+    ) -> list[dict[str, Any]]:
+        rows = conn.execute(
+            """
+            SELECT
+              progress.status,
+              progress.progress_percent,
+              progress.completed_at,
+              progress.notes,
+              progress.evidence_url,
+              route.route_type,
+              COALESCE(milestone.sequence, action_milestone.sequence) AS milestone_sequence,
+              action.sequence AS action_sequence
+            FROM roadmap_progress progress
+            LEFT JOIN roadmap_milestones milestone ON milestone.id = progress.milestone_id
+            LEFT JOIN milestone_actions action ON action.id = progress.action_id
+            LEFT JOIN roadmap_milestones action_milestone ON action_milestone.id = action.milestone_id
+            JOIN career_routes route ON route.id = COALESCE(milestone.route_id, action_milestone.route_id)
+            WHERE progress.employee_profile_id = ?
+              AND progress.roadmap_id = ?
+            ORDER BY route.sequence ASC, milestone_sequence ASC, action_sequence ASC
+            """,
+            (employee_profile_id, roadmap_id),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def _restore_progress_snapshot_sqlite(
+        self,
+        conn,
+        employee_profile_id: int,
+        roadmap_id: int,
+        rows: list[dict[str, Any]],
+    ) -> None:
+        for row in rows:
+            route_type = row.get("route_type")
+            milestone_sequence = int(row.get("milestone_sequence") or 0)
+            action_sequence = row.get("action_sequence")
+            milestone = conn.execute(
+                """
+                SELECT milestone.*
+                FROM roadmap_milestones milestone
+                JOIN career_routes route ON route.id = milestone.route_id
+                WHERE route.roadmap_id = ?
+                  AND route.route_type = ?
+                  AND milestone.sequence = ?
+                """,
+                (roadmap_id, route_type, milestone_sequence),
+            ).fetchone()
+            if milestone is None:
+                continue
+            action = None
+            if action_sequence is not None:
+                action = conn.execute(
+                    """
+                    SELECT * FROM milestone_actions
+                    WHERE milestone_id = ? AND sequence = ?
+                    """,
+                    (milestone["id"], int(action_sequence)),
+                ).fetchone()
+                if action is None:
+                    continue
+
+            status_value = self._progress_status(row.get("status"))
+            progress_values = (
+                employee_profile_id,
+                roadmap_id,
+                milestone["id"],
+                action["id"] if action else None,
+                status_value,
+                float(row.get("progress_percent") or self._progress_percent(status_value)),
+                row.get("completed_at"),
+                row.get("notes"),
+                row.get("evidence_url"),
+            )
+            conn.execute(
+                """
+                INSERT INTO roadmap_progress
+                  (employee_profile_id, roadmap_id, milestone_id, action_id, status,
+                   progress_percent, completed_at, notes, evidence_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                progress_values,
+            )
+            source_status = self._source_status(status_value)
+            if action is not None:
+                conn.execute(
+                    "UPDATE milestone_actions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (source_status, action["id"]),
+                )
+            else:
+                conn.execute(
+                    "UPDATE roadmap_milestones SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (source_status, milestone["id"]),
+                )
+
     def _save_generated_roadmap_supabase(
         self,
         *,
@@ -1357,9 +1460,11 @@ class CareerGpsRepository:
         client = supabase()
         existing = self._get_active_roadmap(employee_profile_id)
         target_occupation_id = generated.get("target_occupation_id")
+        preserved_progress: list[dict[str, Any]] = []
         if existing:
             roadmap_id = existing["id"]
             version_number = int(existing["current_version"]) + 1
+            preserved_progress = self.list_roadmap_progress(employee_profile_id, roadmap_id) or []
             client.delete("roadmap_score_components", {"roadmap_id": roadmap_id})
             client.delete("career_routes", {"roadmap_id": roadmap_id})
             client.update(
@@ -1401,6 +1506,8 @@ class CareerGpsRepository:
             roadmap_id = roadmap["id"]
 
         self._insert_supabase_generated_children(client, roadmap_id, generated)
+        if preserved_progress:
+            self._restore_progress_snapshot_supabase(employee_profile_id, roadmap_id, preserved_progress)
         snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number, "selected_route_type": "recommended"}
         client.insert(
             "roadmap_versions",
@@ -1467,3 +1574,52 @@ class CareerGpsRepository:
                     "source_label": generated["scoring_version"],
                 },
             )
+
+    def _restore_progress_snapshot_supabase(
+        self,
+        employee_profile_id: int,
+        roadmap_id: int,
+        rows: list[dict[str, Any]],
+    ) -> None:
+        client = supabase()
+        routes = client.select("career_routes", {"roadmap_id": roadmap_id}, order="sequence.asc")
+        for route in routes:
+            milestones = client.select("roadmap_milestones", {"route_id": route["id"]}, order="sequence.asc")
+            milestone_by_sequence = {int(milestone["sequence"]): milestone for milestone in milestones}
+            action_by_milestone_sequence: dict[tuple[int, int], dict[str, Any]] = {}
+            for milestone in milestones:
+                actions = client.select("milestone_actions", {"milestone_id": milestone["id"]}, order="sequence.asc")
+                for action in actions:
+                    action_by_milestone_sequence[(int(milestone["sequence"]), int(action["sequence"]))] = action
+
+            for row in [item for item in rows if item.get("route_type") == route.get("route_type")]:
+                milestone_sequence = int(row.get("milestone_sequence") or 0)
+                milestone = milestone_by_sequence.get(milestone_sequence)
+                if milestone is None:
+                    continue
+                action = None
+                action_sequence = row.get("action_sequence")
+                if action_sequence is not None:
+                    action = action_by_milestone_sequence.get((milestone_sequence, int(action_sequence)))
+                    if action is None:
+                        continue
+                status_value = self._progress_status(row.get("status"))
+                client.insert(
+                    "roadmap_progress",
+                    {
+                        "employee_profile_id": employee_profile_id,
+                        "roadmap_id": roadmap_id,
+                        "milestone_id": milestone["id"],
+                        "action_id": action["id"] if action else None,
+                        "status": status_value,
+                        "progress_percent": float(row.get("progress_percent") or self._progress_percent(status_value)),
+                        "completed_at": row.get("completed_at"),
+                        "notes": row.get("notes"),
+                        "evidence_url": row.get("evidence_url"),
+                    },
+                )
+                self._update_progress_source_status_supabase(
+                    milestone["id"],
+                    action["id"] if action else None,
+                    status_value,
+                )

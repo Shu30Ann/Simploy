@@ -34,6 +34,7 @@ class Settings:
     career_buddy_ai_provider: str = os.getenv("SIMPLOY_CAREER_BUDDY_AI_PROVIDER", "auto")
     career_buddy_model: str = os.getenv("SIMPLOY_CAREER_BUDDY_MODEL", "")
     career_buddy_rate_limit_per_hour: int = int(os.getenv("SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR", "20"))
+    career_buddy_timeout_seconds: int = int(os.getenv("SIMPLOY_CAREER_BUDDY_TIMEOUT_SECONDS", "45"))
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
     gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
     cors_origins: str = os.getenv("SIMPLOY_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")

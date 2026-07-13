@@ -141,6 +141,8 @@ For Supabase-backed deployment:
    - `backend/migrations/003_career_gps_profile_api_fields.sql`
    - `backend/migrations/004_career_gps_profile_api_rls.sql`
    - `backend/migrations/005_career_buddy.sql`
+   - `backend/migrations/006_selected_route_type.sql`
+   - `backend/migrations/007_roadmap_progress_evidence.sql`
 3. Set backend-only variables on Render:
 
 ```bash
@@ -150,10 +152,13 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SIMPLOY_CORS_ORIGINS=https://your-vercel-app.vercel.app,http://localhost:3000
 SIMPLOY_CORS_ORIGIN_REGEX=https://.*\.vercel\.app|http://(localhost|127\.0\.0\.1):\d+
 SIMPLOY_CAREER_BUDDY_AI_PROVIDER=auto
+SIMPLOY_CAREER_BUDDY_MODEL=gemini-flash-latest
 SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR=20
+SIMPLOY_CAREER_BUDDY_TIMEOUT_SECONDS=45
+GEMINI_API_KEY=
 ```
 
-Career Buddy is usable without paid AI access. Leave `OPENAI_API_KEY` empty for deterministic template responses. If an AI provider is enabled later, set `OPENAI_API_KEY` and `SIMPLOY_CAREER_BUDDY_MODEL` only on the backend.
+Career Buddy is usable without paid AI access. Leave `GEMINI_API_KEY` empty for deterministic template responses. To enable Gemini for the hackathon demo, set `GEMINI_API_KEY` and `SIMPLOY_CAREER_BUDDY_MODEL` only on the Render backend. Do not configure OpenAI or any paid provider as a fallback.
 
 For Vercel frontend, set only:
 
@@ -161,4 +166,4 @@ For Vercel frontend, set only:
 NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com
 ```
 
-Never add `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` to frontend or `NEXT_PUBLIC_*` variables.
+Never add `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, or any AI provider key to frontend or `NEXT_PUBLIC_*` variables.
