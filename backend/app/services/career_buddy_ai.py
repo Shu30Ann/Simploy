@@ -26,6 +26,57 @@ class CareerBuddyProviderResult:
     model: str | None
 
 
+def career_buddy_response_schema() -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "answer",
+            "recommended_actions",
+            "referenced_route_type",
+            "confidence",
+            "used_context",
+            "safety_notes",
+        ],
+        "properties": {
+            "answer": {"type": "string", "minLength": 1, "maxLength": 2400},
+            "recommended_actions": {
+                "type": "array",
+                "maxItems": 5,
+                "items": {"type": "string", "maxLength": 220},
+            },
+            "referenced_route_type": {
+                "anyOf": [
+                    {"type": "string", "enum": ["recommended", "accelerated", "balanced"]},
+                    {"type": "null"},
+                ]
+            },
+            "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+            "used_context": {
+                "type": "array",
+                "maxItems": 8,
+                "items": {"type": "string", "maxLength": 120},
+            },
+            "safety_notes": {
+                "type": "array",
+                "maxItems": 5,
+                "items": {"type": "string", "maxLength": 180},
+            },
+        },
+    }
+
+
+def career_buddy_system_instructions() -> str:
+    return (
+        "You are Career Buddy for Simploy Career GPS. Answer only from the provided JSON context. "
+        "Use the stored roadmap, selected route, deterministic scores, skill gaps, milestones, Next Best Action, "
+        "and employee preferences. Do not replace or rescore deterministic Career GPS routes. "
+        "Do not invent salary, market-size, hiring-probability, or labor-market figures. "
+        "If asked for unavailable facts, say the current prototype does not contain verified market data. "
+        "Keep advice practical and concise."
+    )
+
+
 def route_label(route: dict[str, Any] | None) -> str:
     if route is None:
         return "the selected route"
@@ -55,6 +106,24 @@ def disallowed_salary_or_market_figures(text: str) -> bool:
     currency_pattern = r"(\$|rm|myr|usd|sgd|eur|gbp)\s?\d"
     salary_pattern = r"(salary|compensation|pay|market rate|market size)[^\n.]{0,80}\d"
     return bool(re.search(currency_pattern, normalized) or re.search(salary_pattern, normalized))
+
+
+def normalize_ai_response_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(payload)
+    for key in ("recommended_actions", "used_context", "safety_notes"):
+        value = normalized.get(key)
+        if isinstance(value, str):
+            normalized[key] = [value]
+        elif isinstance(value, dict):
+            normalized[key] = list(value.keys())
+        elif value is None:
+            normalized[key] = []
+
+    if normalized.get("referenced_route_type") not in {"recommended", "accelerated", "balanced", None}:
+        normalized["referenced_route_type"] = None
+    if normalized.get("confidence") not in {"low", "medium", "high"}:
+        normalized["confidence"] = "medium"
+    return normalized
 
 
 class TemplateCareerBuddyProvider:
@@ -164,7 +233,7 @@ class OpenAiCareerBuddyProvider:
     def __init__(self) -> None:
         if not settings.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY is not configured")
-        self.model_name = settings.career_buddy_model
+        self.model_name = settings.career_buddy_model or "gpt-5.6"
 
     def answer(self, *, question: str, context: dict[str, Any]) -> CareerBuddyStructuredResponse:
         request_body = {
@@ -215,59 +284,16 @@ class OpenAiCareerBuddyProvider:
 
         parsed = json.loads(raw)
         output_text = self._extract_output_text(parsed)
-        structured = CareerBuddyStructuredResponse(**json.loads(output_text))
+        structured = CareerBuddyStructuredResponse(**normalize_ai_response_payload(json.loads(output_text)))
         if disallowed_salary_or_market_figures(structured.answer):
             raise ValueError("AI response included disallowed salary or market figures")
         return structured
 
     def _system_instructions(self) -> str:
-        return (
-            "You are Career Buddy for Simploy Career GPS. Answer only from the provided JSON context. "
-            "Use the stored roadmap, selected route, deterministic scores, skill gaps, milestones, Next Best Action, "
-            "and employee preferences. Do not replace or rescore deterministic Career GPS routes. "
-            "Do not invent salary, market-size, hiring-probability, or labor-market figures. "
-            "If asked for unavailable facts, say the current prototype does not contain verified market data. "
-            "Keep advice practical and concise."
-        )
+        return career_buddy_system_instructions()
 
     def _response_schema(self) -> dict[str, Any]:
-        return {
-            "type": "object",
-            "additionalProperties": False,
-            "required": [
-                "answer",
-                "recommended_actions",
-                "referenced_route_type",
-                "confidence",
-                "used_context",
-                "safety_notes",
-            ],
-            "properties": {
-                "answer": {"type": "string", "minLength": 1, "maxLength": 2400},
-                "recommended_actions": {
-                    "type": "array",
-                    "maxItems": 5,
-                    "items": {"type": "string", "maxLength": 220},
-                },
-                "referenced_route_type": {
-                    "anyOf": [
-                        {"type": "string", "enum": ["recommended", "accelerated", "balanced"]},
-                        {"type": "null"},
-                    ]
-                },
-                "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
-                "used_context": {
-                    "type": "array",
-                    "maxItems": 8,
-                    "items": {"type": "string", "maxLength": 120},
-                },
-                "safety_notes": {
-                    "type": "array",
-                    "maxItems": 5,
-                    "items": {"type": "string", "maxLength": 180},
-                },
-            },
-        }
+        return career_buddy_response_schema()
 
     def _extract_output_text(self, response: dict[str, Any]) -> str:
         if isinstance(response.get("output_text"), str):
@@ -277,6 +303,79 @@ class OpenAiCareerBuddyProvider:
                 if content.get("type") in {"output_text", "text"} and isinstance(content.get("text"), str):
                     return content["text"]
         raise ValueError("OpenAI response did not include output text")
+
+
+class GeminiCareerBuddyProvider:
+    provider_name = "gemini"
+
+    def __init__(self) -> None:
+        if not settings.gemini_api_key:
+            raise RuntimeError("GEMINI_API_KEY is not configured")
+        self.model_name = settings.career_buddy_model or "gemini-3.5-flash"
+
+    def answer(self, *, question: str, context: dict[str, Any]) -> CareerBuddyStructuredResponse:
+        request_body = {
+            "systemInstruction": {
+                "parts": [
+                    {
+                        "text": (
+                            f"{career_buddy_system_instructions()} "
+                            "Return only a JSON object with these keys: answer, recommended_actions, "
+                            "referenced_route_type, confidence, used_context, safety_notes."
+                        )
+                    }
+                ]
+            },
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "text": json.dumps({"question": question, "context": context}, separators=(",", ":")),
+                        }
+                    ],
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+            },
+        }
+        request = Request(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent",
+            data=json.dumps(request_body).encode("utf-8"),
+            headers={
+                "x-goog-api-key": settings.gemini_api_key,
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=20) as response:
+                raw = response.read().decode("utf-8")
+        except (HTTPError, URLError, TimeoutError) as exc:
+            raise RuntimeError("Gemini Career Buddy provider failed") from exc
+
+        parsed = json.loads(raw)
+        output_text = self._extract_output_text(parsed)
+        structured = CareerBuddyStructuredResponse(**normalize_ai_response_payload(json.loads(output_text)))
+        if disallowed_salary_or_market_figures(structured.answer):
+            raise ValueError("AI response included disallowed salary or market figures")
+        return structured
+
+    def _extract_output_text(self, response: dict[str, Any]) -> str:
+        if isinstance(response.get("output_text"), str):
+            return response["output_text"]
+        if all(key in response for key in career_buddy_response_schema()["required"]):
+            return json.dumps(response)
+        for item in response.get("output", []):
+            for content in item.get("content", []):
+                if content.get("type") in {"output_text", "text"} and isinstance(content.get("text"), str):
+                    return content["text"]
+        for candidate in response.get("candidates", []):
+            for part in candidate.get("content", {}).get("parts", []):
+                if isinstance(part.get("text"), str):
+                    return part["text"]
+        raise ValueError("Gemini response did not include output text")
 
 
 class CareerBuddyAiService:
@@ -299,4 +398,6 @@ class CareerBuddyAiService:
         provider = settings.career_buddy_ai_provider.lower().strip()
         if provider == "openai" or (provider == "auto" and settings.openai_api_key):
             return OpenAiCareerBuddyProvider()
+        if provider == "gemini" or (provider == "auto" and settings.gemini_api_key):
+            return GeminiCareerBuddyProvider()
         return self.template_provider

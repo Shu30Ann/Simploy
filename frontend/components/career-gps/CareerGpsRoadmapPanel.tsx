@@ -786,6 +786,7 @@ function CareerBuddyPanel({
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [provider, setProvider] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
 
   const loadConversation = useCallback(async () => {
@@ -802,6 +803,8 @@ function CareerBuddyPanel({
       if (!latest) {
         setConversation(null);
         setMessages([]);
+        setProvider(null);
+        setModel(null);
         return;
       }
       const detail = await getJson<CareerBuddyConversationDetail>(
@@ -810,6 +813,9 @@ function CareerBuddyPanel({
       );
       setConversation(detail);
       setMessages(detail.messages);
+      const latestAssistantMessage = [...detail.messages].reverse().find((message) => message.sender === "assistant");
+      setProvider(latestAssistantMessage?.provider ?? null);
+      setModel(latestAssistantMessage?.model ?? null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load Career Buddy conversation.");
     } finally {
@@ -841,6 +847,7 @@ function CareerBuddyPanel({
       setConversation(reply.conversation);
       setMessages((current) => [...current, reply.user_message, reply.assistant_message]);
       setProvider(reply.provider);
+      setModel(reply.model ?? reply.assistant_message.model);
       setRemaining(reply.rate_limit_remaining);
       setDraft("");
     } catch (sendError) {
@@ -898,7 +905,10 @@ function CareerBuddyPanel({
                   >
                     <p>{message.content}</p>
                     {message.sender === "assistant" && message.provider && (
-                      <p className="mt-2 text-[11px] font-bold uppercase text-[#9CA3AF]">Provider: {message.provider}</p>
+                      <p className="mt-2 text-[11px] font-bold uppercase text-[#9CA3AF]">
+                        Provider: {message.provider}
+                        {message.model ? ` / ${message.model}` : ""}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -960,6 +970,11 @@ function CareerBuddyPanel({
             <p>
               Provider: <span className="font-bold text-[#1A1033]">{provider ?? "template or configured backend AI"}</span>
             </p>
+            {model && (
+              <p className="mt-1">
+                Model: <span className="font-bold text-[#1A1033]">{model}</span>
+              </p>
+            )}
             {remaining !== null && (
               <p className="mt-1">
                 Messages left this hour: <span className="font-bold text-[#1A1033]">{remaining}</span>

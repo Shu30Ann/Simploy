@@ -298,6 +298,7 @@ class CareerGpsService:
             assistant_message=CareerBuddyMessage(**assistant_message),
             response=result.response,
             provider=result.provider,
+            model=result.model,
             rate_limit_remaining=max(0, remaining - 1),
         )
 

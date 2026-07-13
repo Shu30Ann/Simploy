@@ -393,4 +393,5 @@ class CareerBuddyReply(BaseModel):
     assistant_message: CareerBuddyMessage
     response: CareerBuddyStructuredResponse
     provider: str
+    model: str | None = None
     rate_limit_remaining: int

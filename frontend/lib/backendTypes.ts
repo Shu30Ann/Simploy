@@ -388,5 +388,6 @@ export interface CareerBuddyReply {
   assistant_message: CareerBuddyMessage;
   response: CareerBuddyStructuredResponse;
   provider: string;
+  model: string | null;
   rate_limit_remaining: number;
 }

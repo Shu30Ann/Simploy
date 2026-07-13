@@ -69,7 +69,17 @@ Important endpoints:
 
 For Supabase-backed production, run `backend/supabase_schema.sql` first, then run migrations `backend/migrations/001_career_gps_foundation.sql` through `backend/migrations/005_career_buddy.sql` in order.
 
-Career Buddy does not require a paid AI key for the hackathon demo. Leave `OPENAI_API_KEY` empty to use deterministic template responses. If you later enable an AI provider, set `OPENAI_API_KEY` only on the backend environment, never in frontend/Vercel public variables.
+Career Buddy does not require a paid AI key for the hackathon demo. Leave AI keys empty to use deterministic template responses.
+
+To enable Gemini for Career Buddy, create `backend/.env` from `backend/.env.example` and set:
+
+```env
+SIMPLOY_CAREER_BUDDY_AI_PROVIDER=gemini
+SIMPLOY_CAREER_BUDDY_MODEL=gemini-3.5-flash
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+Set AI provider keys only on the backend environment, never in frontend/Vercel public variables.
 
 ## Future improvement ideas
 
