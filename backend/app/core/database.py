@@ -230,6 +230,7 @@ def init_db() -> None:
                 fit_score_snapshot REAL,
                 scoring_version TEXT NOT NULL DEFAULT 'not_scored_phase_1',
                 source_label TEXT NOT NULL DEFAULT 'user_or_system_created',
+                selected_route_type TEXT NOT NULL DEFAULT 'recommended',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
@@ -290,6 +291,30 @@ def init_db() -> None:
                 UNIQUE(roadmap_id, component_key)
             );
 
+            CREATE TABLE IF NOT EXISTS roadmap_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_profile_id INTEGER NOT NULL REFERENCES employee_profiles(id) ON DELETE CASCADE,
+                roadmap_id INTEGER NOT NULL REFERENCES career_roadmaps(id) ON DELETE CASCADE,
+                milestone_id INTEGER REFERENCES roadmap_milestones(id) ON DELETE CASCADE,
+                action_id INTEGER REFERENCES milestone_actions(id) ON DELETE CASCADE,
+                status TEXT NOT NULL DEFAULT 'not_started',
+                progress_percent REAL NOT NULL DEFAULT 0,
+                completed_at TEXT,
+                notes TEXT,
+                evidence_url TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CHECK (milestone_id IS NOT NULL OR action_id IS NOT NULL)
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS roadmap_progress_unique_milestone
+                ON roadmap_progress (employee_profile_id, roadmap_id, milestone_id)
+                WHERE milestone_id IS NOT NULL AND action_id IS NULL;
+
+            CREATE UNIQUE INDEX IF NOT EXISTS roadmap_progress_unique_action
+                ON roadmap_progress (employee_profile_id, roadmap_id, action_id)
+                WHERE action_id IS NOT NULL;
+
             CREATE TABLE IF NOT EXISTS roadmap_versions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 roadmap_id INTEGER NOT NULL REFERENCES career_roadmaps(id) ON DELETE CASCADE,
@@ -328,6 +353,18 @@ def init_db() -> None:
             "career_preferences",
             "international_mobility",
             "INTEGER NOT NULL DEFAULT 0",
+        )
+        ensure_sqlite_column(
+            conn,
+            "career_roadmaps",
+            "selected_route_type",
+            "TEXT NOT NULL DEFAULT 'recommended'",
+        )
+        ensure_sqlite_column(
+            conn,
+            "roadmap_progress",
+            "evidence_url",
+            "TEXT",
         )
         seed_demo_data(conn)
         seed_career_gps_reference_data(conn)

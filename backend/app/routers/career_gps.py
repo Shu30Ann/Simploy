@@ -12,7 +12,14 @@ from backend.app.schemas.career_gps import (
     CareerGoals,
     CareerGoalsIn,
     CareerGpsProfile,
+    CareerGpsMilestoneDetail,
+    CareerGpsNextBestActionDetail,
+    CareerGpsNextBestActionStatusIn,
+    CareerGpsProgressEntry,
+    CareerGpsProgressResponse,
+    CareerGpsProgressUpdateIn,
     CareerGpsRoadmap,
+    CareerGpsSelectedRouteIn,
     CareerGpsWhatIfApplyResponse,
     CareerGpsWhatIfPreview,
     CareerGpsWhatIfScenarioIn,
@@ -98,6 +105,79 @@ def get_latest_roadmap(user: dict = Depends(require_role("employee"))) -> Career
 @router.get("/roadmaps/{roadmap_id}", response_model=CareerGpsRoadmap)
 def get_roadmap(roadmap_id: int, user: dict = Depends(require_role("employee"))) -> CareerGpsRoadmap:
     return CareerGpsService().get_roadmap(user, roadmap_id)
+
+
+@router.put("/roadmaps/{roadmap_id}/selected-route", response_model=CareerGpsRoadmap)
+def update_selected_route(
+    roadmap_id: int,
+    payload: CareerGpsSelectedRouteIn,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsRoadmap:
+    return CareerGpsService().update_selected_route(user, roadmap_id, payload)
+
+
+@router.get("/roadmaps/{roadmap_id}/next-best-action", response_model=CareerGpsNextBestActionDetail)
+def get_next_best_action(
+    roadmap_id: int,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsNextBestActionDetail:
+    return CareerGpsService().get_next_best_action(user, roadmap_id)
+
+
+@router.put("/roadmaps/{roadmap_id}/next-best-action/status", response_model=CareerGpsNextBestActionDetail)
+def update_next_best_action_status(
+    roadmap_id: int,
+    payload: CareerGpsNextBestActionStatusIn,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsNextBestActionDetail:
+    return CareerGpsService().update_next_best_action_status(user, roadmap_id, payload)
+
+
+@router.post("/roadmaps/{roadmap_id}/next-best-action/alternative", response_model=CareerGpsNextBestActionDetail)
+def get_alternative_next_best_action(
+    roadmap_id: int,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsNextBestActionDetail:
+    return CareerGpsService().get_next_best_action(user, roadmap_id, alternative=True)
+
+
+@router.get("/roadmaps/{roadmap_id}/progress", response_model=CareerGpsProgressResponse)
+def get_roadmap_progress(
+    roadmap_id: int,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsProgressResponse:
+    return CareerGpsService().get_roadmap_progress(user, roadmap_id)
+
+
+@router.put("/roadmaps/{roadmap_id}/progress/actions", response_model=CareerGpsProgressEntry)
+def update_action_progress(
+    roadmap_id: int,
+    payload: CareerGpsProgressUpdateIn,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsProgressEntry:
+    return CareerGpsService().update_action_progress(user, roadmap_id, payload)
+
+
+@router.put("/roadmaps/{roadmap_id}/progress/milestones", response_model=CareerGpsProgressEntry)
+def update_milestone_progress(
+    roadmap_id: int,
+    payload: CareerGpsProgressUpdateIn,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsProgressEntry:
+    return CareerGpsService().update_milestone_progress(user, roadmap_id, payload)
+
+
+@router.get(
+    "/roadmaps/{roadmap_id}/milestones/{route_type}/{milestone_sequence}",
+    response_model=CareerGpsMilestoneDetail,
+)
+def get_milestone_detail(
+    roadmap_id: int,
+    route_type: str,
+    milestone_sequence: int,
+    user: dict = Depends(require_role("employee")),
+) -> CareerGpsMilestoneDetail:
+    return CareerGpsService().get_milestone_detail(user, roadmap_id, route_type, milestone_sequence)
 
 
 @router.get("/career-buddy/conversations", response_model=list[CareerBuddyConversation])

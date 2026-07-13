@@ -671,7 +671,7 @@ export default function EmployeeDashboardPage() {
               <a href="/employee/applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Applications
               </a>
-              <a href="#career-north-star" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+              <a href="/employee/career-gps" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Career GPS
               </a>
               <a href="#career-gps-roadmap" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">

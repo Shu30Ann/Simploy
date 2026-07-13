@@ -198,6 +198,7 @@ export interface CareerGpsProfile {
 }
 
 export type CareerGpsRouteType = "recommended" | "accelerated" | "balanced";
+export type CareerGpsProgressStatus = "not_started" | "in_progress" | "completed" | "skipped";
 
 export interface CareerGpsOccupationSummary {
   id: number;
@@ -281,7 +282,91 @@ export interface CareerGpsRoadmap {
   routes: CareerGpsRoute[];
   score_components: CareerGpsStoredScoreComponent[];
   next_best_action: CareerGpsNextBestAction;
+  selected_route_type: CareerGpsRouteType;
   source_note: string;
+}
+
+export interface CareerGpsSelectedRoutePayload {
+  selected_route_type: CareerGpsRouteType;
+}
+
+export interface CareerGpsProgressEntry {
+  id: number;
+  roadmap_id: number;
+  route_type: CareerGpsRouteType;
+  milestone_sequence: number;
+  action_sequence: number | null;
+  status: CareerGpsProgressStatus;
+  progress_percent: number;
+  notes: string | null;
+  evidence_url: string | null;
+  completed_at: string | null;
+  updated_at: string | null;
+}
+
+export interface CareerGpsProgressResponse {
+  roadmap_id: number;
+  entries: CareerGpsProgressEntry[];
+}
+
+export interface CareerGpsProgressUpdatePayload {
+  route_type: CareerGpsRouteType;
+  milestone_sequence: number;
+  action_sequence?: number | null;
+  status: CareerGpsProgressStatus;
+  notes?: string | null;
+  evidence_url?: string | null;
+  completed_at?: string | null;
+}
+
+export interface CareerGpsNextBestActionDetail {
+  roadmap_id: number;
+  route_type: CareerGpsRouteType;
+  milestone_sequence: number;
+  action_sequence: number;
+  action_title: string;
+  why_it_matters: string;
+  estimated_effort: string;
+  target_completion_date: string;
+  expected_impact: string;
+  related_milestone: string;
+  status: CareerGpsProgressStatus;
+  recommended_skill_gained: string;
+  selection_reason: string;
+  is_alternative: boolean;
+}
+
+export interface CareerGpsNextBestActionStatusPayload {
+  route_type: CareerGpsRouteType;
+  milestone_sequence: number;
+  action_sequence: number;
+  status: CareerGpsProgressStatus;
+}
+
+export interface CareerGpsMilestoneActionDetail extends CareerGpsMilestoneAction {
+  progress: CareerGpsProgressEntry | null;
+}
+
+export interface CareerGpsMilestoneDetail {
+  roadmap_id: number;
+  route_type: CareerGpsRouteType;
+  milestone_sequence: number;
+  title: string;
+  why_recommended: string;
+  estimated_timeline: string;
+  required_skills: string[];
+  existing_skills: string[];
+  missing_skills: string[];
+  recommended_certification: string;
+  recommended_experience: string;
+  suggested_project: string;
+  relevant_target_roles: string[];
+  transition_difficulty: string;
+  lifestyle_impact: string;
+  confidence_level: string;
+  main_assumptions: string[];
+  immediate_actions: CareerGpsMilestoneActionDetail[];
+  milestone_progress: CareerGpsProgressEntry | null;
 }
 
 export type CareerGpsScenarioCode =

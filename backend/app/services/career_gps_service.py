@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -18,7 +19,14 @@ from backend.app.schemas.career_gps import (
     CareerGoals,
     CareerGoalsIn,
     CareerGpsProfile,
+    CareerGpsMilestoneDetail,
+    CareerGpsNextBestActionDetail,
+    CareerGpsNextBestActionStatusIn,
+    CareerGpsProgressEntry,
+    CareerGpsProgressResponse,
+    CareerGpsProgressUpdateIn,
     CareerGpsRoadmap,
+    CareerGpsSelectedRouteIn,
     CareerGpsWhatIfApplyResponse,
     CareerGpsWhatIfChange,
     CareerGpsWhatIfComparison,
@@ -224,6 +232,249 @@ class CareerGpsService:
         if snapshot is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
         return CareerGpsRoadmap(**snapshot)
+
+    def update_selected_route(
+        self,
+        user: dict,
+        roadmap_id: int,
+        payload: CareerGpsSelectedRouteIn,
+    ) -> CareerGpsRoadmap:
+        employee = self._employee(user)
+        snapshot = self.career.get_roadmap_snapshot(employee["id"], roadmap_id)
+        if snapshot is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        route_types = {route.get("route_type") for route in snapshot.get("routes", [])}
+        if payload.selected_route_type not in route_types:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Selected route is not available on this roadmap.",
+            )
+        updated = self.career.update_selected_route(
+            employee_profile_id=employee["id"],
+            roadmap_id=roadmap_id,
+            selected_route_type=payload.selected_route_type,
+        )
+        if updated is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        return CareerGpsRoadmap(**updated)
+
+    def get_roadmap_progress(self, user: dict, roadmap_id: int) -> CareerGpsProgressResponse:
+        employee = self._employee(user)
+        rows = self.career.list_roadmap_progress(employee["id"], roadmap_id)
+        if rows is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        return CareerGpsProgressResponse(
+            roadmap_id=roadmap_id,
+            entries=[CareerGpsProgressEntry(**row) for row in rows],
+        )
+
+    def update_action_progress(
+        self,
+        user: dict,
+        roadmap_id: int,
+        payload: CareerGpsProgressUpdateIn,
+    ) -> CareerGpsProgressEntry:
+        if payload.action_sequence is None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="action_sequence is required")
+        return self._save_progress(user, roadmap_id, payload)
+
+    def update_milestone_progress(
+        self,
+        user: dict,
+        roadmap_id: int,
+        payload: CareerGpsProgressUpdateIn,
+    ) -> CareerGpsProgressEntry:
+        if payload.action_sequence is not None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="action_sequence is not allowed for milestone progress",
+            )
+        employee = self._employee(user)
+        context = self.career.get_milestone_context(
+            employee_profile_id=employee["id"],
+            roadmap_id=roadmap_id,
+            route_type=payload.route_type,
+            milestone_sequence=payload.milestone_sequence,
+        )
+        if context is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found")
+        if payload.status == "completed":
+            rows = self.career.list_roadmap_progress(employee["id"], roadmap_id) or []
+            action_sequences = {int(action["sequence"]) for action in context["actions"]}
+            completed_actions = {
+                int(row["action_sequence"])
+                for row in rows
+                if row.get("route_type") == payload.route_type
+                and int(row.get("milestone_sequence") or 0) == payload.milestone_sequence
+                and row.get("action_sequence") is not None
+                and row.get("status") == "completed"
+            }
+            if action_sequences and not action_sequences.issubset(completed_actions):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Complete all milestone actions before marking the milestone complete.",
+                )
+        return self._save_progress(user, roadmap_id, payload, employee=employee)
+
+    def get_milestone_detail(
+        self,
+        user: dict,
+        roadmap_id: int,
+        route_type: str,
+        milestone_sequence: int,
+    ) -> CareerGpsMilestoneDetail:
+        employee = self._employee(user)
+        roadmap = self.career.get_roadmap_snapshot(employee["id"], roadmap_id)
+        if roadmap is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        route = self._selected_route(roadmap, route_type)
+        if route is None or route.get("route_type") != route_type:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Route not found")
+        milestone = next(
+            (item for item in route.get("milestones", []) if int(item.get("sequence", 0)) == milestone_sequence),
+            None,
+        )
+        if milestone is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found")
+
+        progress_rows = self.career.list_roadmap_progress(employee["id"], roadmap_id) or []
+        milestone_progress = next(
+            (
+                row
+                for row in progress_rows
+                if row.get("route_type") == route_type
+                and int(row.get("milestone_sequence") or 0) == milestone_sequence
+                and row.get("action_sequence") is None
+            ),
+            None,
+        )
+        action_progress = {
+            int(row["action_sequence"]): row
+            for row in progress_rows
+            if row.get("route_type") == route_type
+            and int(row.get("milestone_sequence") or 0) == milestone_sequence
+            and row.get("action_sequence") is not None
+        }
+        required_skills = [gap["skill_name"] for gap in route.get("skill_gaps", [])]
+        existing_skills = [str(skill) for skill in employee.get("skills", [])]
+        focus_skill = milestone.get("focus_skill_name")
+        project_action = next(
+            (action for action in milestone.get("actions", []) if action.get("action_type") == "project"),
+            None,
+        )
+        transition_difficulty = self._component_label(route, "transition_difficulty")
+        lifestyle_impact = (
+            f"{self._component_label(route, 'lifestyle_fit')} / "
+            f"{self._component_label(route, 'work_life_balance_fit')}"
+        )
+        immediate_actions = []
+        for action in milestone.get("actions", []):
+            progress = action_progress.get(int(action.get("sequence", 0)))
+            immediate_actions.append(
+                {
+                    **action,
+                    "progress": CareerGpsProgressEntry(**progress) if progress else None,
+                }
+            )
+        return CareerGpsMilestoneDetail(
+            roadmap_id=roadmap_id,
+            route_type=route_type,  # type: ignore[arg-type]
+            milestone_sequence=milestone_sequence,
+            title=milestone["title"],
+            why_recommended=milestone.get("description") or route["explanation"],
+            estimated_timeline=f"{milestone.get('duration_weeks') or 4} weeks",
+            required_skills=required_skills,
+            existing_skills=existing_skills,
+            missing_skills=required_skills,
+            recommended_certification="No mandatory certification is stored for this route.",
+            recommended_experience=(
+                f"Complete one applied {route['target_occupation']['family']} work sample before moving to the next milestone."
+            ),
+            suggested_project=(
+                project_action.get("title")
+                if project_action
+                else f"Build evidence for {focus_skill or route['target_occupation']['title']}."
+            ),
+            relevant_target_roles=[item["target_occupation"]["title"] for item in roadmap.get("routes", [])],
+            transition_difficulty=transition_difficulty,
+            lifestyle_impact=lifestyle_impact,
+            confidence_level=self._confidence_level(float(route.get("score", 0))),
+            main_assumptions=[
+                "Scores are deterministic planning scores from saved profile, route, and illustrative occupation data.",
+                "Occupation and transition references are illustrative seed data, not verified labor-market data.",
+                "No salary data is shown because no validated salary source is attached to this roadmap.",
+            ],
+            immediate_actions=immediate_actions,
+            milestone_progress=CareerGpsProgressEntry(**milestone_progress) if milestone_progress else None,
+        )
+
+    def _save_progress(
+        self,
+        user: dict,
+        roadmap_id: int,
+        payload: CareerGpsProgressUpdateIn,
+        employee: dict | None = None,
+    ) -> CareerGpsProgressEntry:
+        employee = employee or self._employee(user)
+        completed_at = self._completion_timestamp(payload)
+        row = self.career.upsert_progress(
+            employee_profile_id=employee["id"],
+            roadmap_id=roadmap_id,
+            route_type=payload.route_type,
+            milestone_sequence=payload.milestone_sequence,
+            action_sequence=payload.action_sequence,
+            status_value=payload.status,
+            notes=payload.notes,
+            evidence_url=payload.evidence_url,
+            completed_at=completed_at,
+        )
+        if row is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Roadmap progress target not found")
+        return CareerGpsProgressEntry(**row)
+
+    def get_next_best_action(
+        self,
+        user: dict,
+        roadmap_id: int,
+        *,
+        alternative: bool = False,
+    ) -> CareerGpsNextBestActionDetail:
+        employee = self._employee(user)
+        roadmap = self.career.get_roadmap_snapshot(employee["id"], roadmap_id)
+        if roadmap is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Career GPS roadmap not found")
+        progress_rows = self.career.list_roadmap_progress(employee["id"], roadmap_id) or []
+        profile = self._profile_response(employee)
+        candidate = self._choose_next_best_action(
+            roadmap=roadmap,
+            progress_rows=progress_rows,
+            profile=profile.model_dump(),
+            alternative=alternative,
+        )
+        if candidate is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No available next action found for this roadmap.",
+            )
+        return CareerGpsNextBestActionDetail(**candidate)
+
+    def update_next_best_action_status(
+        self,
+        user: dict,
+        roadmap_id: int,
+        payload: CareerGpsNextBestActionStatusIn,
+    ) -> CareerGpsNextBestActionDetail:
+        progress_payload = CareerGpsProgressUpdateIn(
+            route_type=payload.route_type,
+            milestone_sequence=payload.milestone_sequence,
+            action_sequence=payload.action_sequence,
+            status=payload.status,
+            notes=None,
+            evidence_url=None,
+            completed_at=datetime.now(timezone.utc).isoformat() if payload.status == "completed" else None,
+        )
+        self.update_action_progress(user, roadmap_id, progress_payload)
+        return self.get_next_best_action(user, roadmap_id)
 
     def list_buddy_conversations(self, user: dict) -> list[CareerBuddyConversation]:
         employee = self._employee(user)
@@ -523,6 +774,41 @@ class CareerGpsService:
             return "No trade-off available"
         return f"{component['label']} ({round(component['score'])}%)"
 
+    def _component_label(self, route: dict[str, Any], key: str) -> str:
+        component = next((item for item in route.get("score_components", []) if item.get("key") == key), None)
+        if component is None:
+            return "No stored signal"
+        return f"{component['label']} {round(component.get('score', 0))}%"
+
+    def _confidence_level(self, score: float) -> str:
+        if score >= 82:
+            return "High"
+        if score >= 68:
+            return "Medium"
+        if score >= 52:
+            return "Developing"
+        return "Low"
+
+    def _completion_timestamp(self, payload: CareerGpsProgressUpdateIn) -> str | None:
+        if payload.status != "completed":
+            return None
+        if not payload.completed_at:
+            return datetime.now(timezone.utc).isoformat()
+        value = payload.completed_at
+        try:
+            if len(value) == 10:
+                parsed = datetime.fromisoformat(f"{value}T00:00:00+00:00")
+            else:
+                parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="completed_at must be an ISO date or timestamp.",
+            ) from exc
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc).isoformat()
+
     def _change(
         self,
         category: str,
@@ -552,6 +838,177 @@ class CareerGpsService:
                 detail="Generate a Career GPS roadmap before using Career Buddy.",
             )
         return roadmap
+
+    def _choose_next_best_action(
+        self,
+        *,
+        roadmap: dict[str, Any],
+        progress_rows: list[dict[str, Any]],
+        profile: dict[str, Any],
+        alternative: bool,
+    ) -> dict[str, Any] | None:
+        selected_route_type = roadmap.get("selected_route_type") or "recommended"
+        route = self._selected_route(roadmap, selected_route_type)
+        if route is None:
+            return None
+
+        progress_by_action = {
+            (
+                row.get("route_type"),
+                int(row.get("milestone_sequence") or 0),
+                int(row.get("action_sequence") or 0),
+            ): row
+            for row in progress_rows
+            if row.get("action_sequence") is not None
+        }
+        progress_by_milestone = {
+            (
+                row.get("route_type"),
+                int(row.get("milestone_sequence") or 0),
+            ): row
+            for row in progress_rows
+            if row.get("action_sequence") is None
+        }
+
+        active_milestone_sequence = self._active_milestone_sequence(route, progress_by_milestone)
+        largest_gap = max(route.get("skill_gaps", []), key=lambda gap: int(gap.get("priority", 0)), default=None)
+        candidate_rows: list[dict[str, Any]] = []
+        for milestone in route.get("milestones", []):
+            milestone_sequence = int(milestone.get("sequence") or 0)
+            milestone_status = progress_by_milestone.get((route["route_type"], milestone_sequence), {}).get("status")
+            if milestone_status in {"completed", "skipped"}:
+                continue
+            for action in milestone.get("actions", []):
+                action_sequence = int(action.get("sequence") or 0)
+                progress = progress_by_action.get((route["route_type"], milestone_sequence, action_sequence), {})
+                action_status = progress.get("status", "not_started")
+                if action_status in {"completed", "skipped"}:
+                    continue
+                candidate_rows.append(
+                    {
+                        "route": route,
+                        "milestone": milestone,
+                        "action": action,
+                        "status": action_status,
+                        "score": self._next_action_score(
+                            route=route,
+                            milestone=milestone,
+                            action=action,
+                            status_value=action_status,
+                            active_milestone_sequence=active_milestone_sequence,
+                            largest_gap=largest_gap,
+                            priorities=profile.get("lifestyle_priorities", {}).get("top_two_non_negotiable_priorities", []),
+                        ),
+                    }
+                )
+
+        if not candidate_rows:
+            return None
+        candidate_rows.sort(
+            key=lambda item: (
+                -item["score"],
+                int(item["milestone"].get("sequence") or 0),
+                int(item["action"].get("sequence") or 0),
+            )
+        )
+        chosen = candidate_rows[1] if alternative and len(candidate_rows) > 1 else candidate_rows[0]
+        return self._next_action_response(
+            roadmap=roadmap,
+            route=chosen["route"],
+            milestone=chosen["milestone"],
+            action=chosen["action"],
+            status_value=chosen["status"],
+            largest_gap=largest_gap,
+            is_alternative=alternative,
+        )
+
+    def _active_milestone_sequence(
+        self,
+        route: dict[str, Any],
+        progress_by_milestone: dict[tuple[str, int], dict[str, Any]],
+    ) -> int:
+        milestones = route.get("milestones", [])
+        for milestone in milestones:
+            row = progress_by_milestone.get((route["route_type"], int(milestone.get("sequence") or 0)), {})
+            if row.get("status") == "in_progress":
+                return int(milestone.get("sequence") or 1)
+        for milestone in milestones:
+            row = progress_by_milestone.get((route["route_type"], int(milestone.get("sequence") or 0)), {})
+            if row.get("status") not in {"completed", "skipped"}:
+                return int(milestone.get("sequence") or 1)
+        return int(milestones[-1].get("sequence") if milestones else 1)
+
+    def _next_action_score(
+        self,
+        *,
+        route: dict[str, Any],
+        milestone: dict[str, Any],
+        action: dict[str, Any],
+        status_value: str,
+        active_milestone_sequence: int,
+        largest_gap: dict[str, Any] | None,
+        priorities: list[str],
+    ) -> float:
+        score = 0.0
+        if int(milestone.get("sequence") or 0) == active_milestone_sequence:
+            score += 100
+        if status_value == "in_progress":
+            score += 35
+        if status_value == "not_started":
+            score += 18
+        focus_skill = str(milestone.get("focus_skill_name") or "").lower()
+        action_text = f"{action.get('title', '')} {action.get('description', '')}".lower()
+        if largest_gap and str(largest_gap.get("skill_name", "")).lower() in f"{focus_skill} {action_text}":
+            score += 45 + int(largest_gap.get("priority") or 0) * 3
+        if action.get("action_type") == "project":
+            score += 12
+        if "work_life_balance" in priorities and route.get("route_type") == "balanced":
+            score += 8
+        if "income" in priorities and route.get("route_type") == "accelerated":
+            score += 8
+        score += max(0, 10 - int(action.get("sequence") or 1))
+        return score
+
+    def _next_action_response(
+        self,
+        *,
+        roadmap: dict[str, Any],
+        route: dict[str, Any],
+        milestone: dict[str, Any],
+        action: dict[str, Any],
+        status_value: str,
+        largest_gap: dict[str, Any] | None,
+        is_alternative: bool,
+    ) -> dict[str, Any]:
+        focus_skill = milestone.get("focus_skill_name") or (largest_gap or {}).get("skill_name") or "role evidence"
+        estimated_hours = float(action.get("estimated_hours") or 2)
+        target_date = (datetime.now(timezone.utc) + timedelta(days=max(3, min(21, round(estimated_hours * 1.5))))).date()
+        effort = f"{estimated_hours:g} hours"
+        return {
+            "roadmap_id": roadmap["roadmap_id"],
+            "route_type": route["route_type"],
+            "milestone_sequence": int(milestone.get("sequence") or 1),
+            "action_sequence": int(action.get("sequence") or 1),
+            "action_title": action["title"],
+            "why_it_matters": (
+                f"This is the best next step because it supports {milestone['title']} on the active "
+                f"{route['route_type']} route and builds evidence for {focus_skill}."
+            ),
+            "estimated_effort": effort,
+            "target_completion_date": target_date.isoformat(),
+            "expected_impact": (
+                f"Completing it should improve readiness for {route['target_occupation']['title']} by turning "
+                f"{focus_skill} into visible progress."
+            ),
+            "related_milestone": milestone["title"],
+            "status": status_value if status_value in {"not_started", "in_progress", "completed", "skipped"} else "not_started",
+            "recommended_skill_gained": str(focus_skill),
+            "selection_reason": (
+                "Deterministic selection based on the active route, active milestone, largest skill gap, "
+                "incomplete action status, employee priorities, and route requirements."
+            ),
+            "is_alternative": is_alternative,
+        }
 
     def _buddy_context(self, employee: dict, roadmap: dict[str, Any], route_type: str) -> dict[str, Any]:
         selected_route = self._selected_route(roadmap, route_type)

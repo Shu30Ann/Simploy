@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 RiskTolerance = Literal["low", "moderate", "high"]
 CareerRouteType = Literal["recommended", "accelerated", "balanced"]
+CareerGpsProgressStatus = Literal["not_started", "in_progress", "completed", "skipped"]
 CareerGpsScenarioCode = Literal[
     "prioritise_salary",
     "prioritise_work_life_balance",
@@ -239,6 +240,97 @@ class CareerGpsNextBestAction(BaseModel):
     route_type: CareerRouteType
 
 
+class CareerGpsSelectedRouteIn(BaseModel):
+    selected_route_type: CareerRouteType
+
+
+class CareerGpsProgressUpdateIn(BaseModel):
+    route_type: CareerRouteType
+    milestone_sequence: int = Field(gt=0)
+    action_sequence: int | None = Field(default=None, gt=0)
+    status: CareerGpsProgressStatus
+    notes: str | None = Field(default=None, max_length=600)
+    evidence_url: str | None = Field(default=None, max_length=500)
+    completed_at: str | None = Field(default=None, max_length=40)
+
+    @field_validator("notes", "evidence_url", "completed_at")
+    @classmethod
+    def strip_optional_progress_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+
+class CareerGpsProgressEntry(BaseModel):
+    id: int
+    roadmap_id: int
+    route_type: CareerRouteType
+    milestone_sequence: int
+    action_sequence: int | None = None
+    status: CareerGpsProgressStatus
+    progress_percent: float = Field(ge=0, le=100)
+    notes: str | None = None
+    evidence_url: str | None = None
+    completed_at: str | None = None
+    updated_at: str | None = None
+
+
+class CareerGpsProgressResponse(BaseModel):
+    roadmap_id: int
+    entries: list[CareerGpsProgressEntry] = Field(default_factory=list)
+
+
+class CareerGpsNextBestActionDetail(BaseModel):
+    roadmap_id: int
+    route_type: CareerRouteType
+    milestone_sequence: int
+    action_sequence: int
+    action_title: str
+    why_it_matters: str
+    estimated_effort: str
+    target_completion_date: str
+    expected_impact: str
+    related_milestone: str
+    status: CareerGpsProgressStatus
+    recommended_skill_gained: str
+    selection_reason: str
+    is_alternative: bool = False
+
+
+class CareerGpsNextBestActionStatusIn(BaseModel):
+    route_type: CareerRouteType
+    milestone_sequence: int = Field(gt=0)
+    action_sequence: int = Field(gt=0)
+    status: CareerGpsProgressStatus
+
+
+class CareerGpsMilestoneActionDetail(CareerGpsMilestoneAction):
+    progress: CareerGpsProgressEntry | None = None
+
+
+class CareerGpsMilestoneDetail(BaseModel):
+    roadmap_id: int
+    route_type: CareerRouteType
+    milestone_sequence: int
+    title: str
+    why_recommended: str
+    estimated_timeline: str
+    required_skills: list[str] = Field(default_factory=list)
+    existing_skills: list[str] = Field(default_factory=list)
+    missing_skills: list[str] = Field(default_factory=list)
+    recommended_certification: str
+    recommended_experience: str
+    suggested_project: str
+    relevant_target_roles: list[str] = Field(default_factory=list)
+    transition_difficulty: str
+    lifestyle_impact: str
+    confidence_level: str
+    main_assumptions: list[str] = Field(default_factory=list)
+    immediate_actions: list[CareerGpsMilestoneActionDetail] = Field(default_factory=list)
+    milestone_progress: CareerGpsProgressEntry | None = None
+
+
 class CareerGpsRoadmap(BaseModel):
     roadmap_id: int
     version: int
@@ -250,6 +342,7 @@ class CareerGpsRoadmap(BaseModel):
     routes: list[CareerGpsRoute] = Field(default_factory=list)
     score_components: list[CareerGpsStoredScoreComponent] = Field(default_factory=list)
     next_best_action: CareerGpsNextBestAction
+    selected_route_type: CareerRouteType = "recommended"
     source_note: str
 
 

@@ -224,9 +224,215 @@ class CareerGpsIntegrationTest(unittest.TestCase):
         )
         self.assertEqual(unauthorized_message.status_code, 404)
 
+    def test_selected_route_updates_without_regenerating_roadmap(self) -> None:
+        owner_headers = self.signup_employee("career-gps-route-owner@simploy.local")
+        other_headers = self.signup_employee("career-gps-route-other@simploy.local")
+        self.complete_onboarding(owner_headers)
+        roadmap = self.generate_roadmap(owner_headers)
+        self.assertEqual(roadmap["selected_route_type"], "recommended")
+
+        updated = self.client.put(
+            f"/career-gps/roadmaps/{roadmap['roadmap_id']}/selected-route",
+            headers=owner_headers,
+            json={"selected_route_type": "balanced"},
+        )
+        self.assertEqual(updated.status_code, 200, updated.text)
+        updated_body = updated.json()
+        self.assertEqual(updated_body["selected_route_type"], "balanced")
+        self.assertEqual(updated_body["roadmap_id"], roadmap["roadmap_id"])
+        self.assertEqual(updated_body["version"], roadmap["version"])
+
+        latest = self.client.get("/career-gps/roadmaps/latest", headers=owner_headers)
+        self.assertEqual(latest.status_code, 200, latest.text)
+        self.assertEqual(latest.json()["selected_route_type"], "balanced")
+        self.assertEqual(latest.json()["version"], roadmap["version"])
+
+        unauthorized = self.client.put(
+            f"/career-gps/roadmaps/{roadmap['roadmap_id']}/selected-route",
+            headers=other_headers,
+            json={"selected_route_type": "accelerated"},
+        )
+        self.assertEqual(unauthorized.status_code, 404)
+
+    def test_roadmap_progress_updates_persist_and_validate_ownership(self) -> None:
+        owner_headers = self.signup_employee("career-gps-progress-owner@simploy.local")
+        other_headers = self.signup_employee("career-gps-progress-other@simploy.local")
+        self.complete_onboarding(owner_headers)
+        roadmap = self.generate_roadmap(owner_headers)
+        roadmap_id = roadmap["roadmap_id"]
+
+        initial_progress = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/progress", headers=owner_headers)
+        self.assertEqual(initial_progress.status_code, 200, initial_progress.text)
+        self.assertEqual(initial_progress.json()["entries"], [])
+
+        detail = self.client.get(
+            f"/career-gps/roadmaps/{roadmap_id}/milestones/recommended/1",
+            headers=owner_headers,
+        )
+        self.assertEqual(detail.status_code, 200, detail.text)
+        self.assertEqual(detail.json()["milestone_sequence"], 1)
+        self.assertIn("No mandatory certification", detail.json()["recommended_certification"])
+
+        premature_milestone = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/progress/milestones",
+            headers=owner_headers,
+            json={
+                "route_type": "recommended",
+                "milestone_sequence": 1,
+                "action_sequence": None,
+                "status": "completed",
+                "notes": "Trying to close early.",
+                "evidence_url": None,
+                "completed_at": "2026-07-13",
+            },
+        )
+        self.assertEqual(premature_milestone.status_code, 422)
+
+        action_progress = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/progress/actions",
+            headers=owner_headers,
+            json={
+                "route_type": "recommended",
+                "milestone_sequence": 1,
+                "action_sequence": 1,
+                "status": "completed",
+                "notes": "Finished the first practice block.",
+                "evidence_url": "https://example.com/evidence",
+                "completed_at": "2026-07-13",
+            },
+        )
+        self.assertEqual(action_progress.status_code, 200, action_progress.text)
+        action_body = action_progress.json()
+        self.assertEqual(action_body["status"], "completed")
+        self.assertEqual(action_body["evidence_url"], "https://example.com/evidence")
+        self.assertEqual(action_body["action_sequence"], 1)
+
+        milestone_progress = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/progress/milestones",
+            headers=owner_headers,
+            json={
+                "route_type": "recommended",
+                "milestone_sequence": 1,
+                "action_sequence": None,
+                "status": "completed",
+                "notes": "Milestone complete after evidence review.",
+                "evidence_url": "https://example.com/milestone",
+                "completed_at": "2026-07-13",
+            },
+        )
+        self.assertEqual(milestone_progress.status_code, 200, milestone_progress.text)
+        self.assertIsNone(milestone_progress.json()["action_sequence"])
+
+        refreshed = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/progress", headers=owner_headers)
+        self.assertEqual(refreshed.status_code, 200, refreshed.text)
+        entries = refreshed.json()["entries"]
+        self.assertEqual(len(entries), 2)
+        self.assertEqual({entry["status"] for entry in entries}, {"completed"})
+
+        unauthorized_read = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/progress", headers=other_headers)
+        self.assertEqual(unauthorized_read.status_code, 404)
+        unauthorized_update = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/progress/actions",
+            headers=other_headers,
+            json={
+                "route_type": "recommended",
+                "milestone_sequence": 1,
+                "action_sequence": 1,
+                "status": "in_progress",
+            },
+        )
+        self.assertEqual(unauthorized_update.status_code, 404)
+
+    def test_next_best_action_workflow_persists_progress_and_validates_ownership(self) -> None:
+        owner_headers = self.signup_employee("career-gps-action-owner@simploy.local")
+        other_headers = self.signup_employee("career-gps-action-other@simploy.local")
+        self.complete_onboarding(owner_headers)
+        roadmap = self.generate_roadmap(owner_headers)
+        roadmap_id = roadmap["roadmap_id"]
+
+        first = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/next-best-action", headers=owner_headers)
+        self.assertEqual(first.status_code, 200, first.text)
+        first_action = first.json()
+        self.assertEqual(first_action["status"], "not_started")
+        self.assertIn("Deterministic selection", first_action["selection_reason"])
+        self.assertTrue(first_action["action_title"])
+        self.assertTrue(first_action["recommended_skill_gained"])
+
+        started = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/next-best-action/status",
+            headers=owner_headers,
+            json={
+                "route_type": first_action["route_type"],
+                "milestone_sequence": first_action["milestone_sequence"],
+                "action_sequence": first_action["action_sequence"],
+                "status": "in_progress",
+            },
+        )
+        self.assertEqual(started.status_code, 200, started.text)
+        self.assertEqual(started.json()["status"], "in_progress")
+
+        completed = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/next-best-action/status",
+            headers=owner_headers,
+            json={
+                "route_type": first_action["route_type"],
+                "milestone_sequence": first_action["milestone_sequence"],
+                "action_sequence": first_action["action_sequence"],
+                "status": "completed",
+            },
+        )
+        self.assertEqual(completed.status_code, 200, completed.text)
+        next_action = completed.json()
+        self.assertNotEqual(
+            (next_action["milestone_sequence"], next_action["action_sequence"]),
+            (first_action["milestone_sequence"], first_action["action_sequence"]),
+        )
+
+        alternative = self.client.post(
+            f"/career-gps/roadmaps/{roadmap_id}/next-best-action/alternative",
+            headers=owner_headers,
+            json={},
+        )
+        self.assertEqual(alternative.status_code, 200, alternative.text)
+        self.assertTrue(alternative.json()["is_alternative"])
+
+        skipped = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/next-best-action/status",
+            headers=owner_headers,
+            json={
+                "route_type": next_action["route_type"],
+                "milestone_sequence": next_action["milestone_sequence"],
+                "action_sequence": next_action["action_sequence"],
+                "status": "skipped",
+            },
+        )
+        self.assertEqual(skipped.status_code, 200, skipped.text)
+
+        progress = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/progress", headers=owner_headers)
+        self.assertEqual(progress.status_code, 200, progress.text)
+        statuses = {entry["status"] for entry in progress.json()["entries"]}
+        self.assertIn("completed", statuses)
+        self.assertIn("skipped", statuses)
+
+        unauthorized_read = self.client.get(f"/career-gps/roadmaps/{roadmap_id}/next-best-action", headers=other_headers)
+        self.assertEqual(unauthorized_read.status_code, 404)
+        unauthorized_update = self.client.put(
+            f"/career-gps/roadmaps/{roadmap_id}/next-best-action/status",
+            headers=other_headers,
+            json={
+                "route_type": first_action["route_type"],
+                "milestone_sequence": first_action["milestone_sequence"],
+                "action_sequence": first_action["action_sequence"],
+                "status": "in_progress",
+            },
+        )
+        self.assertEqual(unauthorized_update.status_code, 404)
+
     def test_career_gps_rls_migrations_cover_employee_owned_tables(self) -> None:
         rls_sql = Path("backend/migrations/002_career_gps_rls.sql").read_text(encoding="utf-8")
         buddy_sql = Path("backend/migrations/005_career_buddy.sql").read_text(encoding="utf-8")
+        selected_route_sql = Path("backend/migrations/006_selected_route_type.sql").read_text(encoding="utf-8")
+        progress_sql = Path("backend/migrations/007_roadmap_progress_evidence.sql").read_text(encoding="utf-8")
         for table in [
             "career_north_star_settings",
             "career_preferences",
@@ -238,6 +444,8 @@ class CareerGpsIntegrationTest(unittest.TestCase):
         self.assertIn("alter table public.career_buddy_conversations enable row level security", buddy_sql)
         self.assertIn("alter table public.career_buddy_messages enable row level security", buddy_sql)
         self.assertIn("public.is_career_buddy_conversation_owner", buddy_sql)
+        self.assertIn("selected_route_type", selected_route_sql)
+        self.assertIn("evidence_url", progress_sql)
 
 
 if __name__ == "__main__":

@@ -316,6 +316,7 @@ class CareerGpsRepository:
         if isinstance(snapshot, dict):
             snapshot.setdefault("roadmap_id", roadmap["id"])
             snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
+            self._apply_selected_route(snapshot, roadmap)
         return snapshot
 
     def get_roadmap_snapshot(self, employee_profile_id: int, roadmap_id: int) -> dict[str, Any] | None:
@@ -343,7 +344,347 @@ class CareerGpsRepository:
         if isinstance(snapshot, dict):
             snapshot.setdefault("roadmap_id", roadmap["id"])
             snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
+            self._apply_selected_route(snapshot, roadmap)
         return snapshot
+
+    def update_selected_route(
+        self,
+        *,
+        employee_profile_id: int,
+        roadmap_id: int,
+        selected_route_type: str,
+    ) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            roadmap = _first(
+                supabase().select(
+                    "career_roadmaps",
+                    {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+                    limit=1,
+                )
+            )
+            if roadmap is None:
+                return None
+            version = self._latest_roadmap_version(roadmap_id)
+            if version is None:
+                return None
+            snapshot = _json_value(version.get("roadmap_snapshot_json"), {})
+            if not isinstance(snapshot, dict):
+                return None
+            snapshot["selected_route_type"] = selected_route_type
+            updated_roadmap = supabase().update(
+                "career_roadmaps",
+                {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+                {"selected_route_type": selected_route_type},
+            )
+            supabase().update(
+                "roadmap_versions",
+                {"id": version["id"]},
+                {"roadmap_snapshot_json": snapshot},
+            )
+            snapshot.setdefault("roadmap_id", roadmap_id)
+            snapshot.setdefault("version", roadmap.get("current_version", version.get("version_number", 1)))
+            self._apply_selected_route(snapshot, updated_roadmap or roadmap)
+            return snapshot
+
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM career_roadmaps
+                WHERE id = ? AND employee_profile_id = ?
+                """,
+                (roadmap_id, employee_profile_id),
+            ).fetchone()
+            if row is None:
+                return None
+            roadmap = dict(row)
+            version = conn.execute(
+                """
+                SELECT * FROM roadmap_versions
+                WHERE roadmap_id = ?
+                ORDER BY version_number DESC
+                LIMIT 1
+                """,
+                (roadmap_id,),
+            ).fetchone()
+            if version is None:
+                return None
+            version_data = dict(version)
+            snapshot = _json_value(version_data.get("roadmap_snapshot_json"), {})
+            if not isinstance(snapshot, dict):
+                return None
+            snapshot["selected_route_type"] = selected_route_type
+            conn.execute(
+                """
+                UPDATE career_roadmaps
+                SET selected_route_type = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND employee_profile_id = ?
+                """,
+                (selected_route_type, roadmap_id, employee_profile_id),
+            )
+            conn.execute(
+                """
+                UPDATE roadmap_versions
+                SET roadmap_snapshot_json = ?
+                WHERE id = ?
+                """,
+                (json.dumps(snapshot), version_data["id"]),
+            )
+            roadmap["selected_route_type"] = selected_route_type
+        snapshot.setdefault("roadmap_id", roadmap_id)
+        snapshot.setdefault("version", roadmap.get("current_version", version_data.get("version_number", 1)))
+        self._apply_selected_route(snapshot, roadmap)
+        return snapshot
+
+    def get_milestone_context(
+        self,
+        *,
+        employee_profile_id: int,
+        roadmap_id: int,
+        route_type: str,
+        milestone_sequence: int,
+    ) -> dict[str, Any] | None:
+        if settings.supabase_enabled:
+            roadmap = _first(
+                supabase().select(
+                    "career_roadmaps",
+                    {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+                    limit=1,
+                )
+            )
+            if roadmap is None:
+                return None
+            route = _first(
+                supabase().select(
+                    "career_routes",
+                    {"roadmap_id": roadmap_id, "route_type": route_type},
+                    limit=1,
+                )
+            )
+            if route is None:
+                return None
+            milestone = _first(
+                supabase().select(
+                    "roadmap_milestones",
+                    {"route_id": route["id"], "sequence": milestone_sequence},
+                    limit=1,
+                )
+            )
+            if milestone is None:
+                return None
+            actions = supabase().select(
+                "milestone_actions",
+                {"milestone_id": milestone["id"]},
+                order="sequence.asc",
+            )
+            return {"roadmap": roadmap, "route": route, "milestone": milestone, "actions": actions}
+
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                  roadmap.id AS roadmap_id,
+                  route.id AS route_id,
+                  route.route_type,
+                  route.sequence AS route_sequence,
+                  milestone.*
+                FROM career_roadmaps roadmap
+                JOIN career_routes route ON route.roadmap_id = roadmap.id
+                JOIN roadmap_milestones milestone ON milestone.route_id = route.id
+                WHERE roadmap.id = ?
+                  AND roadmap.employee_profile_id = ?
+                  AND route.route_type = ?
+                  AND milestone.sequence = ?
+                """,
+                (roadmap_id, employee_profile_id, route_type, milestone_sequence),
+            ).fetchone()
+            if row is None:
+                return None
+            milestone = dict(row)
+            actions = conn.execute(
+                "SELECT * FROM milestone_actions WHERE milestone_id = ? ORDER BY sequence ASC",
+                (milestone["id"],),
+            ).fetchall()
+        return {
+            "roadmap": {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+            "route": {
+                "id": milestone["route_id"],
+                "route_type": milestone["route_type"],
+                "sequence": milestone["route_sequence"],
+            },
+            "milestone": milestone,
+            "actions": [dict(action) for action in actions],
+        }
+
+    def list_roadmap_progress(self, employee_profile_id: int, roadmap_id: int) -> list[dict[str, Any]] | None:
+        if settings.supabase_enabled:
+            roadmap = _first(
+                supabase().select(
+                    "career_roadmaps",
+                    {"id": roadmap_id, "employee_profile_id": employee_profile_id},
+                    limit=1,
+                )
+            )
+            if roadmap is None:
+                return None
+            rows = supabase().select(
+                "roadmap_progress",
+                {"employee_profile_id": employee_profile_id, "roadmap_id": roadmap_id},
+                order="updated_at.asc",
+            )
+            return self._progress_rows_with_route_keys_supabase(roadmap_id, rows)
+
+        with get_connection() as conn:
+            roadmap = conn.execute(
+                "SELECT id FROM career_roadmaps WHERE id = ? AND employee_profile_id = ?",
+                (roadmap_id, employee_profile_id),
+            ).fetchone()
+            if roadmap is None:
+                return None
+            rows = conn.execute(
+                """
+                SELECT
+                  progress.*,
+                  route.route_type,
+                  COALESCE(milestone.sequence, action_milestone.sequence) AS milestone_sequence,
+                  action.sequence AS action_sequence
+                FROM roadmap_progress progress
+                LEFT JOIN roadmap_milestones milestone ON milestone.id = progress.milestone_id
+                LEFT JOIN milestone_actions action ON action.id = progress.action_id
+                LEFT JOIN roadmap_milestones action_milestone ON action_milestone.id = action.milestone_id
+                JOIN career_routes route ON route.id = COALESCE(milestone.route_id, action_milestone.route_id)
+                WHERE progress.employee_profile_id = ?
+                  AND progress.roadmap_id = ?
+                ORDER BY route.sequence ASC, milestone_sequence ASC, action_sequence ASC
+                """,
+                (employee_profile_id, roadmap_id),
+            ).fetchall()
+        return [self._progress_row(dict(row)) for row in rows]
+
+    def upsert_progress(
+        self,
+        *,
+        employee_profile_id: int,
+        roadmap_id: int,
+        route_type: str,
+        milestone_sequence: int,
+        action_sequence: int | None,
+        status_value: str,
+        notes: str | None,
+        evidence_url: str | None,
+        completed_at: str | None,
+    ) -> dict[str, Any] | None:
+        context = self.get_milestone_context(
+            employee_profile_id=employee_profile_id,
+            roadmap_id=roadmap_id,
+            route_type=route_type,
+            milestone_sequence=milestone_sequence,
+        )
+        if context is None:
+            return None
+        milestone = context["milestone"]
+        actions = context["actions"]
+        action = next((item for item in actions if int(item["sequence"]) == int(action_sequence)), None) if action_sequence else None
+        if action_sequence is not None and action is None:
+            return None
+        now_value = _now()
+        data = {
+            "employee_profile_id": employee_profile_id,
+            "roadmap_id": roadmap_id,
+            "milestone_id": milestone["id"],
+            "action_id": action["id"] if action else None,
+            "status": status_value,
+            "progress_percent": self._progress_percent(status_value),
+            "completed_at": completed_at or (now_value if status_value == "completed" else None),
+            "notes": notes,
+            "evidence_url": evidence_url,
+        }
+        if settings.supabase_enabled:
+            row = self._upsert_progress_supabase(data)
+            self._update_progress_source_status_supabase(milestone["id"], action["id"] if action else None, status_value)
+            row["route_type"] = route_type
+            row["milestone_sequence"] = milestone_sequence
+            row["action_sequence"] = action_sequence
+            return self._progress_row(row)
+
+        with get_connection() as conn:
+            if action is not None:
+                existing = conn.execute(
+                    """
+                    SELECT id FROM roadmap_progress
+                    WHERE employee_profile_id = ? AND roadmap_id = ? AND action_id = ?
+                    """,
+                    (employee_profile_id, roadmap_id, action["id"]),
+                ).fetchone()
+            else:
+                existing = conn.execute(
+                    """
+                    SELECT id FROM roadmap_progress
+                    WHERE employee_profile_id = ? AND roadmap_id = ? AND milestone_id = ? AND action_id IS NULL
+                    """,
+                    (employee_profile_id, roadmap_id, milestone["id"]),
+                ).fetchone()
+            values = (
+                data["status"],
+                data["progress_percent"],
+                data["completed_at"],
+                data["notes"],
+                data["evidence_url"],
+            )
+            if existing:
+                conn.execute(
+                    """
+                    UPDATE roadmap_progress
+                    SET status = ?, progress_percent = ?, completed_at = ?, notes = ?,
+                        evidence_url = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    """,
+                    (*values, existing["id"]),
+                )
+                progress_id = existing["id"]
+            else:
+                cursor = conn.execute(
+                    """
+                    INSERT INTO roadmap_progress
+                      (employee_profile_id, roadmap_id, milestone_id, action_id, status,
+                       progress_percent, completed_at, notes, evidence_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        employee_profile_id,
+                        roadmap_id,
+                        milestone["id"],
+                        action["id"] if action else None,
+                        *values,
+                    ),
+                )
+                progress_id = cursor.lastrowid
+            source_status = self._source_status(status_value)
+            if action is not None:
+                conn.execute(
+                    "UPDATE milestone_actions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (source_status, action["id"]),
+                )
+            else:
+                conn.execute(
+                    "UPDATE roadmap_milestones SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (source_status, milestone["id"]),
+                )
+            row = conn.execute(
+                """
+                SELECT
+                  progress.*,
+                  route.route_type,
+                  milestone.sequence AS milestone_sequence,
+                  action.sequence AS action_sequence
+                FROM roadmap_progress progress
+                LEFT JOIN milestone_actions action ON action.id = progress.action_id
+                JOIN roadmap_milestones milestone ON milestone.id = progress.milestone_id
+                JOIN career_routes route ON route.id = milestone.route_id
+                WHERE progress.id = ?
+                """,
+                (progress_id,),
+            ).fetchone()
+        return self._progress_row(dict(row))
 
     def list_buddy_conversations(self, employee_profile_id: int) -> list[dict[str, Any]]:
         if settings.supabase_enabled:
@@ -661,6 +1002,122 @@ class CareerGpsRepository:
         data["structured_response"] = _json_value(data.pop("structured_response_json", {}), {})
         return data
 
+    def _progress_percent(self, status_value: str) -> float:
+        if status_value == "completed":
+            return 100
+        if status_value == "in_progress":
+            return 50
+        return 0
+
+    def _source_status(self, status_value: str) -> str:
+        if status_value == "not_started":
+            return "planned"
+        return status_value
+
+    def _progress_status(self, status_value: str | None) -> str:
+        if status_value in {"not_started", "in_progress", "completed", "skipped"}:
+            return status_value
+        return "not_started"
+
+    def _progress_row(self, row: dict[str, Any]) -> dict[str, Any]:
+        data = dict(row)
+        data["status"] = self._progress_status(data.get("status"))
+        data["progress_percent"] = float(data.get("progress_percent") or 0)
+        data["action_sequence"] = data.get("action_sequence")
+        data["evidence_url"] = data.get("evidence_url")
+        data["completed_at"] = data.get("completed_at")
+        data["updated_at"] = data.get("updated_at")
+        return data
+
+    def _progress_rows_with_route_keys_supabase(
+        self,
+        roadmap_id: int,
+        rows: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        if not rows:
+            return []
+        routes = supabase().select("career_routes", {"roadmap_id": roadmap_id}, order="sequence.asc")
+        route_by_id = {route["id"]: route for route in routes}
+        milestones_by_id: dict[int, dict[str, Any]] = {}
+        actions_by_id: dict[int, dict[str, Any]] = {}
+        for route in routes:
+            milestones = supabase().select("roadmap_milestones", {"route_id": route["id"]}, order="sequence.asc")
+            for milestone in milestones:
+                milestones_by_id[milestone["id"]] = {**milestone, "route": route}
+                actions = supabase().select("milestone_actions", {"milestone_id": milestone["id"]}, order="sequence.asc")
+                for action in actions:
+                    actions_by_id[action["id"]] = {**action, "milestone": milestone, "route": route}
+        enriched: list[dict[str, Any]] = []
+        for row in rows:
+            action = actions_by_id.get(row.get("action_id"))
+            milestone = milestones_by_id.get(row.get("milestone_id")) or (action or {}).get("milestone")
+            route = (milestone or {}).get("route") or (action or {}).get("route")
+            if not milestone or not route:
+                continue
+            enriched.append(
+                self._progress_row(
+                    {
+                        **row,
+                        "route_type": route["route_type"],
+                        "milestone_sequence": milestone["sequence"],
+                        "action_sequence": action["sequence"] if action else None,
+                    }
+                )
+            )
+        return sorted(
+            enriched,
+            key=lambda item: (
+                route_by_id.get(milestones_by_id.get(item.get("milestone_id"), {}).get("route_id"), {}).get("sequence", 0),
+                item.get("milestone_sequence") or 0,
+                item.get("action_sequence") or 0,
+            ),
+        )
+
+    def _upsert_progress_supabase(self, data: dict[str, Any]) -> dict[str, Any]:
+        existing_rows = supabase().select(
+            "roadmap_progress",
+            {
+                "employee_profile_id": data["employee_profile_id"],
+                "roadmap_id": data["roadmap_id"],
+            },
+        )
+        if data.get("action_id") is not None:
+            existing = next((row for row in existing_rows if row.get("action_id") == data["action_id"]), None)
+        else:
+            existing = next(
+                (
+                    row
+                    for row in existing_rows
+                    if row.get("milestone_id") == data["milestone_id"] and row.get("action_id") is None
+                ),
+                None,
+            )
+        if existing:
+            return supabase().update(
+                "roadmap_progress",
+                {"id": existing["id"]},
+                {
+                    "status": data["status"],
+                    "progress_percent": data["progress_percent"],
+                    "completed_at": data["completed_at"],
+                    "notes": data["notes"],
+                    "evidence_url": data["evidence_url"],
+                },
+            ) or existing
+        return supabase().insert("roadmap_progress", data)
+
+    def _update_progress_source_status_supabase(
+        self,
+        milestone_id: int,
+        action_id: int | None,
+        status_value: str,
+    ) -> None:
+        source_status = self._source_status(status_value)
+        if action_id is not None:
+            supabase().update("milestone_actions", {"id": action_id}, {"status": source_status})
+        else:
+            supabase().update("roadmap_milestones", {"id": milestone_id}, {"status": source_status})
+
     def _parse_timestamp(self, value: str) -> datetime:
         normalized = str(value).replace("Z", "+00:00")
         try:
@@ -670,6 +1127,17 @@ class CareerGpsRepository:
         if parsed.tzinfo is None:
             return parsed.replace(tzinfo=timezone.utc)
         return parsed.astimezone(timezone.utc)
+
+    def _apply_selected_route(self, snapshot: dict[str, Any], roadmap: dict[str, Any] | None) -> None:
+        route_types = {
+            route.get("route_type")
+            for route in snapshot.get("routes", [])
+            if isinstance(route, dict) and isinstance(route.get("route_type"), str)
+        }
+        selected = (roadmap or {}).get("selected_route_type") or snapshot.get("selected_route_type") or "recommended"
+        if selected not in route_types and route_types:
+            selected = "recommended" if "recommended" in route_types else sorted(route_types)[0]
+        snapshot["selected_route_type"] = selected
 
     def _get_active_roadmap(self, employee_profile_id: int) -> dict[str, Any] | None:
         if settings.supabase_enabled:
@@ -745,7 +1213,7 @@ class CareerGpsRepository:
                     SET north_star_setting_id = ?, target_occupation_id = ?, title = ?, summary = ?,
                         status = 'active', current_version = ?, readiness_score_snapshot = ?,
                         fit_score_snapshot = ?, scoring_version = ?, source_label = 'deterministic_engine',
-                        updated_at = CURRENT_TIMESTAMP
+                        selected_route_type = 'recommended', updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                     """,
                     (
@@ -767,8 +1235,8 @@ class CareerGpsRepository:
                     INSERT INTO career_roadmaps
                       (employee_profile_id, north_star_setting_id, target_occupation_id, title, summary,
                        status, current_version, readiness_score_snapshot, fit_score_snapshot,
-                       scoring_version, source_label)
-                    VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, 'deterministic_engine')
+                       scoring_version, source_label, selected_route_type)
+                    VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, 'deterministic_engine', 'recommended')
                     """,
                     (
                         employee_profile_id,
@@ -785,7 +1253,7 @@ class CareerGpsRepository:
                 roadmap_id = cursor.lastrowid
 
             self._insert_sqlite_generated_children(conn, roadmap_id, generated)
-            snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number}
+            snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number, "selected_route_type": "recommended"}
             conn.execute(
                 """
                 INSERT INTO roadmap_versions
@@ -908,6 +1376,7 @@ class CareerGpsRepository:
                     "fit_score_snapshot": generated["fit_score"],
                     "scoring_version": generated["scoring_version"],
                     "source_label": "deterministic_engine",
+                    "selected_route_type": "recommended",
                 },
             )
         else:
@@ -926,12 +1395,13 @@ class CareerGpsRepository:
                     "fit_score_snapshot": generated["fit_score"],
                     "scoring_version": generated["scoring_version"],
                     "source_label": "deterministic_engine",
+                    "selected_route_type": "recommended",
                 },
             )
             roadmap_id = roadmap["id"]
 
         self._insert_supabase_generated_children(client, roadmap_id, generated)
-        snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number}
+        snapshot = {**generated, "roadmap_id": roadmap_id, "version": version_number, "selected_route_type": "recommended"}
         client.insert(
             "roadmap_versions",
             {

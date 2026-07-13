@@ -3,6 +3,7 @@ export const routes = {
   login: "/login",
   signup: "/signup",
   employeeDashboard: "/employee/dashboard",
+  employeeCareerGps: "/employee/career-gps",
   employeeApplications: "/employee/applications",
   employerDashboard: "/employer/dashboard",
   employerSimulator: "/employer/analytics/simulator",
