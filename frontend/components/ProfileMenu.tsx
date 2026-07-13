@@ -17,7 +17,7 @@ export function ProfileMenu({ role, initials, name, label }: ProfileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const settingsHref =
     role === "employee"
-      ? `${routes.employeeDashboard}#settings`
+      ? routes.employeeSettings
       : `${routes.employerDashboard}#settings`;
 
   useEffect(() => {

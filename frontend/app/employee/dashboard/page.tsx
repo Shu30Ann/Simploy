@@ -14,7 +14,7 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import { ProfileMenu } from "@/components/ProfileMenu";
+import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
 import RiasecAssessment from "@/components/RiasecAssessment";
 import CareerGpsRoadmapPanel from "@/components/career-gps/CareerGpsRoadmapPanel";
 import CareerNorthStarPanel from "@/components/career-gps/CareerNorthStarPanel";
@@ -658,40 +658,7 @@ export default function EmployeeDashboardPage() {
 
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <header className="border-b border-[#F0EBF8] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold text-[#E8197A]">
-              Simploy
-            </a>
-            <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-              <a href="#asia-market-title" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Asia Market Insight
-              </a>
-              <a href="/employee/applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Applications
-              </a>
-              <a href="/employee/career-gps" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Career GPS
-              </a>
-              <a href="#career-gps-roadmap" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Roadmap
-              </a>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
-            >
-              <Building2 size={16} />
-              Switch Portal
-            </a>
-            <ProfileMenu role="employee" initials={profileInitials} name={fullName} label="Open employee profile menu" />
-          </div>
-        </div>
-      </header>
+      <EmployeeTopNav initials={profileInitials} name={fullName} />
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -785,7 +752,7 @@ export default function EmployeeDashboardPage() {
           </div>
         )}
 
-        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
+        <div id="marketplace" className="mt-6 flex scroll-mt-24 flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
           <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
             <Search size={18} />
             <input

@@ -10,7 +10,6 @@ import {
   Award,
   Bot,
   BriefcaseBusiness,
-  Building2,
   CalendarCheck,
   ChevronDown,
   CheckCircle2,
@@ -37,7 +36,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import { ProfileMenu } from "@/components/ProfileMenu";
+import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
 import { getAuthToken, getJson, postJson, putJson } from "@/lib/api";
 import type {
   CareerGpsMilestone,
@@ -944,25 +943,6 @@ function EmptyPanel({
   );
 }
 
-function HeaderNav({ active = false }: { active?: boolean }) {
-  return (
-    <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-      <Link href={`${routes.employeeDashboard}#asia-market-title`} className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-        Asia Market Insight
-      </Link>
-      <Link
-        href={routes.employeeCareerGps}
-        className={`rounded-full px-4 py-2 ${active ? "bg-[#FFF0F8] text-[#E8197A]" : "hover:bg-[#F8F5FC]"}`}
-      >
-        Career GPS
-      </Link>
-      <Link href={routes.employeeApplications} className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-        Applications
-      </Link>
-    </nav>
-  );
-}
-
 function DemoModeBanner() {
   return (
     <section className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
@@ -1022,7 +1002,7 @@ function CareerGpsHeader({
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
-              href={`${routes.employeeDashboard}#settings`}
+              href={routes.employeeSettings}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white"
             >
               <Target size={16} />
@@ -1099,7 +1079,7 @@ function NorthStarSummary({ profile }: { profile: CareerGpsProfile }) {
               This summary uses your saved Career GPS profile and existing employee data.
             </p>
           </div>
-          <Link href={`${routes.employeeDashboard}#settings`} className="text-sm font-bold text-[#0891B2]">
+          <Link href={routes.employeeSettings} className="text-sm font-bold text-[#0891B2]">
             Update summary
           </Link>
         </div>
@@ -3243,12 +3223,14 @@ function CareerBuddyPanel({
 
   if (!roadmap || !activeRoute) {
     return (
-      <EmptyPanel
-        icon={Bot}
-        label="Career Buddy"
-        title="Generate a roadmap to ask Career Buddy"
-        description="Career Buddy needs a stored roadmap so it can answer from deterministic route, milestone, and skill-gap context."
-      />
+      <div id="career-buddy" className="scroll-mt-24">
+        <EmptyPanel
+          icon={Bot}
+          label="Career Buddy"
+          title="Generate a roadmap to ask Career Buddy"
+          description="Career Buddy needs a stored roadmap so it can answer from deterministic route, milestone, and skill-gap context."
+        />
+      </div>
     );
   }
 
@@ -3261,7 +3243,7 @@ function CareerBuddyPanel({
   const latestAssistant = [...messages].reverse().find((message) => message.sender === "assistant");
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section id="career-buddy" className="scroll-mt-24 rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]">
@@ -3826,27 +3808,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
 
   return (
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <header className="border-b border-[#F0EBF8] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold text-[#E8197A]">
-              Simploy
-            </Link>
-            <HeaderNav active />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
-            >
-              <Building2 size={16} />
-              Switch Portal
-            </Link>
-            <ProfileMenu role="employee" initials={profileInitials} name={profileName} label="Open employee profile menu" />
-          </div>
-        </div>
-      </header>
+      <EmployeeTopNav initials={profileInitials} name={profileName} />
 
       <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         {isLoading ? (

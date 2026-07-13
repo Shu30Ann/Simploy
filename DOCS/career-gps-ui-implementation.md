@@ -4,6 +4,8 @@ This file is the source of truth for the employee Career GPS redesign work. Read
 
 ## Current Phase Status
 
+- Phase 2 - Simplify Employee Navigation: completed.
+- Phase 1 - Employee Information Architecture Audit: completed.
 - Phase 3K - Integration Testing and Cleanup: completed.
 - Phase 3J - Visual Polish and Hackathon Demo Mode: completed.
 - Phase 3I - Career Buddy with Gemini Free Tier: completed.
@@ -87,6 +89,284 @@ This file is the source of truth for the employee Career GPS redesign work. Read
   - The repository already contains an uppercase `DOCS` directory. On this Windows workspace, the requested `docs/career-gps-ui-implementation.md` path resolves to that existing directory without renaming it.
 - Prior implementation reference:
   - `DOCS/career-gps-implementation.md` contains the historical Career GPS backend, frontend, testing, and security work from earlier phases.
+
+## Phase 1 - Employee Information Architecture Audit
+
+Phase 1 is a documentation-only audit. It inspected the current employee frontend, route constants, Career GPS components, navigation, and backend router surface. It did not change visible production behavior, backend behavior, Supabase schema, authentication, or Career GPS recommendation logic.
+
+### Current Employee Page Map
+
+- `/employee/dashboard`
+  - File: `frontend/app/employee/dashboard/page.tsx`.
+  - Current role: the main employee workspace, but it also acts as marketplace, settings, Career North Star setup, RIASEC entry point, and older roadmap surface.
+  - Mounted sections: header navigation, Career Command Center, `CareerNorthStarPanel`, `CareerGpsRoadmapPanel`, `RiasecAssessment`, marketplace search/filter controls, internal skill gigs, external opportunities, and Asia market signals.
+  - API calls: `GET /dashboard/employee`, `POST /jobs/{job_id}/apply`, then refreshes `GET /dashboard/employee`.
+  - Local/mock data: `demoEmployeeProfile`, `demoInternalGigs`, `marketplaceCompanies`, `marketplaceJobs`, RIASEC local storage, and hard-coded Asia market signals.
+- `/employee/career-gps`
+  - File: `frontend/app/employee/career-gps/page.tsx`.
+  - Shell: `frontend/components/career-gps/CareerGpsPageShell.tsx`.
+  - Current role: the more complete standalone Career GPS experience, including overview, route selector, visual journey map, milestone detail, progress, skills readiness, what-if simulator, and Career Buddy.
+  - Query behavior: `/employee/career-gps?demo=1` enables frontend-only safe demo mode.
+  - API calls in production mode: `GET /career-gps/profile`, `GET /career-gps/roadmaps/latest`, `GET /career-gps/roadmaps/{roadmap_id}/progress`, `GET /career-gps/roadmaps/{roadmap_id}/next-best-action`, `PUT /career-gps/roadmaps/{roadmap_id}/selected-route`, `PUT /career-gps/roadmaps/{roadmap_id}/next-best-action/status`, `POST /career-gps/roadmaps/{roadmap_id}/next-best-action/alternative`, `GET /career-gps/roadmaps/{roadmap_id}/milestones/{route_type}/{milestone_sequence}`, `PUT /career-gps/roadmaps/{roadmap_id}/progress/actions`, `PUT /career-gps/roadmaps/{roadmap_id}/progress/milestones`, `POST /career-gps/roadmaps/what-if/preview`, `POST /career-gps/roadmaps/what-if/apply`, `GET /career-gps/career-buddy/conversations`, `GET /career-gps/career-buddy/conversations/{conversation_id}`, and `POST /career-gps/career-buddy/messages`.
+- `/employee/applications`
+  - File: `frontend/app/employee/applications/page.tsx`.
+  - Current role: application tracker.
+  - API calls: `GET /applications/me`.
+  - Navigation still points to `/employee/dashboard#asia-market-title` and `/employee/dashboard#skills`; `#skills` is stale because the dashboard no longer contains a matching skills anchor.
+- Missing employee pages
+  - There is no standalone `/employee/settings` route.
+  - There is no standalone `/employee/marketplace` or `/employee/jobs` route in the current Next.js app, although older checklist docs mention `/employee/jobs`.
+  - There is no standalone `/employee/career-buddy` route; Career Buddy exists inside Career GPS and a separate floating mock `ChatWidget` exists globally in `frontend/app/employee/layout.tsx`.
+
+### Problems In The Current Flow
+
+- The dashboard mixes overview, next actions, editable preferences, roadmap generation, roadmap visualization, marketplace search, application actions, RIASEC assessment, and market intelligence.
+- Career goals, lifestyle priorities, constraints, financial targets, and relocation preferences are editable in `CareerNorthStarPanel` on the main dashboard through the `#settings` anchor.
+- Career GPS exists twice: the newer `/employee/career-gps` shell and the older dashboard-mounted `CareerGpsRoadmapPanel`.
+- Career Buddy exists twice conceptually: a real roadmap-aware Career Buddy inside Career GPS, and a generic floating `ChatWidget` titled "Career Coach" that returns local template replies and is not connected to Career GPS backend context.
+- Navigation is inconsistent across employee pages:
+  - Dashboard nav uses dashboard anchors and `/employee/career-gps`.
+  - Career GPS nav uses `routes.employeeDashboard#asia-market-title`, `routes.employeeCareerGps`, and `routes.employeeApplications`.
+  - Applications nav still uses `/employee/dashboard#skills`, which no longer maps to a current section.
+  - `ProfileMenu` sends employee Settings to `/employee/dashboard#settings` because no real settings route exists.
+- Marketplace responsibilities are embedded in `/employee/dashboard`; there is no focused jobs/opportunities page for search, filters, internal gigs, external roles, or Asia market signals.
+- The dashboard `Career Command Center` uses demo profile values while the Career GPS page uses authenticated Career GPS profile/roadmap data, which can create conflicting readiness, next role, and next action signals.
+- The older dashboard roadmap panel keeps local-only milestone progress, while the standalone Career GPS page uses persisted roadmap progress.
+
+### Sections To Remove From The Dashboard In Later Redesign Phases
+
+- Editable `CareerNorthStarPanel` form and the `#settings` dashboard anchor.
+- Dashboard-mounted `CareerGpsRoadmapPanel`, including roadmap generation/regeneration, route cards, what-if simulator, milestone detail, skill readiness summary, and dashboard Career Buddy.
+- Marketplace search and filters once a standalone Marketplace route exists.
+- Internal Skill Gigs and External Opportunities lists once a standalone Marketplace route exists.
+- Asia market signals once they are moved into Marketplace or a market-insights subview.
+- Full `RiasecAssessment` modal launcher if it becomes part of Settings or Career GPS setup rather than dashboard overview.
+- Any dashboard-only demo readiness/next-role/next-action copy that duplicates authenticated Career GPS data.
+
+### Sections To Move Into Settings
+
+- Career ambition, target role, target industry, motivation, target timeline, and retirement target from `CareerNorthStarPanel`.
+- Lifestyle priority sliders: income growth, work-life balance, leadership, job security, and remote work.
+- Preferred locations, preferred work styles, relocation willingness, international mobility, risk tolerance, learning budget, and preferred company type.
+- Top non-negotiable priorities.
+- Constraints, including type, label, and blocking flag.
+- RIASEC assessment entry/results if product direction treats career interest identity as a preference/setup setting.
+- Employee profile basics only if backed by existing profile endpoints such as `GET /employees/me` and `PUT /employees/me`.
+
+### Sections That Belong In Career GPS
+
+- Career North Star summary as read-only context, with edit links to Settings instead of inline editing.
+- Next Best Action.
+- Recommended, Accelerated, and Balanced route selector and comparison.
+- Visual journey map as the primary first-read object.
+- Milestone detail and action progress editor.
+- Skills and Readiness.
+- What-if Career Simulator.
+- Roadmap-aware Career Buddy.
+- Roadmap source note and data limitations.
+- Safe demo banner and demo-only journey state behind `?demo=1`.
+
+### Proposed Navigation
+
+- Use one consistent employee top navigation across employee pages:
+  - Dashboard
+  - Career GPS
+  - Marketplace
+  - Applications
+  - Career Buddy, either as a Career GPS sub-entry or a dedicated route only if it can preserve roadmap context
+  - Settings, preferably through profile menu and optionally as a top-level item on smaller IA
+- `ProfileMenu` should send employees to `/employee/settings` instead of `/employee/dashboard#settings` once the Settings route exists.
+- Dashboard should link primary next actions to the relevant destination:
+  - Continue journey -> `/employee/career-gps`
+  - Review preferences -> `/employee/settings`
+  - View opportunities -> `/employee/marketplace`
+  - Track applications -> `/employee/applications`
+- Avoid dashboard anchors for primary product areas after the split. Anchors can remain only for intra-page scan sections.
+
+### Proposed Route Structure
+
+- `/employee/dashboard`
+  - Overview, summary metrics, and next actions only.
+  - No direct editing of career goals, lifestyle preferences, or constraints.
+- `/employee/career-gps`
+  - Main visual route, milestones, progress, what-if, skills readiness, and roadmap-aware Career Buddy.
+  - Preserve `/employee/career-gps?demo=1` for safe demo mode.
+- `/employee/marketplace`
+  - Jobs and opportunities, including internal gigs, external jobs, filters, apply actions, and Asia market signals if retained.
+  - Could alias or replace older documented `/employee/jobs` if backward compatibility is needed.
+- `/employee/applications`
+  - Application tracker.
+- `/employee/settings`
+  - Career North Star setup and editing, lifestyle preferences, constraints, financial/retirement targets, RIASEC setup/result, and account/profile settings as backend support allows.
+- Optional future route: `/employee/career-buddy`
+  - Only add if Career Buddy can keep the same roadmap context and conversation persistence as the embedded Career GPS panel. Otherwise keep Career Buddy embedded in Career GPS.
+
+### Components That Can Be Reused
+
+- `CareerGpsPageShell` as the primary Career GPS page foundation.
+- Shell-local Career GPS pieces in `CareerGpsPageShell`: header, demo banner, North Star summary, Next Best Action, route selector, journey map, milestone detail, action progress editor, skills readiness, what-if simulator, and Career Buddy.
+- `CareerNorthStarPanel` form logic and payload mapping for a future Settings page, preferably split into smaller settings components before moving.
+- `RiasecAssessment` for Settings or setup.
+- `ProfileMenu`, with its settings link updated when `/employee/settings` exists.
+- `ChatWidget` styling patterns only if a generic helper remains useful; do not treat it as the roadmap-aware Career Buddy.
+- `OpportunityCard`, marketplace search controls, and `AsiaMarketMap` can be extracted from `frontend/app/employee/dashboard/page.tsx` for a Marketplace page.
+- Existing Tailwind card, badge, loading, empty, and error patterns.
+
+### Components That Should Be Removed Or Merged Later
+
+- Remove `CareerGpsRoadmapPanel` from the dashboard after `/employee/career-gps` owns the full Career GPS experience.
+- Merge duplicated North Star summaries so dashboard and Career GPS do not show competing target-role/readiness narratives.
+- Merge or clearly separate the generic `ChatWidget` from Career Buddy; the real Career Buddy should be the backend-connected component in Career GPS.
+- Extract marketplace-only code from the dashboard into reusable marketplace components, then remove those sections from the dashboard.
+- Replace stale dashboard anchor navigation, especially `/employee/dashboard#skills`.
+
+### Backend Endpoints Already Available
+
+- Dashboard and profile:
+  - `GET /dashboard/employee`
+  - `GET /employees/me`
+  - `PUT /employees/me`
+- Marketplace and applications:
+  - `GET /jobs`
+  - `GET /jobs/{job_id}`
+  - `POST /jobs/{job_id}/apply`
+  - `GET /applications/me`
+- Career GPS settings/profile:
+  - `GET /career-gps/profile`
+  - `PUT /career-gps/onboarding-progress`
+  - `PUT /career-gps/goals`
+  - `PUT /career-gps/lifestyle-priorities`
+  - `PUT /career-gps/constraints`
+  - `GET /career-gps/north-star`
+- Career GPS roadmap:
+  - `POST /career-gps/roadmaps/generate`
+  - `GET /career-gps/roadmaps/latest`
+  - `GET /career-gps/roadmaps/{roadmap_id}`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/selected-route`
+  - `GET /career-gps/roadmaps/{roadmap_id}/milestones/{route_type}/{milestone_sequence}`
+- Progress and next action:
+  - `GET /career-gps/roadmaps/{roadmap_id}/progress`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/progress/actions`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/progress/milestones`
+  - `GET /career-gps/roadmaps/{roadmap_id}/next-best-action`
+  - `PUT /career-gps/roadmaps/{roadmap_id}/next-best-action/status`
+  - `POST /career-gps/roadmaps/{roadmap_id}/next-best-action/alternative`
+- What-if and Career Buddy:
+  - `POST /career-gps/roadmaps/what-if/preview`
+  - `POST /career-gps/roadmaps/what-if/apply`
+  - `GET /career-gps/career-buddy/conversations`
+  - `POST /career-gps/career-buddy/conversations`
+  - `GET /career-gps/career-buddy/conversations/{conversation_id}`
+  - `POST /career-gps/career-buddy/messages`
+
+### Backend Gaps
+
+- No backend change is required to create a frontend Settings route that reuses existing Career GPS profile/settings endpoints.
+- No backend change is required to create a frontend Marketplace route that reuses current dashboard/jobs/application endpoints.
+- There is no dedicated Marketplace endpoint that returns internal gigs and external opportunities as separate product concepts; current frontend internal gigs are mock data and backend jobs are generic open jobs.
+- There is no persisted backend endpoint for RIASEC results; current RIASEC storage is browser-local.
+- There is no explicit roadmap lock/prerequisite metadata in production APIs; locked milestones remain demo-only.
+- There is no verified labor-market/salary data endpoint for Asia market signals; current dashboard market data is illustrative frontend data.
+- There is no separate Career Buddy route API gap because conversation/message endpoints already exist, but any future standalone page must keep roadmap ID and selected route context attached to the authenticated employee.
+
+### Phase 1 Verification
+
+- Expected visible production UI change: none.
+- Expected backend behavior change: none.
+- Verification run:
+  - Frontend lint: passed with `npm run lint`.
+  - Frontend type check: passed with `npx tsc --noEmit`.
+  - Frontend production build: passed with `npm run build`.
+  - Backend compile check: passed with `python -m compileall backend`.
+  - Backend tests: not run because the active Python environment does not have `pytest` installed.
+- Files changed in Phase 1:
+  - `docs/career-gps-ui-implementation.md`
+- Manual testing steps:
+  1. Open `/employee/dashboard` and confirm the page still renders the existing dashboard.
+  2. Open `/employee/career-gps` and confirm the existing Career GPS shell still renders.
+  3. Open `/employee/applications` and confirm the applications page still renders.
+  4. Confirm there is still no `/employee/settings` or `/employee/marketplace` page until a later implementation phase.
+- Limitations:
+  - This phase did not perform visual redesign or route extraction.
+  - This phase did not add Settings or Marketplace pages.
+  - This phase did not remove duplicate dashboard sections.
+  - This phase did not change backend endpoints or database schema.
+
+## Phase 2 - Simplify Employee Navigation
+
+Phase 2 created one shared employee navigation component and mounted it across the current employee pages. It changed frontend navigation only. No backend endpoints, authentication behavior, Supabase schema, employer pages, Career GPS recommendation logic, or Career Buddy backend behavior were changed.
+
+### Runtime Behavior Changed
+
+- Added `frontend/components/employee/EmployeeTopNav.tsx` as the shared employee header/navigation component.
+- Replaced page-specific employee header navs on:
+  - `/employee/dashboard`
+  - `/employee/career-gps`
+  - `/employee/applications`
+- Added consistent employee navigation targets:
+  - Dashboard -> `/employee/dashboard`
+  - Career GPS -> `/employee/career-gps`
+  - Marketplace -> `/employee/dashboard#marketplace`
+  - Career Buddy -> `/employee/career-gps#career-buddy`
+  - Settings -> `/employee/dashboard#settings`
+- Added route constants in `frontend/lib/routes.ts` for current employee Marketplace, Career Buddy, and Settings surfaces.
+- Updated `ProfileMenu` so employee Settings uses the shared `routes.employeeSettings` constant while employer Settings continues to point to the existing employer dashboard settings anchor.
+- Added a stable `#marketplace` anchor to the existing dashboard marketplace controls.
+- Added a stable `#career-buddy` anchor to the Career Buddy panel and its empty state on `/employee/career-gps`.
+
+### Navigation Design
+
+- The shared nav keeps the existing Simploy header style: white translucent header, rounded pill desktop links, existing brand color, and existing profile menu/switch portal controls.
+- Desktop layout shows icon + text pill links.
+- Mobile layout shows the same five destinations as a compact responsive grid below the brand/profile row.
+- Active navigation is derived from the current pathname and hash:
+  - `/employee/dashboard` highlights Dashboard.
+  - `/employee/dashboard#marketplace` highlights Marketplace.
+  - `/employee/dashboard#settings` highlights Settings.
+  - `/employee/career-gps` highlights Career GPS.
+  - `/employee/career-gps#career-buddy` highlights Career Buddy.
+- The old duplicate/stale employee nav links were removed from the page headers:
+  - Dashboard no longer has both Career GPS and Roadmap links.
+  - Applications no longer links to the stale `/employee/dashboard#skills` anchor.
+  - Career GPS no longer uses a separate local header nav.
+
+### Files Changed In Phase 2
+
+- `frontend/components/employee/EmployeeTopNav.tsx`
+- `frontend/lib/routes.ts`
+- `frontend/app/employee/dashboard/page.tsx`
+- `frontend/app/employee/applications/page.tsx`
+- `frontend/components/career-gps/CareerGpsPageShell.tsx`
+- `frontend/components/ProfileMenu.tsx`
+- `docs/career-gps-ui-implementation.md`
+
+### Verification Run
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend compile check: passed with `python -m compileall backend`.
+- Backend tests: not run because the active Python environment does not have `pytest` installed.
+
+### Manual Testing Steps For Phase 2
+
+1. Start the frontend from `frontend` with `npm run dev`.
+2. Open `/employee/dashboard` and confirm the shared employee nav appears.
+3. Confirm Dashboard is highlighted on `/employee/dashboard`.
+4. Click Marketplace and confirm the page scrolls to the dashboard marketplace area and Marketplace becomes highlighted.
+5. Click Settings and confirm the page scrolls to the existing Career North Star/settings area and Settings becomes highlighted.
+6. Click Career GPS and confirm `/employee/career-gps` loads with Career GPS highlighted.
+7. Click Career Buddy and confirm `/employee/career-gps#career-buddy` loads or scrolls to the Career Buddy area and Career Buddy becomes highlighted.
+8. Open `/employee/applications` and confirm the same employee nav appears without the old stale Learning Path link.
+9. Resize to mobile width and confirm all five nav destinations remain visible and tappable.
+10. Open an employer route and confirm employer page navigation is unchanged.
+
+### Phase 2 Limitations
+
+- Marketplace and Settings are still existing anchored dashboard surfaces, not standalone pages. Creating `/employee/marketplace` and `/employee/settings` is intentionally left for later phases.
+- Career Buddy remains embedded in `/employee/career-gps`; no standalone Career Buddy page was added.
+- `/employee/applications` is still reachable by direct URL and in-app actions, but it is no longer part of the simplified five-item employee nav because Phase 2 focused on the requested structure.
+- Browser screenshot verification was not performed in this environment.
 
 ## Existing Frontend Architecture
 
