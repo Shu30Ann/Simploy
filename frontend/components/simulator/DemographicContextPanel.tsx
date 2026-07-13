@@ -32,7 +32,7 @@ function Row({ r }: { r: MarketRow }) {
       </div>
       <span className="flex-1 text-sm" style={{ color: "var(--text-primary)" }}>{r.country}</span>
       <span className="text-sm font-semibold tabular-nums"
-        style={{ color: isGrowing ? "#10B981" : "#E8197A" }}>
+        style={{ color: isGrowing ? "#10B981" : "#B08A44" }}>
         {r.change}
       </span>
     </div>
@@ -56,7 +56,7 @@ export default function DemographicContextPanel() {
       {/* Declining */}
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: "#FFF0F5", color: "#E8197A" }}>
+          style={{ background: "#FFF0F5", color: "#B08A44" }}>
           DECLINING
         </span>
       </div>

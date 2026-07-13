@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline";
+  variant?: "primary" | "outline" | "gold";
   size?: "sm" | "md";
   className?: string;
   children: React.ReactNode;
@@ -14,12 +14,14 @@ export default function Button({
   children,
   ...props
 }: ButtonProps) {
-  const sizeClass = size === "sm" ? "px-4 py-2 text-xs" : "px-6 py-3 text-sm";
+  const sizeClass = size === "sm" ? "px-5 py-2 text-xs" : "px-7 py-3 text-sm";
 
   const variantClass =
     variant === "primary"
-      ? "bg-[#E8197A] hover:bg-[#C91569] text-white rounded-full font-medium transition-colors"
-      : "border border-[#E8197A] text-[#E8197A] hover:bg-[#FFF5FA] rounded-full font-medium transition-colors bg-transparent";
+      ? "bg-[#1E2A44] hover:bg-[#16233C] text-white rounded-full font-semibold transition-colors"
+      : variant === "gold"
+      ? "bg-[#B08A44] hover:bg-[#97742F] text-white rounded-full font-semibold transition-colors"
+      : "border border-[#1E2A44]/25 text-[#1E2A44] hover:bg-[#1E2A44]/5 rounded-full font-semibold transition-colors bg-transparent";
 
   return (
     <button className={`${variantClass} ${sizeClass} ${className}`} {...props}>

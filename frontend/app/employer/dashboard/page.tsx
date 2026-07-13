@@ -86,7 +86,7 @@ const insights = [
     label: "Sales",
     benchmark: "22 days",
     value: 58,
-    color: "bg-[#E8197A]",
+    color: "bg-[#B08A44]",
   },
   {
     label: "Marketing",
@@ -148,9 +148,9 @@ const workforceForecast = manufacturingForecast
   }));
 
 const toneStyles: Record<string, string> = {
-  pink: "border-[#FFD0E8] bg-[#FFF0F8] text-[#E8197A]",
-  teal: "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]",
-  purple: "border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]",
+  pink: "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]",
+  teal: "border-[#CBDFD4] bg-[#E7F0E9] text-[#114F3B]",
+  purple: "border-[#DFD6BE] bg-[#F1EDE0] text-[#6B46C1]",
   orange: "border-[#FED7AA] bg-[#FFF7ED] text-[#C2410C]",
 };
 
@@ -169,11 +169,11 @@ function JobPostingTable({ jobs }: { jobs: typeof fallbackJobs }) {
     <section
       id="jobs"
       aria-labelledby="jobs-title"
-      className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7"
+      className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7"
     >
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Active Hiring Pipeline</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Active Hiring Pipeline</p>
           <h2 id="jobs-title" className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
             Active Hiring Pipeline
           </h2>
@@ -191,11 +191,11 @@ function JobPostingTable({ jobs }: { jobs: typeof fallbackJobs }) {
         <table className="w-full min-w-[640px] border-separate border-spacing-0 text-left">
           <thead>
             <tr className="text-xs font-bold uppercase text-[#9CA3AF]">
-              <th className="border-b border-[#F0EBF8] px-1 pb-3">Role Title</th>
-              <th className="border-b border-[#F0EBF8] px-4 pb-3">Hiring Status</th>
-              <th className="border-b border-[#F0EBF8] px-4 pb-3 text-center">Apps Received</th>
-              <th className="border-b border-[#F0EBF8] px-4 pb-3">Matches</th>
-              <th className="border-b border-[#F0EBF8] px-1 pb-3 text-right">Action</th>
+              <th className="border-b border-[#EAE3D3] px-1 pb-3">Role Title</th>
+              <th className="border-b border-[#EAE3D3] px-4 pb-3">Hiring Status</th>
+              <th className="border-b border-[#EAE3D3] px-4 pb-3 text-center">Apps Received</th>
+              <th className="border-b border-[#EAE3D3] px-4 pb-3">Matches</th>
+              <th className="border-b border-[#EAE3D3] px-1 pb-3 text-right">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -231,7 +231,7 @@ function JobPostingTable({ jobs }: { jobs: typeof fallbackJobs }) {
                 </td>
                 <td className="border-b border-[#F8F5FC] px-1 py-4 text-right">
                   <button
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#6B46C1] hover:bg-[#F5F0FF]"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#6B46C1] hover:bg-[#F1EDE0]"
                     aria-label={job.hiringStatus === "Draft" ? `Edit ${job.title}` : `Open actions for ${job.title}`}
                   >
                     {job.hiringStatus === "Draft" ? <FilePenLine size={18} /> : <EllipsisVertical size={18} />}
@@ -254,18 +254,18 @@ function WorkforceCommandCenter({
   companyName?: string;
 }) {
   return (
-    <section aria-labelledby="command-center-title" className="relative overflow-hidden bg-[#FDFCFF] pb-14 pt-12 sm:pb-20 sm:pt-16">
-      <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#E8197A]/[0.06] blur-3xl" />
+    <section aria-labelledby="command-center-title" className="relative overflow-hidden bg-[#F7F3EA] pb-14 pt-12 sm:pb-20 sm:pt-16">
+      <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#B08A44]/[0.06] blur-3xl" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)] lg:items-center">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#FFD0E8] bg-[#FFF5FA] px-5 py-2 text-base font-bold text-[#E8197A]">
+            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-5 py-2 text-base font-bold text-[#B08A44]">
               <Sparkles size={17} />
               Employer marketplace
             </div>
             <h1
               id="command-center-title"
-              className="font-bold leading-[1.1] tracking-tight text-[#1A1033]"
+              className="font-bold leading-[1.1] tracking-tight text-[#1E2A44]"
               style={{ fontSize: "clamp(36px, 6vw, 64px)" }}
             >
               Workforce Command Center
@@ -278,14 +278,14 @@ function WorkforceCommandCenter({
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href="#jobs"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8197A] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#C91569]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#B08A44] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#97742F]"
               >
                 Find Talent
                 <ArrowUpRight size={16} />
               </Link>
               <Link
                 href="#jobs"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#E8197A] bg-transparent px-6 py-3 text-sm font-medium text-[#E8197A] transition-colors hover:bg-[#FFF5FA]"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#B08A44] bg-transparent px-6 py-3 text-sm font-medium text-[#B08A44] transition-colors hover:bg-[#F6F1E4]"
               >
                 <Send size={16} />
                 Post Job
@@ -295,11 +295,11 @@ function WorkforceCommandCenter({
 
           <div className="grid gap-3 sm:grid-cols-2">
             {metrics.map(({ label, value, detail, icon: Icon, tone }) => (
-              <article key={label} className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.1)]">
+              <article key={label} className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_48px_rgba(70,60,35,0.1)]">
                 <div className={`mb-5 flex h-11 w-11 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
                   <Icon size={20} />
                 </div>
-                <p className="text-4xl font-bold text-[#1A1033]">{value}</p>
+                <p className="text-4xl font-bold text-[#1E2A44]">{value}</p>
                 <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
                 <p className="mt-2 text-sm font-semibold text-[#6B7280]">{detail}</p>
               </article>
@@ -313,16 +313,16 @@ function WorkforceCommandCenter({
 
 function AttentionRequired() {
   return (
-    <section aria-labelledby="attention-title" className="bg-[#FDFCFF] py-16">
+    <section aria-labelledby="attention-title" className="bg-[#F7F3EA] py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Attention Required</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Attention Required</p>
             <h2 id="attention-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
               Clear the blockers first.
             </h2>
           </div>
-          <Link href={routes.employerActionEngine} className="inline-flex items-center gap-1 text-sm font-medium text-[#E8197A] hover:underline">
+          <Link href={routes.employerActionEngine} className="inline-flex items-center gap-1 text-sm font-medium text-[#B08A44] hover:underline">
             Open action engine
             <ArrowUpRight size={14} />
           </Link>
@@ -330,7 +330,7 @@ function AttentionRequired() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {attentionItems.map(({ title, detail, meta, action, icon: Icon, tone }) => (
-            <article key={title} className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+            <article key={title} className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(70,60,35,0.08)]">
               <div className="flex items-start justify-between gap-4">
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
                   <Icon size={20} />
@@ -339,7 +339,7 @@ function AttentionRequired() {
               </div>
               <h3 className="mt-5 text-xl font-bold">{title}</h3>
               <p className="mt-2 min-h-[48px] text-sm leading-6 text-[#6B7280]">{detail}</p>
-              <button className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#E8197A]">
+              <button className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#B08A44]">
                 {action}
                 <ArrowUpRight size={15} />
               </button>
@@ -356,7 +356,7 @@ function WorkforceInsights() {
     <section id="insights" aria-labelledby="insights-title" className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Workforce Insights</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Workforce Insights</p>
           <h2 id="insights-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
             Marketplace signals for the next hire.
           </h2>
@@ -366,28 +366,28 @@ function WorkforceInsights() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <section className="rounded-2xl border border-[#F0D9E6] bg-[#FDFCFF] p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7" aria-labelledby="velocity-title">
+          <section className="rounded-2xl border border-[#F0D9E6] bg-[#F7F3EA] p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7" aria-labelledby="velocity-title">
             <div className="mb-6 flex items-center justify-between gap-3">
               <h3 id="velocity-title" className="flex items-center gap-2 text-2xl font-bold">
                 <BarChart3 size={22} className="text-[#087C7E]" />
                 Hiring Velocity
               </h3>
-              <LineChart size={20} className="text-[#1A1033]" />
+              <LineChart size={20} className="text-[#1E2A44]" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg bg-white p-4">
                 <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Time-to-hire</p>
                 <div className="mt-1 flex items-end gap-2">
-                  <p className="text-3xl font-bold text-[#1A1033]">18 Days</p>
+                  <p className="text-3xl font-bold text-[#1E2A44]">18 Days</p>
                   <span className="pb-1 text-xs font-bold text-[#087C7E]">-2.4%</span>
                 </div>
               </div>
               <div className="rounded-lg bg-white p-4">
                 <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Cost-per-hire</p>
                 <div className="mt-1 flex items-end gap-2">
-                  <p className="text-3xl font-bold text-[#1A1033]">$4,200</p>
-                  <span className="pb-1 text-xs font-bold text-[#E8197A]">+1.2%</span>
+                  <p className="text-3xl font-bold text-[#1E2A44]">$4,200</p>
+                  <span className="pb-1 text-xs font-bold text-[#B08A44]">+1.2%</span>
                 </div>
               </div>
             </div>
@@ -406,7 +406,7 @@ function WorkforceInsights() {
               ))}
             </div>
 
-            <div className="mt-6 rounded-lg border border-[#BAF3FF] bg-[#D8F7FF] p-4">
+            <div className="mt-6 rounded-lg border border-[#CBDFD4] bg-[#D8F7FF] p-4">
               <p className="text-sm leading-6 text-[#34616F]">
                 Hiring velocity is <span className="font-bold">15% faster</span> for candidates with existing skill
                 certifications.
@@ -414,28 +414,28 @@ function WorkforceInsights() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.08)] sm:p-7" aria-labelledby="snapshot-title">
+          <section className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7" aria-labelledby="snapshot-title">
             <div className="mb-6 flex items-center justify-between gap-3">
               <h3 id="snapshot-title" className="text-2xl font-bold">
                 Talent Marketplace Snapshot
               </h3>
-              <Megaphone size={20} className="text-[#E8197A]" />
+              <Megaphone size={20} className="text-[#B08A44]" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {marketplaceSnapshot.map(({ label, value, detail, icon: Icon, tone }) => (
-                <article key={label} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+                <article key={label} className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-4">
                   <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
                     <Icon size={18} />
                   </div>
                   <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
-                  <p className="mt-2 text-2xl font-bold text-[#1A1033]">{value}</p>
+                  <p className="mt-2 text-2xl font-bold text-[#1E2A44]">{value}</p>
                   <p className="mt-2 text-sm leading-6 text-[#6B7280]">{detail}</p>
                 </article>
               ))}
             </div>
             <Link
               href={routes.employerSimulator}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1A1033] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1E2A44] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
             >
               Open workforce simulator
               <ArrowUpRight size={16} />
@@ -452,7 +452,7 @@ function DemographicClock() {
     <section aria-labelledby="workforce-forecast-title" className="bg-[#FFF8FC] py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Workforce Forecast</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Workforce Forecast</p>
           <h2 id="workforce-forecast-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
             Workforce Availability Forecast
           </h2>
@@ -461,9 +461,9 @@ function DemographicClock() {
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#F0EBF8] bg-white shadow-[0_8px_48px_rgba(232,25,122,0.1)]">
+        <div className="overflow-hidden rounded-2xl border border-[#EAE3D3] bg-white shadow-[0_8px_48px_rgba(70,60,35,0.1)]">
           <div className="grid gap-0 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="bg-[#1A1033] p-6 text-white sm:p-8">
+            <div className="bg-[#1E2A44] p-6 text-white sm:p-8">
               <h3 className="flex items-center gap-3 text-2xl font-bold">
                 <LineChart size={22} className="text-[#39BFE8]" />
                 Demographic Clock
@@ -495,7 +495,7 @@ function DemographicClock() {
                 <Pill tone="pink">2026 - 2050</Pill>
               </div>
 
-              <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 sm:p-5">
+              <div className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-4 sm:p-5">
                 <div className="relative h-72">
                   <div className="absolute inset-x-0 top-8 border-t border-dashed border-[#E5DDEC]" />
                   <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-[#E5DDEC]" />
@@ -510,7 +510,7 @@ function DemographicClock() {
                     <defs>
                       <linearGradient id="workforceLine" x1="0" x2="1" y1="0" y2="0">
                         <stop offset="0%" stopColor="#087C7E" />
-                        <stop offset="55%" stopColor="#E8197A" />
+                        <stop offset="55%" stopColor="#B08A44" />
                         <stop offset="100%" stopColor="#6B46C1" />
                       </linearGradient>
                     </defs>
@@ -522,12 +522,12 @@ function DemographicClock() {
                       strokeLinejoin="round"
                       strokeWidth="7"
                     />
-                    <polyline points="48,54 160,92 286,145 386,176 386,215 48,215" fill="rgba(232,25,122,0.08)" />
+                    <polyline points="48,54 160,92 286,145 386,176 386,215 48,215" fill="rgba(70,60,35,0.08)" />
                     {[
                       ["48", "54", "#087C7E"],
-                      ["160", "92", "#E8197A"],
+                      ["160", "92", "#B08A44"],
                       ["286", "145", "#6B46C1"],
-                      ["386", "176", "#1A1033"],
+                      ["386", "176", "#1E2A44"],
                     ].map(([cx, cy, color]) => (
                       <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="8" fill={color} stroke="#FFFFFF" strokeWidth="4" />
                     ))}
@@ -536,7 +536,7 @@ function DemographicClock() {
                   <div className="absolute bottom-0 left-0 right-0 grid grid-cols-4 gap-2">
                     {workforceForecast.map((point) => (
                       <div key={point.year} className="text-center">
-                        <p className="text-base font-bold text-[#1A1033]">{point.year}</p>
+                        <p className="text-base font-bold text-[#1E2A44]">{point.year}</p>
                         <p className="text-sm font-semibold text-[#6B7280]">{point.population}</p>
                       </div>
                     ))}
@@ -549,10 +549,10 @@ function DemographicClock() {
                   <div key={point.year} className="rounded-lg bg-[#FFF8FC] p-4">
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <span className="text-sm font-bold text-[#6B46C1]">{point.year}</span>
-                      <span className="text-sm font-bold text-[#E8197A]">{point.value}%</span>
+                      <span className="text-sm font-bold text-[#B08A44]">{point.value}%</span>
                     </div>
                     <div className="h-2.5 rounded-full bg-[#EFE7F4]">
-                      <div className="h-2.5 rounded-full bg-[#E8197A]" style={{ width: `${point.value}%` }} />
+                      <div className="h-2.5 rounded-full bg-[#B08A44]" style={{ width: `${point.value}%` }} />
                     </div>
                   </div>
                 ))}
@@ -560,7 +560,7 @@ function DemographicClock() {
 
               <Link
                 href={routes.employerSimulator}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-4 text-base font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-5 py-4 text-base font-bold text-white shadow-[0_8px_24px_rgba(26,16,51,0.16)]"
               >
                 Checkout workforce simulator
                 <ArrowUpRight size={18} />
@@ -621,15 +621,15 @@ export default function EmployerDashboardPage() {
     : commandMetrics;
 
   return (
-    <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
+    <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
       <WorkforceCommandCenter metrics={metrics} companyName={dashboard?.company_name} />
       {loadState === "loaded" && (
-        <div className="border-y border-[#BAF3FF] bg-[#F0FDFF] px-4 py-3 text-center text-sm font-bold text-[#087C7E]">
+        <div className="border-y border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-center text-sm font-bold text-[#087C7E]">
           Dashboard loaded from database for {dashboard?.company_name}.
         </div>
       )}
       <AttentionRequired />
-      <section className="bg-[#FDFCFF] pb-16">
+      <section className="bg-[#F7F3EA] pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <JobPostingTable jobs={visibleJobs} />
         </div>

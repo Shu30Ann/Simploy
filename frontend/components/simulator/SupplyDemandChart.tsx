@@ -20,8 +20,8 @@ interface Props {
 
 const LEGEND = [
   { color: "#E8E6E0", label: "Projected Supply", shape: "bar"  },
-  { color: "#E8197A", label: "Projected Demand", shape: "bar"  },
-  { color: "#7F77DD", label: "Net Position",      shape: "line" },
+  { color: "#B08A44", label: "Projected Demand", shape: "bar"  },
+  { color: "#56618C", label: "Net Position",      shape: "line" },
 ];
 
 export default function SupplyDemandChart({ result, aiPresetActive, compareMode, resultB }: Props) {
@@ -99,13 +99,13 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
       <div className="flex items-center gap-3 rounded-xl px-4 py-2.5 mb-3 border"
         style={{ background: "var(--bg-purple-soft)", borderColor: "var(--purple-border)" }}>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: "#7F77DD" }}>
+          style={{ background: "#56618C" }}>
           <Users size={14} color="white" />
         </div>
         <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
           <span className="font-semibold" style={{ color: "var(--text-primary)" }}>14 of 38 gap roles</span>
           {" "}can be filled internally · 45 current employees are eligible for upskilling.{" "}
-          <button className="font-medium hover:underline" style={{ color: "#7F77DD" }}>
+          <button className="font-medium hover:underline" style={{ color: "#56618C" }}>
             View candidates →
           </button>
         </p>
@@ -153,8 +153,8 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
             <ReferenceLine y={0} stroke="#E8E6E0" strokeWidth={1}
               label={{ value: "Break-even", position: "insideBottomLeft", fontSize: 10, fill: "#9CA3AF", dy: -4 }} />
             {aiPresetActive && (
-              <ReferenceLine x="2027" stroke="#E8197A" strokeDasharray="3 3" strokeOpacity={0.5}
-                label={{ value: "AUTOMATION INFLECTION", position: "insideTopLeft", fontSize: 9, fill: "#E8197A", fontWeight: 600 }} />
+              <ReferenceLine x="2027" stroke="#B08A44" strokeDasharray="3 3" strokeOpacity={0.5}
+                label={{ value: "AUTOMATION INFLECTION", position: "insideTopLeft", fontSize: 9, fill: "#B08A44", fontWeight: 600 }} />
             )}
 
             {/* Supply bars */}
@@ -163,13 +163,13 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
 
             {/* Demand bars */}
             <Bar dataKey="demandA" radius={[6, 6, 0, 0]} maxBarSize={40}
-              fill="#E8197A" animationBegin={0} animationDuration={600} />
+              fill="#B08A44" animationBegin={0} animationDuration={600} />
 
             {/* Net position line */}
             <Line
               type="monotone"
               dataKey="netA"
-              stroke="#7F77DD"
+              stroke="#56618C"
               strokeWidth={2}
               dot={false}
               animationDuration={800}
@@ -289,8 +289,8 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
               Cost of inaction: ${(result.costOfInaction / 1e6).toFixed(1)}M
             </p>
           </div>
-          <div className="p-3 rounded-xl border-2" style={{ borderColor: "#7F77DD", background: "var(--bg-purple-soft)" }}>
-            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#7F77DD" }}>Scenario B</p>
+          <div className="p-3 rounded-xl border-2" style={{ borderColor: "#56618C", background: "var(--bg-purple-soft)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#56618C" }}>Scenario B</p>
             <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
               Gap: {resultB.projectedGap > 0 ? "−" : "+"}{Math.abs(resultB.projectedGap).toLocaleString()} roles
             </p>

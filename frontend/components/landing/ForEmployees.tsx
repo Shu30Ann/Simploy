@@ -39,8 +39,9 @@ export default function ForEmployees() {
         {/* Left — content */}
         <FadeUp delay={0}>
           <SectionLabel>For Employees</SectionLabel>
-          <h2 className="text-[40px] font-bold text-[#1A1033] leading-tight">
-            Your career, intelligently guided.
+          <h2 className="font-serif text-[40px] font-bold text-[#1E2A44] leading-tight">
+            Your career,{" "}
+            <em className="text-[#B08A44] font-medium">intelligently guided</em>.
           </h2>
           <p className="text-lg text-[#6B7280] mt-3 leading-relaxed">
             Simploy shows you exactly where you stand, what skills will unlock new
@@ -50,11 +51,11 @@ export default function ForEmployees() {
           <div className="mt-8 flex flex-col gap-6">
             {features.map(({ icon: Icon, title, description }) => (
               <div key={title} className="flex gap-4">
-                <div className="w-9 h-9 rounded-lg bg-[#FFF5FA] flex items-center justify-center flex-shrink-0">
-                  <Icon size={18} className="text-[#E8197A]" />
+                <div className="w-9 h-9 rounded-lg bg-[#F6F1E4] flex items-center justify-center flex-shrink-0">
+                  <Icon size={18} className="text-[#B08A44]" />
                 </div>
                 <div>
-                  <p className="font-semibold text-[#1A1033] text-sm">{title}</p>
+                  <p className="font-semibold text-[#1E2A44] text-sm">{title}</p>
                   <p className="text-sm text-[#6B7280] mt-1">{description}</p>
                 </div>
               </div>
@@ -62,7 +63,7 @@ export default function ForEmployees() {
           </div>
 
           <Link href="/signup?role=employee">
-            <button className="text-sm text-[#E8197A] font-medium hover:underline flex items-center gap-1 mt-6">
+            <button className="text-sm text-[#B08A44] font-medium hover:underline flex items-center gap-1 mt-6">
               Find Your Next Role <ArrowRight size={14} />
             </button>
           </Link>
@@ -70,13 +71,13 @@ export default function ForEmployees() {
 
         {/* Right — employee mockup */}
         <FadeUp delay={0.1}>
-          <div className="rounded-2xl border border-[#F0EBF8] shadow-[0_4px_24px_rgba(232,25,122,0.08)] bg-white p-5">
+          <div className="rounded-2xl border border-[#EAE3D3] shadow-[0_4px_24px_rgba(70,60,35,0.08)] bg-white p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[13px] font-semibold text-[#1A1033] flex items-center gap-1">
-                <span className="text-[#E8197A]">✦</span> Matching for You
+              <p className="text-[13px] font-semibold text-[#1E2A44] flex items-center gap-1">
+                <span className="text-[#B08A44]">✦</span> Matching for You
               </p>
-              <span className="text-[11px] text-[#E8197A] font-medium cursor-pointer">
+              <span className="text-[11px] text-[#B08A44] font-medium cursor-pointer">
                 View All →
               </span>
             </div>
@@ -86,14 +87,14 @@ export default function ForEmployees() {
               {[
                 {
                   badge: "INTERNAL",
-                  badgeBg: "bg-[#FFF5FA] text-[#E8197A]",
+                  badgeBg: "bg-[#F6F1E4] text-[#B08A44]",
                   title: "Sr. Product Designer",
                   company: "Layer 1 Core",
                   match: 98,
                 },
                 {
                   badge: "EXTERNAL",
-                  badgeBg: "bg-[#E0F9FF] text-[#06B6D4]",
+                  badgeBg: "bg-[#E7F0E9] text-[#17694F]",
                   title: "Creative Director",
                   company: "Stellar Labs",
                   match: 85,
@@ -101,18 +102,18 @@ export default function ForEmployees() {
               ].map((job) => (
                 <div
                   key={job.title}
-                  className="bg-white rounded-xl border border-[#F0EBF8] p-4"
+                  className="bg-white rounded-xl border border-[#EAE3D3] p-4"
                 >
                   <span
                     className={`${job.badgeBg} text-[10px] font-semibold rounded px-2 py-0.5`}
                   >
                     {job.badge}
                   </span>
-                  <p className="text-[12px] font-semibold text-[#1A1033] mt-2">
+                  <p className="text-[12px] font-semibold text-[#1E2A44] mt-2">
                     {job.title}
                   </p>
                   <p className="text-[11px] text-[#6B7280] mt-0.5">{job.company}</p>
-                  <p className="text-[11px] text-[#E8197A] font-medium mt-2">
+                  <p className="text-[11px] text-[#B08A44] font-medium mt-2">
                     ⚡ {job.match}% Match
                   </p>
                 </div>
@@ -120,8 +121,8 @@ export default function ForEmployees() {
             </div>
 
             {/* Skill gap panel */}
-            <div className="bg-[#F5F0FF] rounded-xl border border-[#DDD0F8] p-4 mt-3">
-              <p className="text-[12px] font-semibold text-[#1A1033] flex items-center gap-1 mb-1">
+            <div className="bg-[#F1EDE0] rounded-xl border border-[#DFD6BE] p-4 mt-3">
+              <p className="text-[12px] font-semibold text-[#1E2A44] flex items-center gap-1 mb-1">
                 🎯 Skill Gap
               </p>
               <p className="text-[11px] text-[#6B7280] mb-3">
@@ -133,12 +134,12 @@ export default function ForEmployees() {
               ].map((s) => (
                 <div key={s.skill} className="flex items-center gap-3 mb-2">
                   <p className="text-[11px] text-[#6B7280] w-36">{s.skill}</p>
-                  <span className="text-[10px] text-[#7F77DD] font-medium w-16">
+                  <span className="text-[10px] text-[#56618C] font-medium w-16">
                     {s.matches}
                   </span>
-                  <div className="flex-1 bg-[#DDD0F8] rounded-full h-1.5">
+                  <div className="flex-1 bg-[#DFD6BE] rounded-full h-1.5">
                     <div
-                      className="bg-[#7F77DD] h-1.5 rounded-full"
+                      className="bg-[#56618C] h-1.5 rounded-full"
                       style={{ width: s.width }}
                     />
                   </div>

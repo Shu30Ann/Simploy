@@ -44,8 +44,8 @@ function applicationFromBackend(application: BackendApplication): ApplicationVie
 }
 
 const toneStyles: Record<string, string> = {
-  pink: "bg-[#FFF0F8] text-[#E8197A] border-[#FFD0E8]",
-  teal: "bg-[#E0F9FF] text-[#0891B2] border-[#BAF3FF]",
+  pink: "bg-[#F6F1E4] text-[#B08A44] border-[#E3D8BC]",
+  teal: "bg-[#E7F0E9] text-[#114F3B] border-[#CBDFD4]",
   green: "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]",
 };
 
@@ -79,18 +79,18 @@ export default function EmployeeApplicationsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
-      <header className="border-b border-[#F0EBF8] bg-white/90 backdrop-blur">
+    <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
+      <header className="border-b border-[#EAE3D3] bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold text-[#E8197A]">
+            <a href="/" className="text-xl font-bold text-[#B08A44]">
               Simploy
             </a>
             <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
               <a href="/employee/dashboard#asia-market-title" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Asia Market Insight
               </a>
-              <a href="/employee/applications" className="rounded-full bg-[#FFF0F8] px-4 py-2 text-[#E8197A]">
+              <a href="/employee/applications" className="rounded-full bg-[#F6F1E4] px-4 py-2 text-[#B08A44]">
                 Applications
               </a>
               <a href="/employee/dashboard#skills" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
@@ -102,7 +102,7 @@ export default function EmployeeApplicationsPage() {
           <div className="flex items-center gap-3">
             <a
               href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
             >
               <Building2 size={16} />
               Switch Portal
@@ -115,7 +115,7 @@ export default function EmployeeApplicationsPage() {
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
               <ClipboardCheck size={14} />
               Submitted opportunities
             </div>
@@ -130,19 +130,19 @@ export default function EmployeeApplicationsPage() {
               ["Active", visibleApplications.filter((application) => application.status !== "Rejected").length.toString()],
               ["Next step", "Jun 18"],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+              <div key={label} className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-3 shadow-[0_4px_24px_rgba(70,60,35,0.08)]">
                 <p className="text-xs font-semibold uppercase text-[#9CA3AF]">{label}</p>
-                <p className="mt-1 text-xl font-bold text-[#1A1033]">{value}</p>
+                <p className="mt-1 text-xl font-bold text-[#1E2A44]">{value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-3 shadow-[0_4px_24px_rgba(232,25,122,0.08)] lg:flex-row">
-          <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FDFCFF] px-4 text-sm text-[#9CA3AF]">
+        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-[#EAE3D3] bg-white p-3 shadow-[0_4px_24px_rgba(70,60,35,0.08)] lg:flex-row">
+          <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#F7F3EA] px-4 text-sm text-[#9CA3AF]">
             <Search size={18} />
             <input
-              className="w-full bg-transparent text-[#1A1033] outline-none placeholder:text-[#9CA3AF]"
+              className="w-full bg-transparent text-[#1E2A44] outline-none placeholder:text-[#9CA3AF]"
               placeholder="Search applications..."
             />
           </label>
@@ -153,7 +153,7 @@ export default function EmployeeApplicationsPage() {
                 type="button"
                 onClick={() => setActiveFilter(filter)}
                 className={`rounded-lg px-4 py-3 text-sm font-semibold transition ${
-                  activeFilter === filter ? "bg-[#06B6D4] text-white" : "bg-[#F8F5FC] text-[#6B7280] hover:bg-[#F0FDFF]"
+                  activeFilter === filter ? "bg-[#17694F] text-white" : "bg-[#F8F5FC] text-[#6B7280] hover:bg-[#EFF5F0]"
                 }`}
               >
                 {filter}
@@ -162,13 +162,13 @@ export default function EmployeeApplicationsPage() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] px-4 py-3 text-sm font-semibold text-[#0891B2]">
+        <div className="mt-3 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-semibold text-[#114F3B]">
           Showing {filteredApplications.length} {activeFilter === "All" ? "applications" : activeFilter.toLowerCase() + " applications"}.
         </div>
 
         <section
           aria-labelledby="applications-title"
-          className="mt-8 rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+          className="mt-8 rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(70,60,35,0.08)]"
         >
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 id="applications-title" className="flex items-center gap-2 text-xl font-bold">
@@ -179,21 +179,21 @@ export default function EmployeeApplicationsPage() {
               <button
                 type="button"
                 onClick={() => setIsExportOpen((value) => !value)}
-                className="text-sm font-bold text-[#0891B2]"
+                className="text-sm font-bold text-[#114F3B]"
                 aria-expanded={isExportOpen}
               >
                 Export
               </button>
               {isExportOpen && (
-                <div className="absolute right-0 top-8 z-20 w-64 rounded-lg border border-[#F0EBF8] bg-white p-4 text-sm shadow-[0_16px_44px_rgba(26,16,51,0.14)]">
-                  <p className="font-bold text-[#1A1033]">Export preview ready</p>
+                <div className="absolute right-0 top-8 z-20 w-64 rounded-lg border border-[#EAE3D3] bg-white p-4 text-sm shadow-[0_16px_44px_rgba(26,16,51,0.14)]">
+                  <p className="font-bold text-[#1E2A44]">Export preview ready</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">
                     This would export {filteredApplications.length} visible application records.
                   </p>
                   <button
                     type="button"
                     onClick={() => setIsExportOpen(false)}
-                    className="mt-3 rounded-lg bg-[#1A1033] px-3 py-2 text-xs font-bold text-white"
+                    className="mt-3 rounded-lg bg-[#1E2A44] px-3 py-2 text-xs font-bold text-white"
                   >
                     Got it
                   </button>
@@ -206,7 +206,7 @@ export default function EmployeeApplicationsPage() {
             {filteredApplications.map((application) => (
               <article
                 key={application.title}
-                className="flex flex-col gap-4 rounded-lg bg-[#FDFCFF] p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 rounded-lg bg-[#F7F3EA] p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -247,7 +247,7 @@ export default function EmployeeApplicationsPage() {
 
       {selectedApplication && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1033]/45 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E2A44]/45 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="application-popup-title"
@@ -255,25 +255,25 @@ export default function EmployeeApplicationsPage() {
           <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-[0_24px_80px_rgba(26,16,51,0.28)]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-[#0891B2]">{selectedApplication.type}</p>
-                <h3 id="application-popup-title" className="mt-1 text-xl font-bold text-[#1A1033]">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#114F3B]">{selectedApplication.type}</p>
+                <h3 id="application-popup-title" className="mt-1 text-xl font-bold text-[#1E2A44]">
                   {selectedApplication.title}
                 </h3>
                 <p className="mt-2 text-sm font-semibold text-[#6B7280]">{selectedApplication.company}</p>
               </div>
               <Pill tone={selectedApplication.accent}>{selectedApplication.status}</Pill>
             </div>
-            <div className="mt-5 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+            <div className="mt-5 rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Next update</p>
-              <p className="mt-2 flex items-center gap-2 text-sm font-bold text-[#1A1033]">
-                <CalendarDays size={15} className="text-[#E8197A]" />
+              <p className="mt-2 flex items-center gap-2 text-sm font-bold text-[#1E2A44]">
+                <CalendarDays size={15} className="text-[#B08A44]" />
                 {selectedApplication.date}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setSelectedApplication(null)}
-              className="mt-5 w-full rounded-lg bg-[#1A1033] px-4 py-3 text-sm font-bold text-white"
+              className="mt-5 w-full rounded-lg bg-[#1E2A44] px-4 py-3 text-sm font-bold text-white"
             >
               Close
             </button>

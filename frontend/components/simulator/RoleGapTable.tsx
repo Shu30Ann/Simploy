@@ -4,9 +4,9 @@ import { Download, AlertTriangle } from "lucide-react";
 import type { RoleGap } from "@/lib/simulator/types";
 
 const SUPPLY_STYLE: Record<RoleGap["marketSupply"], { dot: string; bg: string; text: string }> = {
-  Critical: { dot: "#E8197A", bg: "#FFF0F5", text: "#E8197A" },
+  Critical: { dot: "#B08A44", bg: "#FFF0F5", text: "#B08A44" },
   Scarce:   { dot: "#F59E0B", bg: "#FFFBEB", text: "#D97706" },
-  Balanced: { dot: "#06B6D4", bg: "#F0FDFF", text: "#0E7490" },
+  Balanced: { dot: "#17694F", bg: "#EFF5F0", text: "#0E7490" },
   Abundant: { dot: "#10B981", bg: "#F0FDF4", text: "#065F46" },
 };
 
@@ -59,7 +59,7 @@ export default function RoleGapTable({ roleGaps }: Props) {
                   style={{ borderColor: "var(--border)" }}>
                   <td className="py-2.5 pr-4">
                     <div className="flex items-center gap-1.5">
-                      {isCritical && <AlertTriangle size={11} color="#E8197A" />}
+                      {isCritical && <AlertTriangle size={11} color="#B08A44" />}
                       <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
                         {row.role}
                       </span>

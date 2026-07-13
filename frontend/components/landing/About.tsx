@@ -8,11 +8,14 @@ const team = [
 
 export default function About() {
   return (
-    <section id="about" className="bg-[#FDFCFF] py-24">
+    <section id="about" className="bg-[#F7F3EA] py-24">
       <div className="max-w-3xl mx-auto px-6 text-center">
-        <SectionLabel>About</SectionLabel>
-        <h2 className="text-[40px] font-bold text-[#1A1033]">
-          Built for the future of work.
+        <div className="flex justify-center">
+          <SectionLabel>About</SectionLabel>
+        </div>
+        <h2 className="font-serif text-[40px] font-bold text-[#1E2A44]">
+          Built for the <em className="text-[#B08A44] font-medium">future</em> of
+          work.
         </h2>
 
         <p className="text-base text-[#6B7280] leading-relaxed mt-6">
@@ -30,10 +33,10 @@ export default function About() {
         <div className="mt-14 flex justify-center gap-8 flex-wrap">
           {team.map((member) => (
             <div key={member.name} className="flex flex-col items-center gap-2">
-              <div className="w-14 h-14 rounded-full bg-[#FFF5FA] flex items-center justify-center text-[#E8197A] font-semibold text-sm border-2 border-[#FFD0E8]">
+              <div className="w-14 h-14 rounded-full bg-[#F6F1E4] flex items-center justify-center text-[#B08A44] font-semibold text-sm border-2 border-[#E3D8BC]">
                 {member.initials}
               </div>
-              <p className="text-sm font-semibold text-[#1A1033]">{member.name}</p>
+              <p className="text-sm font-semibold text-[#1E2A44]">{member.name}</p>
               <p className="text-xs text-[#6B7280]">{member.role}</p>
             </div>
           ))}

@@ -1,5 +1,6 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import LogoMarquee from "@/components/landing/LogoMarquee";
 import SocialProof from "@/components/landing/SocialProof";
 import HowItWorks from "@/components/landing/HowItWorks";
 import ForEmployees from "@/components/landing/ForEmployees";
@@ -14,6 +15,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <LogoMarquee />
         <SocialProof />
         <HowItWorks />
         <ForEmployees />

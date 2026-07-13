@@ -15,9 +15,9 @@ const PRESETS = [
 ];
 
 const ATTRITION_SPLIT = [
-  { label: "Voluntary resignation",      pct: 8, color: "#E8197A", note: "Retention programs can reduce"  },
+  { label: "Voluntary resignation",      pct: 8, color: "#B08A44", note: "Retention programs can reduce"  },
   { label: "Retirement-eligible",        pct: 3, color: "#A855F7", note: "Succession planning needed"      },
-  { label: "Performance / involuntary",  pct: 2, color: "#06B6D4", note: "Manageable"                     },
+  { label: "Performance / involuntary",  pct: 2, color: "#17694F", note: "Manageable"                     },
 ];
 
 interface Props {
@@ -183,8 +183,8 @@ export default function SimulatorSidebar({ state, setState, isRunning, onRun, co
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-4">
-                <div className="w-2 h-2 rounded-full" style={{ background: "#7F77DD" }} />
-                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#7F77DD" }}>Scenario B</span>
+                <div className="w-2 h-2 rounded-full" style={{ background: "#56618C" }} />
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#56618C" }}>Scenario B</span>
               </div>
               <SliderSet state={stateB} setState={setStateB} condensed />
             </div>

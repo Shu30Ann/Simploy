@@ -102,7 +102,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
         </p>
       </div>
 
-      <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#F0EBF8] bg-[#FDFCFF] p-1">
+      <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#EAE3D3] bg-[#F7F3EA] p-1">
         {(["employee", "employer"] as const).map((option) => (
           <button
             key={option}
@@ -112,7 +112,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
               window.localStorage.setItem("simploy-role", option);
             }}
             className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-              role === option ? "bg-white text-[#E8197A] shadow-sm" : "text-[#6B7280] hover:bg-white/70"
+              role === option ? "bg-white text-[#B08A44] shadow-sm" : "text-[#6B7280] hover:bg-white/70"
             }`}
           >
             {option === "employee" ? "Employee" : "Employer"}
