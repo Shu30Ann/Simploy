@@ -9,6 +9,9 @@ from backend.app.repositories.users import ProfileRepository, UserRepository
 from backend.app.schemas.auth import AuthResponse, LoginRequest, SignupRequest, UserPublic
 
 
+VALID_ROLES = {"employee", "employer", "admin"}
+
+
 class AuthService:
     def __init__(self) -> None:
         self.users = UserRepository()
@@ -67,7 +70,15 @@ class AuthService:
         except HTTPException as exc:
             detail = str(exc.detail).lower()
             if "already" in detail or "registered" in detail:
-                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered") from exc
+                session = self._supabase_login(
+                    LoginRequest(email=normalized_email, password=payload.password, role=payload.role)
+                )
+                if session.user.role != payload.role:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Email is already registered as {session.user.role}",
+                    ) from exc
+                return session
             raise
 
         auth_user = auth_response.get("user") or auth_response
@@ -80,18 +91,7 @@ class AuthService:
                 "users",
                 {"email": normalized_email, "role": payload.role, "supabase_user_id": supabase_user_id},
             )
-
-            if payload.role == "employee":
-                self.profiles.create_employee_profile(
-                    user["id"],
-                    full_name=payload.full_name or normalized_email.split("@")[0].title(),
-                    skills=["communication", "analytics"],
-                )
-            elif payload.role == "employer":
-                self.profiles.create_employer_profile(
-                    user["id"],
-                    company_name=payload.company_name or f"{normalized_email.split('@')[0].title()} Company",
-                )
+            self._ensure_profile(user, metadata)
         except Exception:
             try:
                 admin_client.auth_admin_delete_user(supabase_user_id)
@@ -103,12 +103,63 @@ class AuthService:
         return AuthResponse(access_token=auth_payload["access_token"], user=self._public_user(user))
 
     def _supabase_login(self, payload: LoginRequest) -> AuthResponse:
-        auth_payload = supabase_auth().auth_login(payload.email.strip().lower(), payload.password)
+        normalized_email = payload.email.strip().lower()
+        auth_payload = supabase_auth().auth_login(normalized_email, payload.password)
         auth_user = auth_payload.get("user") or {}
         user = self.users.get_by_supabase_id(auth_user.get("id"))
         if user is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Account profile was not found")
+            user = self._create_app_user_from_auth_user(auth_user, fallback_role=payload.role)
+        else:
+            metadata = self._metadata_from_auth_user(auth_user)
+            self._ensure_profile(user, metadata)
         return AuthResponse(access_token=auth_payload["access_token"], user=self._public_user(user))
 
     def _public_user(self, user: dict) -> UserPublic:
         return UserPublic(id=user["id"], email=user["email"], role=user["role"], created_at=user["created_at"])
+
+    def _create_app_user_from_auth_user(self, auth_user: dict, fallback_role: str | None = None) -> dict:
+        supabase_user_id = auth_user.get("id")
+        email = (auth_user.get("email") or "").strip().lower()
+        metadata = self._metadata_from_auth_user(auth_user)
+        role = metadata.get("role") or fallback_role
+
+        if not supabase_user_id or not email or role not in VALID_ROLES:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Account profile is incomplete. Please sign up again or contact support.",
+            )
+
+        try:
+            user = supabase().insert(
+                "users",
+                {"email": email, "role": role, "supabase_user_id": supabase_user_id},
+            )
+        except HTTPException as exc:
+            if exc.status_code == status.HTTP_409_CONFLICT:
+                existing = self.users.get_by_email(email)
+                if existing is not None:
+                    self._ensure_profile(existing, metadata)
+                    return existing
+            raise
+
+        self._ensure_profile(user, metadata)
+        return user
+
+    def _ensure_profile(self, user: dict, metadata: dict) -> None:
+        role = user["role"]
+        if role == "employee" and self.profiles.get_employee_by_user_id(user["id"]) is None:
+            self.profiles.create_employee_profile(
+                user["id"],
+                full_name=metadata.get("full_name") or user["email"].split("@")[0].title(),
+                skills=["communication", "analytics"],
+            )
+        elif role == "employer" and self.profiles.get_employer_by_user_id(user["id"]) is None:
+            self.profiles.create_employer_profile(
+                user["id"],
+                company_name=metadata.get("company_name") or f"{user['email'].split('@')[0].title()} Company",
+            )
+
+    def _metadata_from_auth_user(self, auth_user: dict) -> dict:
+        user_metadata = auth_user.get("user_metadata") or {}
+        app_metadata = auth_user.get("app_metadata") or {}
+        return {**app_metadata, **user_metadata}

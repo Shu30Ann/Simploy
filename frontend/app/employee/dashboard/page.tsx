@@ -5,31 +5,24 @@ import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import worldCountries from "world-atlas/countries-110m.json";
 import {
   ArrowUpRight,
-  BookOpen,
   BriefcaseBusiness,
   Building2,
-  ChevronRight,
-  CircleDollarSign,
   ClipboardCheck,
   ExternalLink,
-  FileBadge,
-  Flag,
-  GraduationCap,
   Globe2,
-  Map as MapIcon,
   MapPin,
   Search,
   Sparkles,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import RiasecAssessment from "@/components/RiasecAssessment";
+import CareerGpsRoadmapPanel from "@/components/career-gps/CareerGpsRoadmapPanel";
+import CareerNorthStarPanel from "@/components/career-gps/CareerNorthStarPanel";
 import { getAuthToken, getJson, postJson } from "@/lib/api";
 import type { BackendApplication, BackendJob, EmployeeDashboardData } from "@/lib/backendTypes";
 import {
-  demoCareerSkillGaps,
   demoEmployeeProfile,
   demoInternalGigs,
-  demoLearningPath,
   marketplaceCompanies,
   marketplaceJobs,
 } from "@/lib/mock-data";
@@ -248,28 +241,6 @@ const asiaMarkets: Array<{
     topSkills: ["fintech", "mobile", "customer success"],
   },
 ];
-
-const skillGaps = demoCareerSkillGaps;
-
-const consultantRoadmap = demoLearningPath.map((item, index) => ({
-  stage: item.stage,
-  timeframe: item.timeframe,
-  title: item.title,
-  tasks: item.tasks,
-  icon: [BookOpen, FileBadge, ClipboardCheck, CircleDollarSign][index] ?? BookOpen,
-}));
-
-const learningPathMilestones = consultantRoadmap.map((item, index) => ({
-  ...item,
-  progress: demoLearningPath[index]?.progress ?? 0,
-  description: demoLearningPath[index]?.description ?? "",
-  markerPosition: [
-    "left-[7%] top-[71%]",
-    "left-[31%] top-[67%]",
-    "left-[53%] top-[55%]",
-    "left-[75%] top-[67%]",
-  ][index],
-}));
 
 const toneStyles: Record<string, string> = {
   pink: "bg-[#F6F1E4] text-[#B08A44] border-[#E3D8BC]",
@@ -897,7 +868,6 @@ function SkillRoadmapModule({ onStartRoadmap }: { onStartRoadmap: () => void }) 
 }
 
 export default function EmployeeDashboardPage() {
-  const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [dashboard, setDashboard] = useState<EmployeeDashboardData | null>(null);
   const [applyMessage, setApplyMessage] = useState<string | null>(null);
   const [storedDisplayName, setStoredDisplayName] = useState("Alex");
@@ -977,8 +947,11 @@ export default function EmployeeDashboardPage() {
               <a href="/employee/applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Applications
               </a>
-              <a href="#skills" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Learning Path
+              <a href="#career-north-star" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+                Career GPS
+              </a>
+              <a href="#career-gps-roadmap" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+                Roadmap
               </a>
             </nav>
           </div>
@@ -1067,6 +1040,12 @@ export default function EmployeeDashboardPage() {
         </section>
 
         <section id="settings" className="mt-6 scroll-mt-24">
+          <CareerNorthStarPanel />
+        </section>
+
+        <CareerGpsRoadmapPanel />
+
+        <section className="mt-6">
           <RiasecAssessment
             initialResult={interestResult}
             skipped={hasSkippedInterestTest}
@@ -1076,7 +1055,6 @@ export default function EmployeeDashboardPage() {
           />
         </section>
 
-        <SkillRoadmapModule onStartRoadmap={() => setIsRoadmapOpen(true)} />
         {applyMessage && (
           <div className="mt-6 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#087C7E]">
             {applyMessage}

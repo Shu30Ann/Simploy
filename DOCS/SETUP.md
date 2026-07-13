@@ -39,7 +39,18 @@ git checkout Sam
 cd frontend
 ```
 
-### 4. Install dependencies
+### 4. Start the backend
+
+From the repo root:
+
+```bash
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Local development uses SQLite by default at `backend/simploy.db`. Set `SIMPLOY_DATABASE_PATH` to use another local database file.
+
+### 5. Install frontend dependencies
 
 ```bash
 npm install
@@ -47,13 +58,21 @@ npm install
 
 > This installs everything listed in `package.json`, including Next.js, Tailwind CSS, Framer Motion, and Lucide React.
 
-### 5. Start the development server
+### 6. Configure the frontend API URL
+
+Create `frontend/.env.local` when needed:
+
+```bash
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+```
+
+### 7. Start the development server
 
 ```bash
 npm run dev
 ```
 
-### 6. Open in browser
+### 8. Open in browser
 
 ```
 http://localhost:3000
@@ -108,3 +127,38 @@ npm install
 npm install
 ```
 Always run this after pulling new changes in case new packages were added.
+
+---
+
+## Career GPS Backend Setup
+
+For Supabase-backed deployment:
+
+1. Run `backend/supabase_schema.sql`.
+2. Run these additive migrations in order:
+   - `backend/migrations/001_career_gps_foundation.sql`
+   - `backend/migrations/002_career_gps_rls.sql`
+   - `backend/migrations/003_career_gps_profile_api_fields.sql`
+   - `backend/migrations/004_career_gps_profile_api_rls.sql`
+   - `backend/migrations/005_career_buddy.sql`
+3. Set backend-only variables on Render:
+
+```bash
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SIMPLOY_CORS_ORIGINS=https://your-vercel-app.vercel.app,http://localhost:3000
+SIMPLOY_CORS_ORIGIN_REGEX=https://.*\.vercel\.app|http://(localhost|127\.0\.0\.1):\d+
+SIMPLOY_CAREER_BUDDY_AI_PROVIDER=auto
+SIMPLOY_CAREER_BUDDY_RATE_LIMIT_PER_HOUR=20
+```
+
+Career Buddy is usable without paid AI access. Leave `OPENAI_API_KEY` empty for deterministic template responses. If an AI provider is enabled later, set `OPENAI_API_KEY` and `SIMPLOY_CAREER_BUDDY_MODEL` only on the backend.
+
+For Vercel frontend, set only:
+
+```bash
+NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com
+```
+
+Never add `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` to frontend or `NEXT_PUBLIC_*` variables.

@@ -9,7 +9,7 @@ Simploy helps employers, universities, and candidates understand future workforc
 This repository includes a Next.js frontend, a FastAPI product backend, and a separate AI engine boundary:
 
 - `frontend/`: Next.js user experience
-- `backend/`: auth, profiles, jobs, applications, predictions, and persisted simulations
+- `backend/`: auth, profiles, jobs, applications, predictions, persisted simulations, and Career GPS APIs
 - `ai-engine/`: prediction service boundary and baseline model logic
 
 The backend now has a local SQLite default for development and is structured so it can move to PostgreSQL for production.
@@ -20,6 +20,7 @@ The backend now has a local SQLite default for development and is structured so 
 - Skill Demand Shift Detection
 - Automation Risk Estimation
 - Actionable Hiring, Retraining, Automation, and Outsourcing Recommendations
+- Employee Career GPS with Career North Star onboarding, deterministic roadmaps, What-If Career Simulator, and Career Buddy fallback chat
 
 ## Backend Prototype
 
@@ -45,6 +46,11 @@ Important endpoints:
 - `GET /simulations/{simulation_id}/actions`
 - `POST /predictions/job-match`
 - `POST /predictions/skill-gap`
+- `GET /career-gps/profile`
+- `POST /career-gps/roadmaps/generate`
+- `POST /career-gps/roadmaps/what-if/preview`
+- `POST /career-gps/roadmaps/what-if/apply`
+- `POST /career-gps/career-buddy/messages`
 
 ## Run the prototype
 
@@ -60,6 +66,20 @@ Important endpoints:
    ```bash
    npm run dev
    ```
+
+For Supabase-backed production, run `backend/supabase_schema.sql` first, then run migrations `backend/migrations/001_career_gps_foundation.sql` through `backend/migrations/005_career_buddy.sql` in order.
+
+Career Buddy does not require a paid AI key for the hackathon demo. Leave AI keys empty to use deterministic template responses.
+
+To enable Gemini for Career Buddy, create `backend/.env` from `backend/.env.example` and set:
+
+```env
+SIMPLOY_CAREER_BUDDY_AI_PROVIDER=gemini
+SIMPLOY_CAREER_BUDDY_MODEL=gemini-3.5-flash
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+Set AI provider keys only on the backend environment, never in frontend/Vercel public variables.
 
 ## Future improvement ideas
 
