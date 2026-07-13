@@ -1,201 +1,232 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
-import Button from "@/components/ui/Button";
+import { useState } from "react";
+import { ShieldCheck, Lock, Globe, Search, Sparkles } from "lucide-react";
 import FadeUp from "@/components/ui/FadeUp";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  const [mode, setMode] = useState<"job" | "hiring">("job");
+  const router = useRouter();
+
   return (
-    <section className="bg-[#FDFCFF] pt-32 pb-20 text-center overflow-hidden relative">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          style={{
-            position: "absolute",
-            top: "20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(232,25,122,0.06) 0%, transparent 70%)",
-          }}
-        />
-      </div>
+    <section className="bg-[#F7F3EA] pt-32 pb-20 overflow-hidden relative">
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Left — copy */}
+        <div>
+          <FadeUp delay={0}>
+            <p className="flex items-center gap-3 font-mono text-xs font-semibold tracking-[0.25em] uppercase text-[#8B7434] mb-6">
+              <span className="inline-block w-8 h-px bg-[#17694F]" aria-hidden />
+              The home of leading brands
+            </p>
+          </FadeUp>
 
-      <div className="relative z-10 px-4">
-        {/* Eyebrow */}
-        <FadeUp delay={0}>
-          <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium bg-[#FFF5FA] text-[#E8197A] border border-[#FFD0E8] mb-6">
-            <Sparkles size={14} /> Introducing the Career OS
-          </span>
-        </FadeUp>
+          {/* Job / hiring toggle */}
+          <FadeUp delay={0.05}>
+            <div className="inline-flex items-center bg-[#EFEADF] border border-[#E3DCC9] rounded-full p-1.5 mb-8">
+              <button
+                onClick={() => setMode("job")}
+                className={`text-sm font-semibold rounded-full px-5 py-2.5 transition-colors ${
+                  mode === "job"
+                    ? "bg-[#1E2A44] text-white"
+                    : "text-[#5D6470] hover:text-[#1E2A44]"
+                }`}
+              >
+                I&apos;m looking for a job
+              </button>
+              <button
+                onClick={() => setMode("hiring")}
+                className={`text-sm font-semibold rounded-full px-5 py-2.5 transition-colors ${
+                  mode === "hiring"
+                    ? "bg-[#1E2A44] text-white"
+                    : "text-[#5D6470] hover:text-[#1E2A44]"
+                }`}
+              >
+                I&apos;m hiring
+              </button>
+            </div>
+          </FadeUp>
 
-        {/* Headline */}
-        <FadeUp delay={0.05}>
-          <h1
-            className="font-bold leading-[1.1] tracking-tight text-[#1A1033]"
-            style={{ fontSize: "clamp(36px, 6vw, 64px)" }}
-          >
-            The Career{" "}
-            <span className="text-[#E8197A]">OS</span> your
-            <br />
-            workforce deserves.
-          </h1>
-        </FadeUp>
+          {/* Headline */}
+          <FadeUp delay={0.1}>
+            <h1
+              className="font-serif font-bold text-[#1E2A44] leading-[1.08] tracking-tight"
+              style={{ fontSize: "clamp(40px, 5.5vw, 64px)" }}
+            >
+              Where the world&apos;s{" "}
+              <em className="text-[#B08A44] font-medium">
+                most admired companies
+              </em>{" "}
+              hire.
+            </h1>
+          </FadeUp>
 
-        {/* Subheadline */}
-        <FadeUp delay={0.1}>
-          <p className="text-lg text-[#6B7280] max-w-[540px] mx-auto mt-4 leading-relaxed">
-            Simploy maps your live talent graph, simulates future workforce gaps,
-            and recommends the exact actions to close them — before they become
-            crises.
-          </p>
-        </FadeUp>
+          {/* Subheadline */}
+          <FadeUp delay={0.15}>
+            <p className="text-lg text-[#5D6470] mt-5 leading-relaxed max-w-[520px]">
+              From{" "}
+              <em className="font-serif text-[#8B7434]">
+                startups to global enterprises
+              </em>
+              , your next move starts at 900+ of the most admired companies,
+              guided by AI.
+            </p>
+          </FadeUp>
 
-        {/* CTAs */}
-        <FadeUp delay={0.15}>
-          <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
-            <Link href="/signup?role=employee">
-              <Button variant="outline">I&apos;m an Employee</Button>
-            </Link>
-            <Link href="/signup?role=employer">
-              <Button variant="primary">I&apos;m an Employer</Button>
-            </Link>
-          </div>
-        </FadeUp>
+          {/* Search bar */}
+          <FadeUp delay={0.2}>
+            <form
+              className="mt-8 flex items-center bg-white rounded-full border border-[#EAE3D3] shadow-[0_4px_24px_rgba(70,60,35,0.08)] p-2 pl-6 max-w-[560px]"
+              onSubmit={(e) => {
+                e.preventDefault();
+                router.push(
+                  mode === "job" ? "/signup?role=employee" : "/signup?role=employer"
+                );
+              }}
+            >
+              <input
+                type="text"
+                placeholder={
+                  mode === "job"
+                    ? 'Try "remote data analyst"'
+                    : 'Try "senior protocol engineer"'
+                }
+                className="flex-1 bg-transparent text-sm text-[#1E2A44] placeholder-[#9CA3AF] outline-none min-w-0"
+              />
+              <button
+                type="submit"
+                className="flex items-center gap-2 bg-[#1E2A44] hover:bg-[#16233C] text-white text-sm font-semibold rounded-full px-7 py-3 transition-colors flex-shrink-0"
+              >
+                <Search size={15} /> Search
+              </button>
+            </form>
+          </FadeUp>
 
-        {/* Sub-CTA */}
+          {/* Trust row */}
+          <FadeUp delay={0.25}>
+            <div className="flex items-center gap-6 mt-6 flex-wrap text-sm text-[#5D6470]">
+              <span className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-[#17694F]" /> Verified
+                employers only
+              </span>
+              <span className="flex items-center gap-2">
+                <Lock size={16} className="text-[#17694F]" /> Private &amp; secure
+              </span>
+              <span className="flex items-center gap-2">
+                <Globe size={16} className="text-[#17694F]" /> Trusted worldwide
+              </span>
+            </div>
+          </FadeUp>
+        </div>
+
+        {/* Right — AI trajectory chart */}
         <FadeUp delay={0.2}>
-          <p className="text-xs text-[#9CA3AF] mt-3">
-            Free for employees · No credit card required
-          </p>
-        </FadeUp>
+          <div className="relative hidden lg:block">
+            <p className="flex items-center justify-center gap-2 font-mono text-xs tracking-[0.25em] uppercase text-[#9A947F] mb-6">
+              <Sparkles size={12} /> Projected with AI
+            </p>
 
-        {/* Hero mockup */}
-        <FadeUp delay={0.25}>
-          <div className="mt-16 max-w-[900px] mx-auto px-4 relative">
-            <div className="rounded-2xl border border-[#F0EBF8] shadow-[0_8px_48px_rgba(232,25,122,0.12)] overflow-hidden bg-white text-left">
-              {/* Mock navbar */}
-              <div className="bg-[#1A1033] px-4 py-2.5 flex items-center gap-6">
-                <span className="text-white font-bold text-xs">Simploy</span>
-                {["Jobs", "Applications", "Pipeline", "Analytics"].map((item) => (
-                  <span key={item} className="text-white/50 text-[11px]">
-                    {item}
-                  </span>
-                ))}
-              </div>
+            <svg viewBox="0 0 520 360" fill="none" className="w-full">
+              {/* Grid lines */}
+              {[170, 300, 430].map((x) => (
+                <line
+                  key={x}
+                  x1={x}
+                  y1={40}
+                  x2={x}
+                  y2={310}
+                  stroke="#E3DCC9"
+                  strokeDasharray="3 5"
+                />
+              ))}
+              <line x1={40} y1={310} x2={480} y2={310} stroke="#D9D1BC" />
 
-              {/* Mock body */}
-              <div className="p-5">
-                <p className="text-[13px] font-semibold text-[#1A1033]">
-                  Welcome back, Acme Corp Team!
-                </p>
-                <p className="text-[11px] text-[#6B7280] mt-0.5">
-                  Your talent marketplace is live.
-                </p>
+              {/* Peer curves (green) */}
+              <path
+                d="M60 305 C 200 290, 340 240, 470 155"
+                stroke="#4E8A73"
+                strokeWidth="2.5"
+                opacity="0.55"
+              />
+              <path
+                d="M60 305 C 210 296, 360 265, 470 205"
+                stroke="#4E8A73"
+                strokeWidth="2.5"
+                opacity="0.35"
+              />
 
-                {/* Stat cards */}
-                <div className="flex gap-3 mt-4">
-                  <div className="bg-[#E8197A] text-white rounded-xl px-5 py-3 min-w-[100px]">
-                    <p className="text-xl font-bold">124</p>
-                    <p className="text-[10px] uppercase tracking-wider opacity-80 mt-0.5">
-                      Applications
-                    </p>
-                  </div>
-                  <div className="bg-[#06B6D4] text-white rounded-xl px-5 py-3 min-w-[100px]">
-                    <p className="text-xl font-bold">18</p>
-                    <p className="text-[10px] uppercase tracking-wider opacity-80 mt-0.5">
-                      Hired
-                    </p>
-                  </div>
-                </div>
+              {/* Director track (gold) */}
+              <path
+                d="M60 305 C 200 285, 350 200, 462 75"
+                stroke="#B08A44"
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
 
-                {/* Job postings table */}
-                <div className="mt-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[12px] font-semibold text-[#1A1033]">
-                      Job Postings
-                    </p>
-                    <div className="flex gap-2">
-                      <span className="text-[10px] px-2 py-0.5 bg-[#FFF0F8] text-[#E8197A] rounded-full border border-[#FFD0E8]">
-                        Active (8)
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-[#F0EBF8] text-[#6B7280] rounded-full border border-[#E2D9F3]">
-                        Draft (3)
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-t border-[#F0EBF8]" />
-                  {[
-                    { title: "Senior Protocol Engineer", status: "Active", apps: 42, dots: 3 },
-                    { title: "DevRel Lead", status: "Active", apps: 15, dots: 2 },
-                    { title: "Product Designer (v2)", status: "Draft", apps: 0, dots: 0 },
-                  ].map((job) => (
-                    <div
-                      key={job.title}
-                      className="flex items-center justify-between py-2 border-b border-[#F0EBF8] last:border-0"
-                    >
-                      <p className="text-[11px] text-[#1A1033] font-medium">{job.title}</p>
-                      <div className="flex items-center gap-4">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full ${
-                            job.status === "Active"
-                              ? "bg-[#E0F9FF] text-[#06B6D4]"
-                              : "bg-[#F0EBF8] text-[#9CA3AF]"
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-                        <span className="text-[11px] text-[#6B7280] w-6 text-right">
-                          {job.apps}
-                        </span>
-                        <span className="text-[#E8197A] text-xs">
-                          {job.dots > 0 ? "●".repeat(job.dots) : "Pending"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {/* Milestone dots on gold curve */}
+              <circle cx={205} cy={272} r={6} fill="#F7F3EA" stroke="#B08A44" strokeWidth="2.5" />
+              <circle cx={330} cy={212} r={6} fill="#F7F3EA" stroke="#B08A44" strokeWidth="2.5" />
 
-                {/* Insights panel */}
-                <div className="mt-4 border border-[#F0EBF8] rounded-xl p-4">
-                  <p className="text-[12px] font-semibold text-[#1A1033] mb-3">
-                    Marketplace Insights
-                  </p>
-                  {[
-                    { label: "Rust / Wasm Demand", level: "HIGH", width: "80%" },
-                    { label: "Solidity Skills", level: "MED", width: "50%" },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3 mb-2">
-                      <p className="text-[11px] text-[#6B7280] w-36">{item.label}</p>
-                      <div className="flex-1 bg-[#F0EBF8] rounded-full h-1.5">
-                        <div
-                          className="bg-[#E8197A] h-1.5 rounded-full"
-                          style={{ width: item.width }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-semibold text-[#E8197A]">
-                        {item.level}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* End point */}
+              <circle cx={462} cy={75} r={12} fill="#B08A44" opacity="0.25" />
+              <circle cx={462} cy={75} r={7} fill="#B08A44" stroke="#FFFFFF" strokeWidth="2.5" />
+
+              {/* Start point (You) */}
+              <circle cx={60} cy={305} r={7} fill="#1E2A44" />
+
+              {/* Labels */}
+              <text x={462} y={48} textAnchor="end" fontFamily="var(--font-mono), monospace" fontSize="14" fontWeight="700" fill="#8B6D2F">
+                Director track
+              </text>
+              <text x={410} y={190} textAnchor="start" fontFamily="var(--font-mono), monospace" fontSize="12" fill="#7A8A80">
+                Peers like you
+              </text>
+              <text x={60} y={340} textAnchor="middle" fontFamily="var(--font-mono), monospace" fontSize="13" fill="#1E2A44">
+                You
+              </text>
+              <text x={170} y={340} textAnchor="middle" fontFamily="var(--font-mono), monospace" fontSize="12" fill="#9A947F">
+                2 yrs
+              </text>
+              <text x={300} y={340} textAnchor="middle" fontFamily="var(--font-mono), monospace" fontSize="12" fill="#9A947F">
+                5 yrs
+              </text>
+              <text x={430} y={340} textAnchor="middle" fontFamily="var(--font-mono), monospace" fontSize="12" fill="#9A947F">
+                8 yrs
+              </text>
+            </svg>
+
+            {/* Floating match card */}
+            <div className="absolute top-16 left-2 bg-white/80 backdrop-blur rounded-2xl border border-[#EAE3D3] shadow-[0_8px_32px_rgba(70,60,35,0.10)] px-5 py-4">
+              <p className="text-sm font-semibold text-[#1E2A44]">
+                Great match found
+              </p>
+              <p className="text-xs text-[#5D6470] mt-0.5">
+                98% fit · Senior Analyst
+              </p>
+              <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-[#17694F] mt-3 pt-3 border-t border-[#EAE3D3]">
+                ✦ Simploy AI
+              </p>
             </div>
 
-            {/* Frosted bottom edge */}
-            <div
-              className="absolute bottom-0 left-4 right-4 h-24 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(253,252,255,1) 0%, transparent 100%)",
-              }}
-            />
+            <p className="text-center text-sm text-[#5D6470] mt-6 leading-relaxed max-w-[440px] mx-auto">
+              Your career trajectory,{" "}
+              <em className="font-serif text-[#B08A44]">predicted</em>. Simploy
+              maps where people like you went next, then walks every step with
+              you.
+            </p>
           </div>
         </FadeUp>
+      </div>
+
+      {/* Mobile CTA fallback */}
+      <div className="lg:hidden text-center mt-10 px-6">
+        <Link
+          href={mode === "job" ? "/signup?role=employee" : "/signup?role=employer"}
+          className="text-sm font-semibold text-[#8B6D2F] underline underline-offset-4"
+        >
+          See your AI-projected career path →
+        </Link>
       </div>
     </section>
   );

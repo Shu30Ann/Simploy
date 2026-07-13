@@ -19,7 +19,7 @@ const strengthConfig: Record<number, { label: string; color: string }> = {
   0: { label: "",       color: "" },
   1: { label: "Weak",   color: "#EF4444" },
   2: { label: "Fair",   color: "#F59E0B" },
-  3: { label: "Good",   color: "#06B6D4" },
+  3: { label: "Good",   color: "#17694F" },
   4: { label: "Strong", color: "#10B981" },
 };
 

@@ -74,13 +74,13 @@ function actionFromRecommendation(item: RecommendationResponse["recommendations"
 const filters = ["All", "Hire", "Upskill", "Mobility", "Automate", "Retain"];
 
 const labelStyles: Record<string, string> = {
-  Critical: "bg-[#FFF0F8] text-[#E8197A] border-[#FFD0E8]",
-  High: "bg-[#F5F0FF] text-[#6B46C1] border-[#DDD0F8]",
-  Medium: "bg-[#E0F9FF] text-[#087C7E] border-[#BAF3FF]",
+  Critical: "bg-[#F6F1E4] text-[#B08A44] border-[#E3D8BC]",
+  High: "bg-[#F1EDE0] text-[#6B46C1] border-[#DFD6BE]",
+  Medium: "bg-[#E7F0E9] text-[#087C7E] border-[#CBDFD4]",
 };
 
 const impactStyles: Record<string, string> = {
-  High: "text-[#E8197A]",
+  High: "text-[#B08A44]",
   "Medium-High": "text-[#087C7E]",
   Medium: "text-[#6B46C1]",
 };
@@ -88,15 +88,15 @@ const impactStyles: Record<string, string> = {
 const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
   Hire: {
     icon: BriefcaseBusiness,
-    accent: "text-[#E8197A] bg-[#FFF0F8]",
+    accent: "text-[#B08A44] bg-[#F6F1E4]",
   },
   Upskill: {
     icon: GraduationCap,
-    accent: "text-[#6B46C1] bg-[#F5F0FF]",
+    accent: "text-[#6B46C1] bg-[#F1EDE0]",
   },
   Mobility: {
     icon: Repeat2,
-    accent: "text-[#087C7E] bg-[#E0F9FF]",
+    accent: "text-[#087C7E] bg-[#E7F0E9]",
   },
   Automate: {
     icon: Zap,
@@ -104,7 +104,7 @@ const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
   },
   Retain: {
     icon: Sparkles,
-    accent: "text-[#E8197A] bg-[#FFF0F8]",
+    accent: "text-[#B08A44] bg-[#F6F1E4]",
   },
 };
 
@@ -132,14 +132,14 @@ export default function ActionEnginePage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#FFF8FC] text-[#1A1033]">
+    <main className="min-h-screen bg-[#FFF8FC] text-[#1E2A44]">
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
           <div>
             <SectionLabel>Layer 3 Execution Plan</SectionLabel>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold leading-tight text-[#1A1033] sm:text-4xl">Action Engine</h1>
-              <span className="rounded-full bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase text-[#E8197A]">
+              <h1 className="text-3xl font-bold leading-tight text-[#1E2A44] sm:text-4xl">Action Engine</h1>
+              <span className="rounded-full bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase text-[#B08A44]">
                 {visibleActions.length} plans
               </span>
             </div>
@@ -149,21 +149,21 @@ export default function ActionEnginePage() {
           </div>
         </header>
 
-        <section className="mt-5 rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(26,16,51,0.05)]">
+        <section className="mt-5 rounded-lg border border-[#EAE3D3] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(26,16,51,0.05)]">
           <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-center">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Gap detected</p>
-              <p className="mt-1 font-bold text-[#1A1033]">{manufacturingSimulationSummary.projectedGap.toLocaleString()} roles</p>
+              <p className="mt-1 font-bold text-[#1E2A44]">{manufacturingSimulationSummary.projectedGap.toLocaleString()} roles</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Main risk</p>
-              <p className="mt-1 font-bold text-[#E8197A]">Maintenance technician shortage</p>
+              <p className="mt-1 font-bold text-[#B08A44]">Maintenance technician shortage</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Recommended strategy</p>
               <p className="mt-1 font-bold text-[#087C7E]">{manufacturingSimulationSummary.strongestActionMix.join(" + ")}</p>
             </div>
-            <span className="rounded-full bg-[#E0F9FF] px-4 py-2 text-xs font-bold text-[#087C7E]">
+            <span className="rounded-full bg-[#E7F0E9] px-4 py-2 text-xs font-bold text-[#087C7E]">
               Based on current gap signals
             </span>
           </div>
@@ -171,11 +171,11 @@ export default function ActionEnginePage() {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
           <section className="min-w-0">
-            <div className="sticky top-0 z-10 rounded-lg border border-[#F0EBF8] bg-white/95 p-3 shadow-[0_8px_22px_rgba(26,16,51,0.06)] backdrop-blur">
+            <div className="sticky top-0 z-10 rounded-lg border border-[#EAE3D3] bg-white/95 p-3 shadow-[0_8px_22px_rgba(26,16,51,0.06)] backdrop-blur">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Action plan</p>
-                  <h2 className="text-lg font-bold text-[#1A1033]">Execution cards</h2>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Action plan</p>
+                  <h2 className="text-lg font-bold text-[#1E2A44]">Execution cards</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {filters.map((filter) => (
@@ -185,8 +185,8 @@ export default function ActionEnginePage() {
                       onClick={() => setSelectedFilter(filter)}
                       className={`rounded-lg border px-3 py-2 text-sm font-bold transition ${
                         selectedFilter === filter
-                          ? "border-[#E8197A] bg-[#E8197A] text-white shadow-[0_8px_18px_rgba(232,25,122,0.18)]"
-                          : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#FFD0E8] hover:text-[#E8197A]"
+                          ? "border-[#B08A44] bg-[#B08A44] text-white shadow-[0_8px_18px_rgba(70,60,35,0.18)]"
+                          : "border-[#EAE3D3] bg-white text-[#6B7280] hover:border-[#E3D8BC] hover:text-[#B08A44]"
                       }`}
                     >
                       {filter}
@@ -203,7 +203,7 @@ export default function ActionEnginePage() {
                 return (
                   <article
                     key={action.id}
-                    className="flex min-h-[310px] flex-col rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_24px_rgba(26,16,51,0.04)] transition hover:-translate-y-0.5 hover:border-[#FFD0E8] hover:shadow-[0_14px_34px_rgba(232,25,122,0.12)]"
+                    className="flex min-h-[310px] flex-col rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_8px_24px_rgba(26,16,51,0.04)] transition hover:-translate-y-0.5 hover:border-[#E3D8BC] hover:shadow-[0_14px_34px_rgba(70,60,35,0.12)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
@@ -211,7 +211,7 @@ export default function ActionEnginePage() {
                           <Icon size={18} />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="truncate text-xl font-bold text-[#1A1033]">{action.title}</h3>
+                          <h3 className="truncate text-xl font-bold text-[#1E2A44]">{action.title}</h3>
                           <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">
                             Priority {action.priority}
                           </p>
@@ -224,18 +224,18 @@ export default function ActionEnginePage() {
 
                     <p className="mt-4 text-sm font-semibold leading-6 text-[#374151]">{action.problem}</p>
 
-                    <div className="mt-4 rounded-lg bg-[#FDFCFF] p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-[#E8197A]">Recommendation</p>
+                    <div className="mt-4 rounded-lg bg-[#F7F3EA] p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-[#B08A44]">Recommendation</p>
                       <p className="mt-1 text-sm leading-6 text-[#374151]">{action.recommendation}</p>
                     </div>
 
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       {[
-                        ["Impact", action.impact, impactStyles[action.impact] || "text-[#1A1033]"],
-                        ["Cost", action.cost, "text-[#1A1033]"],
-                        ["Timeline", action.timeline, "text-[#1A1033]"],
+                        ["Impact", action.impact, impactStyles[action.impact] || "text-[#1E2A44]"],
+                        ["Cost", action.cost, "text-[#1E2A44]"],
+                        ["Timeline", action.timeline, "text-[#1E2A44]"],
                       ].map(([label, value, color]) => (
-                        <div key={label} className="rounded-lg border border-[#F0EBF8] bg-white p-2">
+                        <div key={label} className="rounded-lg border border-[#EAE3D3] bg-white p-2">
                           <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
                           <p className={`mt-1 text-sm font-bold ${color}`}>{value}</p>
                         </div>
@@ -243,7 +243,7 @@ export default function ActionEnginePage() {
                     </div>
 
                     <div className="mt-auto pt-5">
-                      <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#C91569] hover:shadow-[0_10px_22px_rgba(232,25,122,0.22)]">
+                      <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#97742F] hover:shadow-[0_10px_22px_rgba(70,60,35,0.22)]">
                         {action.buttonLabel}
                         <ArrowRight size={15} />
                       </button>
@@ -255,36 +255,36 @@ export default function ActionEnginePage() {
           </section>
 
           <aside className="hidden xl:block">
-            <div className="sticky top-4 rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_16px_42px_rgba(232,25,122,0.12)]">
+            <div className="sticky top-4 rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_16px_42px_rgba(70,60,35,0.12)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Layer 3 Output</p>
-                  <h2 className="mt-1 text-xl font-bold text-[#1A1033]">Execution Summary</h2>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Layer 3 Output</p>
+                  <h2 className="mt-1 text-xl font-bold text-[#1E2A44]">Execution Summary</h2>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#E0F9FF] text-[#087C7E]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#E7F0E9] text-[#087C7E]">
                   <BarChart3 size={20} />
                 </div>
               </div>
 
-              <div className="mt-5 rounded-lg bg-[#FFF0F8] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#E8197A]">Gap reduction potential</p>
+              <div className="mt-5 rounded-lg bg-[#F6F1E4] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#B08A44]">Gap reduction potential</p>
                 <div className="mt-2 flex items-end justify-between gap-3">
-                  <p className="text-4xl font-bold text-[#1A1033]">82%</p>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#E8197A]">High confidence</span>
+                  <p className="text-4xl font-bold text-[#1E2A44]">82%</p>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#B08A44]">High confidence</span>
                 </div>
                 <div className="mt-4 h-2 rounded-full bg-white">
-                  <div className="h-2 w-[82%] rounded-full bg-[#E8197A]" />
+                  <div className="h-2 w-[82%] rounded-full bg-[#B08A44]" />
                 </div>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {[
-                  ["Total plans", "7", "text-[#1A1033]"],
-                  ["Critical actions", "2", "text-[#E8197A]"],
+                  ["Total plans", "7", "text-[#1E2A44]"],
+                  ["Critical actions", "2", "text-[#B08A44]"],
                   ["Estimated cost", "RM 18.8M", "text-[#087C7E]"],
                   ["Time horizon", "12-36 mo", "text-[#6B46C1]"],
                 ].map(([label, value, color]) => (
-                  <div key={label} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+                  <div key={label} className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-3">
                     <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
                     <p className={`mt-2 text-base font-bold ${color}`}>{value}</p>
                   </div>
@@ -292,7 +292,7 @@ export default function ActionEnginePage() {
               </div>
 
 
-              <div className="mt-4 rounded-lg bg-[#E0F9FF] p-4">
+              <div className="mt-4 rounded-lg bg-[#E7F0E9] p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#087C7E]">Execution result</p>
                 <div className="mt-3 space-y-3">
                   {[
@@ -302,7 +302,7 @@ export default function ActionEnginePage() {
                   ].map(([label, value]) => (
                     <div key={label} className="border-b border-white/70 pb-3 last:border-b-0 last:pb-0">
                       <p className="text-[10px] font-bold uppercase text-[#087C7E]">{label}</p>
-                      <p className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{value}</p>
+                      <p className="mt-1 text-sm font-bold leading-5 text-[#1E2A44]">{value}</p>
                     </div>
                   ))}
                 </div>

@@ -3,45 +3,53 @@
 @tailwind utilities;
 
 :root {
-  /* Brand */
-  --pink:          #E8197A;
-  --pink-hover:    #C91569;
-  --pink-light:    #FFE8F2;
-  --pink-lighter:  #FFF5FA;
-  --pink-border:   #FFD0E8;
+  /* Brand — TalentBank-inspired palette */
+  --pink:          #B08A44; /* gold accent (legacy var name) */
+  --pink-hover:    #97742F;
+  --pink-light:    #F1E9D4;
+  --pink-lighter:  #F6F1E4;
+  --pink-border:   #E3D8BC;
 
-  --teal:          #06B6D4;
-  --teal-hover:    #0891B2;
-  --teal-light:    #E0F9FF;
-  --teal-border:   #BAF3FF;
+  --teal:          #17694F; /* deep green accent (legacy var name) */
+  --teal-hover:    #114F3B;
+  --teal-light:    #E7F0E9;
+  --teal-border:   #CBDFD4;
 
-  --purple-light:  #F5F0FF;
-  --purple-border: #DDD0F8;
+  --purple-light:  #F1EDE0;
+  --purple-border: #DFD6BE;
+
+  --navy:          #1E2A44;
+  --navy-hover:    #16233C;
+  --gold:          #B08A44;
+  --gold-dark:     #8B7434;
+  --green-deep:    #0E4634;
+  --green:         #17694F;
+  --cream:         #F7F3EA;
 
   /* Text */
-  --text-primary:   #1A1033;
-  --text-secondary: #6B7280;
+  --text-primary:   #1E2A44;
+  --text-secondary: #5D6470;
   --text-muted:     #9CA3AF;
 
   /* Backgrounds */
-  --bg-page:         #FDFCFF;
+  --bg-page:         #F7F3EA;
   --bg-card:         #FFFFFF;
-  --bg-pink-soft:    #FFF0F8;
-  --bg-purple-soft:  #F5F0FF;
-  --bg-teal-soft:    #F0FDFF;
-  --bg-dark:         #1A1033;
+  --bg-pink-soft:    #F6F1E4;
+  --bg-purple-soft:  #F1EDE0;
+  --bg-teal-soft:    #EFF5F0;
+  --bg-dark:         #1B2542;
 
   /* Borders */
-  --border:          #F0EBF8;
-  --border-strong:   #E2D9F3;
+  --border:          #EAE3D3;
+  --border-strong:   #DFD6C2;
 
   /* Shadows */
-  --shadow-card:  0 4px 24px rgba(232, 25, 122, 0.08);
-  --shadow-hero:  0 8px 48px rgba(232, 25, 122, 0.12);
+  --shadow-card:  0 4px 24px rgba(70, 60, 35, 0.08);
+  --shadow-hero:  0 8px 48px rgba(70, 60, 35, 0.12);
 
   /* Auth */
-  --input-border:       #E2D9F3;
-  --input-border-focus: #E8197A;
+  --input-border:       #DFD6C2;
+  --input-border-focus: #B08A44;
   --input-border-error: #EF4444;
   --input-bg:           #FFFFFF;
   --label-color:        #374151;
@@ -51,26 +59,26 @@
   --success-bg:         #F0FDF4;
   --success-border:     #BBF7D0;
   --success-text:       #15803D;
-  --divider-color:      #F0EBF8;
+  --divider-color:      #EAE3D3;
   --google-border:      #E5E7EB;
 
   /* Simulator */
-  --sim-sidebar-bg:    #FAFAF9;
+  --sim-sidebar-bg:    #FAF7F0;
   --sim-sidebar-w:     220px;
   --sim-right-w:       268px;
 
   --chart-supply:      #D3D3D8;
-  --chart-demand:      #E8197A;
-  --chart-net:         #7F77DD;
+  --chart-demand:      #B08A44;
+  --chart-net:         #56618C;
 
-  --slider-attrition:  #E8197A;
-  --slider-ai:         #7F77DD;
+  --slider-attrition:  #B08A44;
+  --slider-ai:         #56618C;
   --slider-budget:     #F59E0B;
-  --slider-growth:     #06B6D4;
+  --slider-growth:     #17694F;
 
-  --risk-critical:     #E8197A;
+  --risk-critical:     #B3402F;
   --risk-at-risk:      #F59E0B;
-  --risk-stable:       #06B6D4;
+  --risk-stable:       #17694F;
   --risk-growing:      #10B981;
 }
 
@@ -88,7 +96,7 @@ input[type="range"].sim-slider::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--thumb-color, #E8197A);
+  background: var(--thumb-color, #B08A44);
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
@@ -97,7 +105,7 @@ input[type="range"].sim-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--thumb-color, #E8197A);
+  background: var(--thumb-color, #B08A44);
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
@@ -112,6 +120,20 @@ body {
   background: var(--bg-page);
   color: var(--text-primary);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Logo marquee */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 40s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
 }
 
 @layer utilities {

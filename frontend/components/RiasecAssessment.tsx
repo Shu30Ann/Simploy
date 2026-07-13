@@ -55,19 +55,19 @@ export default function RiasecAssessment({
   };
 
   const containerClass = compact
-    ? "rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4"
-    : "rounded-lg border border-[#BAF3FF] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]";
+    ? "rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-4"
+    : "rounded-lg border border-[#CBDFD4] bg-white p-5 shadow-[0_4px_24px_rgba(70,60,35,0.08)]";
 
   return (
     <>
       <section className={containerClass} aria-label="Career interest assessment">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
               <Compass size={14} />
               Career interest check
             </p>
-            <h2 className="mt-3 text-xl font-bold text-[#1A1033]">
+            <h2 className="mt-3 text-xl font-bold text-[#1E2A44]">
               Match your work style to roles and an avatar
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#6B7280]">
@@ -82,10 +82,10 @@ export default function RiasecAssessment({
 
           <div className="flex shrink-0 flex-col gap-2 sm:min-w-[180px]">
             {activeResult && (
-              <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-4 py-3 text-center">
+              <div className="rounded-lg border border-[#E3D8BC] bg-[#FFF8FC] px-4 py-3 text-center">
                 <p className="text-4xl leading-none">{activeResult.animal}</p>
-                <p className="mt-2 text-sm font-bold text-[#1A1033]">{activeResult.animalName}</p>
-                <p className="text-xs font-bold text-[#E8197A]">
+                <p className="mt-2 text-sm font-bold text-[#1E2A44]">{activeResult.animalName}</p>
+                <p className="text-xs font-bold text-[#B08A44]">
                   {activeResult.hollandCode} - {activeResult.label}
                 </p>
               </div>
@@ -93,7 +93,7 @@ export default function RiasecAssessment({
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#E8197A] px-4 py-2 text-sm font-bold text-white"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#B08A44] px-4 py-2 text-sm font-bold text-white"
             >
               {activeResult ? "Retake test" : "Take test"}
             </button>
@@ -101,11 +101,11 @@ export default function RiasecAssessment({
         </div>
 
         {activeResult && (
-          <div className="mt-4 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
+          <div className="mt-4 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#0891B2]" />
+              <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#114F3B]" />
               <div>
-                <p className="font-bold text-[#1A1033]">{activeResult.label}</p>
+                <p className="font-bold text-[#1E2A44]">{activeResult.label}</p>
                 <p className="mt-1 text-sm leading-6 text-[#6B7280]">{activeResult.summary}</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function RiasecAssessment({
           <button
             type="button"
             onClick={handleSkip}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#E8197A]"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
           >
             Skip the test
           </button>
@@ -125,16 +125,16 @@ export default function RiasecAssessment({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1033]/55 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E2A44]/55 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="riasec-modal-title"
         >
           <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-[0_24px_80px_rgba(26,16,51,0.28)]">
-            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#F0EBF8] bg-white px-5 py-4">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#EAE3D3] bg-white px-5 py-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-[#0891B2]">Career interest check</p>
-                <h2 id="riasec-modal-title" className="mt-1 text-2xl font-bold text-[#1A1033]">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#114F3B]">Career interest check</p>
+                <h2 id="riasec-modal-title" className="mt-1 text-2xl font-bold text-[#1E2A44]">
                   Quick RIASEC test
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
@@ -144,7 +144,7 @@ export default function RiasecAssessment({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#F0EBF8] text-[#6B7280] hover:bg-[#F8F5FC]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE3D3] text-[#6B7280] hover:bg-[#F8F5FC]"
                 aria-label="Close career interest test"
               >
                 <X size={17} />
@@ -153,7 +153,7 @@ export default function RiasecAssessment({
 
             <div className="p-5">
               <div className="h-2 rounded-full bg-[#E9DFF8]">
-                <div className="h-2 rounded-full bg-[#06B6D4]" style={{ width: `${progress}%` }} />
+                <div className="h-2 rounded-full bg-[#17694F]" style={{ width: `${progress}%` }} />
               </div>
               <p className="mt-2 text-xs font-bold text-[#9CA3AF]">
                 {answeredCount}/{riasecQuestions.length} answered
@@ -163,13 +163,13 @@ export default function RiasecAssessment({
                 {riasecQuestions.map((question, index) => {
                   const profile = riasecProfiles[question.code];
                   return (
-                    <div key={question.id} className="rounded-lg border border-[#F0EBF8] bg-white p-3">
+                    <div key={question.id} className="rounded-lg border border-[#EAE3D3] bg-white p-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">
                             {index + 1}. {profile.name}
                           </p>
-                          <p className="mt-1 text-sm font-semibold leading-5 text-[#1A1033]">{question.text}</p>
+                          <p className="mt-1 text-sm font-semibold leading-5 text-[#1E2A44]">{question.text}</p>
                         </div>
                         <div className="grid grid-cols-5 gap-1.5 sm:min-w-[260px]">
                           {answerOptions.map((option) => {
@@ -181,8 +181,8 @@ export default function RiasecAssessment({
                                 onClick={() => handleAnswer(question.id, option.value)}
                                 className={`min-h-10 rounded-lg border px-2 text-xs font-bold transition ${
                                   isSelected
-                                    ? "border-[#E8197A] bg-[#E8197A] text-white"
-                                    : "border-[#E2D9F3] bg-[#FDFCFF] text-[#6B7280] hover:border-[#BAF3FF] hover:bg-[#F0FDFF]"
+                                    ? "border-[#B08A44] bg-[#B08A44] text-white"
+                                    : "border-[#DFD6C2] bg-[#F7F3EA] text-[#6B7280] hover:border-[#CBDFD4] hover:bg-[#EFF5F0]"
                                 }`}
                               >
                                 {option.label}
@@ -197,11 +197,11 @@ export default function RiasecAssessment({
               </div>
 
               {activeResult && (
-                <div className="mt-5 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
+                <div className="mt-5 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#0891B2]" />
+                    <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#114F3B]" />
                     <div>
-                      <p className="font-bold text-[#1A1033]">
+                      <p className="font-bold text-[#1E2A44]">
                         {activeResult.animal} {activeResult.hollandCode} - {activeResult.label}
                       </p>
                       <p className="mt-1 text-sm leading-6 text-[#6B7280]">{activeResult.summary}</p>
@@ -209,7 +209,7 @@ export default function RiasecAssessment({
                         {activeResult.jobThemes.map((theme) => (
                           <span
                             key={theme}
-                            className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#0891B2]"
+                            className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#114F3B]"
                           >
                             {theme}
                           </span>
@@ -224,7 +224,7 @@ export default function RiasecAssessment({
                 <button
                   type="button"
                   onClick={() => setAnswers({})}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-bold text-[#6B46C1]"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-bold text-[#6B46C1]"
                 >
                   <RotateCcw size={15} />
                   Reset answers
@@ -234,7 +234,7 @@ export default function RiasecAssessment({
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="inline-flex items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#E8197A]"
+                      className="inline-flex items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
                     >
                       Skip the test
                     </button>
@@ -242,7 +242,7 @@ export default function RiasecAssessment({
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center rounded-lg bg-[#1A1033] px-4 py-2 text-sm font-bold text-white"
+                    className="inline-flex items-center justify-center rounded-lg bg-[#1E2A44] px-4 py-2 text-sm font-bold text-white"
                   >
                     {result ? "Done" : "Close"}
                   </button>

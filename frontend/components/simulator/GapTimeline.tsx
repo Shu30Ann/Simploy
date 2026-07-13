@@ -18,9 +18,9 @@ const TIMELINE_EVENTS: TimelineEvent[] = [
 ];
 
 const SEV = {
-  critical: { dot: "#E8197A", track: "#FFD0E8", text: "#E8197A", badge: "#FFF0F5" },
+  critical: { dot: "#B08A44", track: "#E3D8BC", text: "#B08A44", badge: "#FFF0F5" },
   warning: { dot: "#F59E0B", track: "#FEE4A0", text: "#854F0B", badge: "#FFFBEB" },
-  medium: { dot: "#06B6D4", track: "#BAF3FF", text: "#0C447C", badge: "#F0FDFF" },
+  medium: { dot: "#17694F", track: "#CBDFD4", text: "#0C447C", badge: "#EFF5F0" },
 };
 
 export default function GapTimeline() {

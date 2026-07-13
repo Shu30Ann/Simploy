@@ -58,12 +58,12 @@ export function ChatWidget({
     <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
       {isOpen && (
         <section
-          className="w-[min(calc(100vw-2.5rem),380px)] overflow-hidden rounded-lg border border-[#F0EBF8] bg-white shadow-[0_24px_70px_rgba(26,16,51,0.22)]"
+          className="w-[min(calc(100vw-2.5rem),380px)] overflow-hidden rounded-lg border border-[#EAE3D3] bg-white shadow-[0_24px_70px_rgba(26,16,51,0.22)]"
           aria-label={`${title} chat`}
         >
-          <div className="flex items-start justify-between gap-3 bg-[#1A1033] px-4 py-4 text-white">
+          <div className="flex items-start justify-between gap-3 bg-[#1E2A44] px-4 py-4 text-white">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8197A]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#B08A44]">
                 <Bot size={20} />
               </div>
               <div className="min-w-0">
@@ -81,7 +81,7 @@ export function ChatWidget({
             </button>
           </div>
 
-          <div className="max-h-[360px] space-y-3 overflow-y-auto bg-[#FDFCFF] px-4 py-4">
+          <div className="max-h-[360px] space-y-3 overflow-y-auto bg-[#F7F3EA] px-4 py-4">
             {messages.map((message, index) => (
               <div
                 key={`${message.sender}-${index}`}
@@ -90,8 +90,8 @@ export function ChatWidget({
                 <p
                   className={`max-w-[82%] rounded-lg px-3 py-2 text-sm leading-6 ${
                     message.sender === "user"
-                      ? "bg-[#E8197A] text-white"
-                      : "border border-[#F0EBF8] bg-white text-[#1A1033]"
+                      ? "bg-[#B08A44] text-white"
+                      : "border border-[#EAE3D3] bg-white text-[#1E2A44]"
                   }`}
                 >
                   {message.text}
@@ -105,7 +105,7 @@ export function ChatWidget({
                   key={prompt}
                   type="button"
                   onClick={() => sendMessage(prompt)}
-                  className="rounded-full border border-[#DDD0F8] bg-white px-3 py-1.5 text-xs font-bold text-[#6B46C1] hover:border-[#E8197A] hover:text-[#E8197A]"
+                  className="rounded-full border border-[#DFD6BE] bg-white px-3 py-1.5 text-xs font-bold text-[#6B46C1] hover:border-[#B08A44] hover:text-[#B08A44]"
                 >
                   {prompt}
                 </button>
@@ -113,16 +113,16 @@ export function ChatWidget({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-[#F0EBF8] bg-white p-3">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-[#EAE3D3] bg-white p-3">
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              className="min-h-11 flex-1 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+              className="min-h-11 flex-1 rounded-lg border border-[#DFD6C2] px-3 text-sm font-semibold text-[#1E2A44] outline-none placeholder:text-[#9CA3AF] focus:border-[#B08A44]"
               placeholder={placeholder}
             />
             <button
               type="submit"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#06B6D4] text-white shadow-sm"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#17694F] text-white shadow-sm"
               aria-label={`Send message to ${title}`}
             >
               <Send size={18} />
@@ -134,7 +134,7 @@ export function ChatWidget({
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-[#E8197A] text-white shadow-[0_12px_30px_rgba(232,25,122,0.32)] transition hover:-translate-y-0.5 hover:bg-[#C91569]"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-[#B08A44] text-white shadow-[0_12px_30px_rgba(70,60,35,0.32)] transition hover:-translate-y-0.5 hover:bg-[#97742F]"
         aria-label={isOpen ? `Close ${title} chat` : `Open ${title} chat`}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={25} />}

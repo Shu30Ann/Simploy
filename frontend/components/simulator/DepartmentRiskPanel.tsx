@@ -5,9 +5,9 @@ import type { DeptRisk, SimResult } from "@/lib/simulator/types";
 
 function getRiskStyle(stability: DeptRisk["stability"]) {
   return ({
-    Critical: { color: "#E8197A" },
+    Critical: { color: "#B08A44" },
     "At Risk": { color: "#F59E0B" },
-    Stable:   { color: "#06B6D4" },
+    Stable:   { color: "#17694F" },
     Growing:  { color: "#10B981" },
   } as const)[stability];
 }

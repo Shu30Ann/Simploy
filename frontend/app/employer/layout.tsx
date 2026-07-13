@@ -15,11 +15,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <header
-        className="flex-shrink-0 border-b border-[#F0EBF8] bg-white/95 backdrop-blur"
+        className="flex-shrink-0 border-b border-[#EAE3D3] bg-white/95 backdrop-blur"
       >
         <div className="mx-auto flex min-h-20 max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex flex-wrap items-center gap-6 lg:gap-8">
-            <Link href={routes.employerDashboard} className="text-xl font-bold text-[#E8197A]">
+            <Link href={routes.employerDashboard} className="text-xl font-bold text-[#B08A44]">
               Simploy
             </Link>
 
@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <Link
                   key={n.label}
                   href={n.href}
-                  className="rounded-full px-4 py-2 transition-colors hover:bg-[#F8F5FC] hover:text-[#E8197A]"
+                  className="rounded-full px-4 py-2 transition-colors hover:bg-[#F8F5FC] hover:text-[#B08A44]"
                 >
                   {n.label}
                 </Link>
@@ -46,14 +46,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
             <Link
               href={`${routes.employerDashboard}#jobs`}
-              className="inline-flex items-center gap-2 rounded-full bg-[#E8197A] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,25,122,0.22)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#B08A44] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(70,60,35,0.22)]"
             >
               <BriefcaseBusiness size={16} />
               Post a Job
             </Link>
             <Link
               href={routes.employerSimulator}
-              className="hidden h-10 items-center justify-center rounded-full border border-[#F0EBF8] bg-white px-4 text-sm font-bold text-[#1A1033] shadow-sm transition hover:bg-[#F8F5FC] sm:inline-flex"
+              className="hidden h-10 items-center justify-center rounded-full border border-[#EAE3D3] bg-white px-4 text-sm font-bold text-[#1E2A44] shadow-sm transition hover:bg-[#F8F5FC] sm:inline-flex"
               aria-label="Open Layer 2 workforce simulator"
             >
               L2

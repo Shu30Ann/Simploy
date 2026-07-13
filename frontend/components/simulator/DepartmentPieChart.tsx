@@ -34,7 +34,7 @@ interface DeptData {
   recommendedAction:   "Hire" | "Upskill" | "Redeploy" | "Automate";
 }
 
-const DEPT_DATA: DeptData[] = ["#E8197A", "#7F77DD", "#06B6D4", "#F59E0B", "#10B981", "#C2410C"].map((color, index) => {
+const DEPT_DATA: DeptData[] = ["#B08A44", "#56618C", "#17694F", "#F59E0B", "#10B981", "#C2410C"].map((color, index) => {
   const dept = manufacturingDepartments[index];
   const deptRoles = manufacturingRoleGaps.filter((role) => role.department === dept.name);
   const largestShortage = deptRoles.reduce((min, role) => Math.min(min, role.gap), 0);
@@ -220,7 +220,7 @@ export default function DepartmentPieChart({ hasSimulated = false }: { hasSimula
         </div>
         {hasSimulated && (
           <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full border"
-            style={{ background: "var(--bg-purple-soft)", color: "#7F77DD", borderColor: "var(--purple-border)" }}>
+            style={{ background: "var(--bg-purple-soft)", color: "#56618C", borderColor: "var(--purple-border)" }}>
             Showing projected sizes
           </span>
         )}

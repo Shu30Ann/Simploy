@@ -79,9 +79,12 @@ export default function Pricing() {
     <section id="pricing" className="bg-white py-24">
       <div className="max-w-5xl mx-auto px-6">
         <div className="text-center">
-          <SectionLabel>Pricing</SectionLabel>
-          <h2 className="text-[40px] font-bold text-[#1A1033]">
-            Simple pricing. Serious results.
+          <div className="flex justify-center">
+            <SectionLabel>Pricing</SectionLabel>
+          </div>
+          <h2 className="font-serif text-[40px] font-bold text-[#1E2A44]">
+            Simple pricing. <em className="text-[#B08A44] font-medium">Serious</em>{" "}
+            results.
           </h2>
           <p className="text-lg text-[#6B7280] mt-3">
             Free for employees. Powerful for teams. Enterprise-grade for the orgs that
@@ -104,40 +107,40 @@ export default function Pricing() {
               style={
                 plan.featured
                   ? {
-                      border: "2px solid #E8197A",
+                      border: "2px solid #B08A44",
                       borderRadius: 20,
                       padding: 28,
-                      boxShadow: "0 8px 32px rgba(232,25,122,0.15)",
+                      boxShadow: "0 8px 32px rgba(70,60,35,0.15)",
                       transform: "scale(1.02)",
                     }
                   : {
-                      border: "1px solid #F0EBF8",
+                      border: "1px solid #EAE3D3",
                       borderRadius: 20,
                       padding: 28,
                     }
               }
             >
               {plan.featured && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#E8197A] text-white text-xs font-semibold rounded-full px-4 py-1">
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#B08A44] text-white text-xs font-semibold rounded-full px-4 py-1">
                   Most Popular
                 </span>
               )}
 
               <SectionLabel>{plan.label}</SectionLabel>
               <div className="flex items-end gap-1">
-                <span className="text-4xl font-bold text-[#1A1033]">{plan.price}</span>
+                <span className="text-4xl font-bold text-[#1E2A44]">{plan.price}</span>
                 {plan.priceSuffix && (
                   <span className="text-lg text-[#6B7280] mb-1">{plan.priceSuffix}</span>
                 )}
               </div>
               <p className="text-sm text-[#6B7280] mt-1 mb-6">{plan.tagline}</p>
 
-              <div className="border-t border-[#F0EBF8] my-2" />
+              <div className="border-t border-[#EAE3D3] my-2" />
 
               <div className="flex flex-col gap-3 mt-4 flex-1">
                 {plan.features.map((f) => (
                   <div key={f} className="flex items-start gap-2 text-sm text-[#6B7280]">
-                    <Check size={14} className="text-[#E8197A] mt-0.5 flex-shrink-0" />
+                    <Check size={14} className="text-[#B08A44] mt-0.5 flex-shrink-0" />
                     {f}
                   </div>
                 ))}
