@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  Building2,
   BriefcaseBusiness,
   CalendarDays,
   ChevronRight,
@@ -9,7 +10,7 @@ import {
   Search,
   Send,
 } from "lucide-react";
-import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { BackendApplication } from "@/lib/backendTypes";
 import { demoApplicationTimeline } from "@/lib/mock-data";
@@ -92,8 +93,8 @@ export default function EmployeeApplicationsPage() {
               <a href="/employee/applications" className="rounded-full bg-[#F6F1E4] px-4 py-2 text-[#B08A44]">
                 Applications
               </a>
-              <a href="/employee/dashboard#skills" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Learning Path
+              <a href="/employee/career-gps" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+                Career GPS
               </a>
             </nav>
           </div>

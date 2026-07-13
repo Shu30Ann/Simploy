@@ -14,10 +14,8 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import RiasecAssessment from "@/components/RiasecAssessment";
-import CareerGpsRoadmapPanel from "@/components/career-gps/CareerGpsRoadmapPanel";
-import CareerNorthStarPanel from "@/components/career-gps/CareerNorthStarPanel";
 import { getAuthToken, getJson, postJson } from "@/lib/api";
 import type { BackendApplication, BackendJob, EmployeeDashboardData } from "@/lib/backendTypes";
 import {
@@ -671,11 +669,8 @@ export default function EmployeeDashboardPage() {
               <a href="/employee/applications" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Applications
               </a>
-              <a href="#career-north-star" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
+              <a href="/employee/career-gps" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
                 Career GPS
-              </a>
-              <a href="#career-gps-roadmap" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Roadmap
               </a>
             </nav>
           </div>
@@ -762,12 +757,6 @@ export default function EmployeeDashboardPage() {
             </button>
           </div>
         </section>
-
-        <section id="settings" className="mt-6 scroll-mt-24">
-          <CareerNorthStarPanel />
-        </section>
-
-        <CareerGpsRoadmapPanel />
 
         <section className="mt-6">
           <RiasecAssessment
