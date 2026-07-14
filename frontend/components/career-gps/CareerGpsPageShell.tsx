@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
@@ -12,6 +13,8 @@ import {
   BriefcaseBusiness,
   CalendarCheck,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   Clock3,
   Compass,
@@ -35,6 +38,7 @@ import {
   Sparkles,
   Target,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
 import { getAuthToken, getJson, postJson, putJson } from "@/lib/api";
@@ -85,6 +89,11 @@ type JourneyNode = {
   milestone: CareerGpsMilestone | null;
   sequence: number;
   desktop: { x: number; y: number };
+};
+
+type JourneyNodeMeta = {
+  sharedCompleted: boolean;
+  changedFromRecommended: boolean;
 };
 
 type ProgressEntriesByKey = Record<string, CareerGpsProgressEntry>;
@@ -624,12 +633,12 @@ function selectedRoute(roadmap: CareerGpsRoadmap | null, routeType?: CareerGpsRo
   );
 }
 
-function strongestComponent(route: CareerGpsRoute) {
-  return [...route.score_components].sort((a, b) => b.score - a.score)[0] ?? null;
-}
-
 function weakestComponent(route: CareerGpsRoute) {
   return [...route.score_components].sort((a, b) => a.score - b.score)[0] ?? null;
+}
+
+function strongestComponent(route: CareerGpsRoute) {
+  return [...route.score_components].sort((a, b) => b.score - a.score)[0] ?? null;
 }
 
 function component(route: CareerGpsRoute, key: string) {
@@ -712,6 +721,93 @@ function confidenceLevel(score: number) {
 function componentText(componentItem: CareerGpsRouteScoreComponent | null) {
   if (!componentItem) return "Overall fit";
   return `${componentItem.label} (${Math.round(componentItem.score)}%)`;
+}
+
+function routeRiskLabel(route: CareerGpsRoute) {
+  const difficulty = metricValue(route, "transition_difficulty");
+  const lifestyle = metricValue(route, "lifestyle_fit");
+  const blendedRisk = Math.round((100 - difficulty + Math.max(0, 70 - lifestyle)) / 2);
+  if (blendedRisk >= 45) return "High career risk";
+  if (blendedRisk >= 28) return "Moderate career risk";
+  return "Lower career risk";
+}
+
+function routeSkillGapDelta(route: CareerGpsRoute, baseline: CareerGpsRoute) {
+  const baselineSkills = new Set(baseline.skill_gaps.map((gap) => normalizeSkill(gap.skill_name)));
+  const changedSkills = route.skill_gaps
+    .filter((gap) => !baselineSkills.has(normalizeSkill(gap.skill_name)))
+    .slice(0, 2)
+    .map((gap) => gap.skill_name);
+  return changedSkills.length ? changedSkills.join(", ") : "Similar priority gaps";
+}
+
+function routeBranchDecision(route: CareerGpsRoute) {
+  const transition = route.transition as { branch_decision?: string | null } | null | undefined;
+  return (
+    transition?.branch_decision ??
+    route.milestones.find((milestone) => /branch|decision/i.test(milestone.title))?.title ??
+    route.target_occupation.title
+  );
+}
+
+function routeTimelineDifference(route: CareerGpsRoute, baseline: CareerGpsRoute) {
+  const difference = route.estimated_months - baseline.estimated_months;
+  if (difference === 0) return "Same timeline";
+  return `${Math.abs(difference)} months ${difference > 0 ? "slower" : "faster"}`;
+}
+
+function routeMetricDifference(route: CareerGpsRoute, baseline: CareerGpsRoute, key: string) {
+  const difference = metricValue(route, key) - metricValue(baseline, key);
+  if (difference === 0) return "Same";
+  return `${difference > 0 ? "+" : ""}${difference} pts`;
+}
+
+function routeDestinationDifference(route: CareerGpsRoute, baseline: CareerGpsRoute) {
+  if (route.target_occupation.title === baseline.target_occupation.title) return "Same destination";
+  return route.target_occupation.title;
+}
+
+function routeMilestoneSignature(milestone: CareerGpsMilestone | null | undefined) {
+  if (!milestone) return "";
+  return [
+    milestone.sequence,
+    normalizeSkill(milestone.focus_skill_name),
+    milestone.title.trim().toLowerCase(),
+  ].join("|");
+}
+
+function milestonesMatch(left: CareerGpsMilestone | null | undefined, right: CareerGpsMilestone | null | undefined) {
+  if (!left || !right) return false;
+  return (
+    left.sequence === right.sequence ||
+    normalizeSkill(left.focus_skill_name) === normalizeSkill(right.focus_skill_name) ||
+    left.title.trim().toLowerCase() === right.title.trim().toLowerCase()
+  );
+}
+
+function isCompletedOnAnyRoute(
+  milestone: CareerGpsMilestone,
+  roadmap: CareerGpsRoadmap,
+  progressByKey: ProgressEntriesByKey,
+) {
+  return roadmap.routes.some((route) =>
+    route.milestones.some(
+      (candidate) =>
+        milestonesMatch(candidate, milestone) &&
+        progressByKey[progressKey(route.route_type, candidate.sequence)]?.status === "completed",
+    ),
+  );
+}
+
+function isChangedFutureMilestone(
+  node: JourneyNode,
+  activeRoute: CareerGpsRoute,
+  baselineRoute: CareerGpsRoute | null,
+) {
+  if (!node.milestone || !baselineRoute || activeRoute.route_type === baselineRoute.route_type) return false;
+  if (node.status === "completed" || node.status === "start" || node.status === "destination") return false;
+  const baselineMilestone = baselineRoute.milestones.find((milestone) => milestone.sequence === node.milestone?.sequence);
+  return routeMilestoneSignature(node.milestone) !== routeMilestoneSignature(baselineMilestone);
 }
 
 function todayIsoDate() {
@@ -882,13 +978,13 @@ function progressStatusTone(status: CareerGpsProgressStatus | null | undefined) 
 }
 
 function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-[#F1ECF8] ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-gradient-to-r from-[#F1ECF8] via-[#FAF8FD] to-[#F1ECF8] ${className}`} />;
 }
 
 function LoadingShell() {
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <div className="space-y-4" aria-label="Loading Career GPS">
+      <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.05)]">
         <SkeletonBlock className="h-5 w-36" />
         <SkeletonBlock className="mt-4 h-10 w-72 max-w-full" />
         <SkeletonBlock className="mt-3 h-4 w-full max-w-2xl" />
@@ -898,10 +994,13 @@ function LoadingShell() {
           <SkeletonBlock className="h-20" />
         </div>
       </section>
-      <section className="grid gap-4 lg:grid-cols-3">
-        <SkeletonBlock className="h-44" />
-        <SkeletonBlock className="h-44" />
-        <SkeletonBlock className="h-44" />
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <SkeletonBlock className="h-[420px] lg:h-[560px]" />
+        <div className="space-y-3">
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-48" />
+          <SkeletonBlock className="h-24" />
+        </div>
       </section>
     </div>
   );
@@ -909,7 +1008,7 @@ function LoadingShell() {
 
 function AlertMessage({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-[#FECACA] bg-[#FFF5F5] px-4 py-3 text-sm font-bold text-[#DC2626]">
+    <div className="flex items-start gap-2 rounded-lg border border-[#FECACA] bg-[#FFF5F5] px-4 py-3 text-sm font-bold leading-6 text-[#B91C1C]" role="alert">
       <AlertCircle size={17} className="mt-0.5 shrink-0" />
       <span>{children}</span>
     </div>
@@ -928,14 +1027,14 @@ function EmptyPanel({
   description: string;
 }) {
   return (
-    <section className="rounded-lg border border-dashed border-[#DDD0F8] bg-white p-5">
+    <section className="rounded-lg border border-dashed border-[#DDD0F8] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.04)]">
       <div className="flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#F5F0FF] text-[#6B46C1]">
           <Icon size={20} />
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
-          <h2 className="mt-1 text-lg font-bold text-[#1A1033]">{title}</h2>
+          <h2 className="mt-1 text-lg font-bold leading-6 text-[#1A1033]">{title}</h2>
           <p className="mt-2 text-sm leading-6 text-[#6B7280]">{description}</p>
         </div>
       </div>
@@ -984,66 +1083,49 @@ function CareerGpsHeader({
   const readiness = roadmap ? Math.round(roadmap.fit_score) : setupReadiness(profile);
 
   return (
-    <section className="relative overflow-hidden rounded-lg border border-[#F0EBF8] bg-white shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
-      <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-[#F0FDFF] lg:block" />
-      <div className="relative grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-7">
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+    <section className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0891B2]">
             <Compass size={14} />
             {isDemoMode ? "Career GPS Demo" : "Career GPS"}
           </p>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#1A1033] sm:text-4xl">
-            {isDemoMode ? "Aisha's Career GPS" : "Your Career GPS"}
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1033] sm:text-3xl">
+            {destination}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]">
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
             {isDemoMode
               ? "A polished hackathon demo flow from computer science student to engineering leadership."
-              : "A focused planning workspace for your destination, next best action, and upcoming career journey map."}
+              : "Your main visual route, active milestone, and next progress stops."}
           </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[520px]">
+          <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Stage</p>
+            <p className="mt-1 truncate text-sm font-bold text-[#E8197A]">{stage}</p>
+          </div>
+          <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Readiness</p>
+            <p className="mt-1 text-sm font-bold text-[#087C7E]">{readiness}% {roadmap ? "fit" : "setup"}</p>
+          </div>
+          <div className="flex gap-2">
             <Link
               href={routes.employeeSettings}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-3 text-sm font-bold text-white outline-none transition hover:bg-[#2A1B4A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
             >
               <Target size={16} />
-              Edit Goals
+              Goals
             </Link>
             <button
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-sm font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isRefreshing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-              Recalculate
+              Refresh
             </button>
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-          <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-4">
-            <p className="text-xs font-bold uppercase text-[#9CA3AF]">Current stage</p>
-            <p className="mt-2 text-lg font-bold text-[#E8197A]">{stage}</p>
-            <p className="mt-1 text-xs font-semibold text-[#6B7280]">
-              {profile.employee.experience_years} years experience
-            </p>
-          </div>
-          <div className="rounded-lg border border-[#BAF3FF] bg-white p-4">
-            <p className="text-xs font-bold uppercase text-[#9CA3AF]">Main destination</p>
-            <p className="mt-2 text-lg font-bold text-[#1A1033]">{destination}</p>
-            <p className="mt-1 text-xs font-semibold text-[#0891B2]">
-              {profile.north_star.target_industry ?? "Industry not set"}
-            </p>
-          </div>
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
-            <p className="text-xs font-bold uppercase text-[#9CA3AF]">Readiness</p>
-            <div className="mt-2 flex items-end gap-2">
-              <p className="text-2xl font-bold text-[#1A1033]">{readiness}%</p>
-              <p className="pb-1 text-xs font-bold text-[#6B7280]">{roadmap ? "roadmap fit" : "profile setup"}</p>
-            </div>
-            <div className="mt-3 h-2 rounded-full bg-[#F0EBF8]">
-              <div className="h-2 rounded-full bg-[#E8197A]" style={{ width: `${Math.max(0, Math.min(100, readiness))}%` }} />
-            </div>
           </div>
         </div>
       </div>
@@ -1339,185 +1421,89 @@ function MetricBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-function RouteComparisonRow({
-  label,
-  selected,
-  recommended,
-}: {
-  label: string;
-  selected: string;
-  recommended: string;
-}) {
-  const changed = selected !== recommended;
+function RouteSelectorMetric({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="grid gap-2 rounded-lg border border-[#F0EBF8] bg-white p-3 md:grid-cols-[150px_minmax(0,1fr)_minmax(0,1fr)]">
-      <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
-      <p className={`text-sm font-bold leading-6 ${changed ? "text-[#E8197A]" : "text-[#1A1033]"}`}>{selected}</p>
-      <p className="text-sm font-semibold leading-6 text-[#6B7280]">{recommended}</p>
+    <div className="rounded-md bg-white/80 px-2 py-1.5">
+      <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+      <div className="mt-0.5 line-clamp-2 text-xs font-bold leading-4 text-[#1A1033]">{value}</div>
     </div>
   );
 }
 
-function RouteCard({
-  route,
-  selected,
-  isSaving,
-  onSelect,
-}: {
-  route: CareerGpsRoute;
-  selected: boolean;
-  isSaving: boolean;
-  onSelect: () => void;
-}) {
-  const tone = routeTone[route.route_type];
-  const advantage = strongestComponent(route);
-  const tradeoff = weakestComponent(route);
-  const skillReadiness = metricValue(route, "skill_fit");
-  const lifestyleFit = metricValue(route, "lifestyle_fit");
-  const marketOpportunity = metricValue(route, "market_opportunity");
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={isSaving}
-      aria-pressed={selected}
-      className={`flex h-full min-h-[400px] flex-col rounded-lg border bg-white p-4 text-left shadow-[0_4px_24px_rgba(232,25,122,0.08)] outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-wait disabled:opacity-75 ${
-        selected ? `${tone.border} ring-2 ${tone.ring}` : "border-[#F0EBF8] hover:-translate-y-0.5 hover:border-[#DDD0F8] hover:bg-[#FDFCFF] hover:shadow-[0_8px_32px_rgba(26,16,51,0.08)]"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${tone.bg} ${tone.accent} ${tone.border}`}>
-          <Route size={14} />
-          {routeLabels[route.route_type]}
-        </span>
-        {route.route_type === "recommended" && (
-          <span className="rounded-full bg-[#1A1033] px-2.5 py-1 text-xs font-bold text-white">Recommended</span>
-        )}
-      </div>
-
-      <div className="mt-4 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-bold leading-tight text-[#1A1033]">{route.target_occupation.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-[#6B7280]">{route.summary}</p>
-        </div>
-        {selected && <CheckCircle2 size={22} className="shrink-0 text-[#10B981]" aria-label="Selected route" />}
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg bg-[#FDFCFF] p-3">
-          <p className="flex items-center gap-1 text-xs font-bold uppercase text-[#9CA3AF]">
-            <Clock3 size={13} />
-            Timeline
-          </p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{route.estimated_months} months</p>
-        </div>
-        <div className="rounded-lg bg-[#FDFCFF] p-3">
-          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Confidence</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{confidenceLevel(route.score)}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-3 text-xs font-semibold leading-5 text-[#6B7280]">
-        <p>
-          <span className="font-bold text-[#059669]">Main advantage:</span> {componentText(advantage)}
-        </p>
-        <p>
-          <span className="font-bold text-[#DC2626]">Main trade-off:</span> {componentText(tradeoff)}
-        </p>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        <MetricBar label="Skill readiness" value={skillReadiness} />
-        <MetricBar label="Lifestyle fit" value={lifestyleFit} />
-        <MetricBar label="Market opportunity" value={marketOpportunity} />
-      </div>
-
-      <div className="mt-auto pt-4">
-        <span
-          className={`inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-bold ${
-            selected ? "bg-[#1A1033] text-white" : "bg-[#F8F5FC] text-[#6B46C1]"
-          }`}
-        >
-          {selected ? "Active route" : "Select route"}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function RouteComparison({
-  roadmap,
+function RouteComparisonMatrix({
+  routes: routeOptions,
   activeRoute,
 }: {
-  roadmap: CareerGpsRoadmap;
+  routes: CareerGpsRoute[];
   activeRoute: CareerGpsRoute;
 }) {
-  const recommended = roadmap.routes.find((route) => route.route_type === "recommended") ?? activeRoute;
-  const activeAdvantage = strongestComponent(activeRoute);
-  const activeTradeoff = weakestComponent(activeRoute);
-  const recommendedAdvantage = strongestComponent(recommended);
-  const recommendedTradeoff = weakestComponent(recommended);
+  const baseline = routeOptions.find((route) => route.route_type === "recommended") ?? routeOptions[0] ?? activeRoute;
+  const rows = [
+    {
+      label: "Timeline",
+      value: (route: CareerGpsRoute) => routeTimelineDifference(route, baseline),
+    },
+    {
+      label: "Skill gaps",
+      value: (route: CareerGpsRoute) => routeSkillGapDelta(route, baseline),
+    },
+    {
+      label: "Lifestyle",
+      value: (route: CareerGpsRoute) => routeMetricDifference(route, baseline, "lifestyle_fit"),
+    },
+    {
+      label: "Career risk",
+      value: (route: CareerGpsRoute) => routeRiskLabel(route),
+    },
+    {
+      label: "Destination",
+      value: (route: CareerGpsRoute) => routeDestinationDifference(route, baseline),
+    },
+  ];
 
   return (
-    <div className="mt-5 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <div className="mt-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Route comparison</p>
-          <h3 className="mt-1 text-xl font-bold text-[#1A1033]">
-            {routeLabels[activeRoute.route_type]} vs Recommended Route
-          </h3>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-            The active route changes the balance of timeline, preparation effort, lifestyle fit, and opportunity signals.
+          <p className="mt-1 text-sm font-semibold leading-5 text-[#6B7280]">
+            Differences are shown against the Recommended Route baseline and use stored route data only.
           </p>
         </div>
-        <div className="rounded-lg bg-white px-4 py-3">
-          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active route</p>
-          <p className="mt-1 text-sm font-bold text-[#E8197A]">{routeLabels[activeRoute.route_type]}</p>
-        </div>
+        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-[#6B46C1]">
+          Active: {routeLabels[activeRoute.route_type]}
+        </span>
       </div>
 
-      <div className="mt-4 grid gap-3">
-        <div className="hidden rounded-lg px-3 text-xs font-bold uppercase tracking-wide text-[#9CA3AF] md:grid md:grid-cols-[150px_minmax(0,1fr)_minmax(0,1fr)]">
-          <span>Signal</span>
-          <span>Active route</span>
-          <span>Recommended route</span>
+      <div className="mt-3 overflow-x-auto">
+        <div className="min-w-[720px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-white">
+          <div className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#F0EBF8] bg-[#F8F5FC] text-xs font-bold uppercase text-[#9CA3AF]">
+            <div className="px-3 py-2">Signal</div>
+            {routeOptions.map((route) => (
+              <div
+                key={route.route_type}
+                className={`px-3 py-2 ${route.route_type === activeRoute.route_type ? routeTone[route.route_type].accent : ""}`}
+              >
+                {routeLabels[route.route_type]}
+              </div>
+            ))}
+          </div>
+          {rows.map((row) => (
+            <div key={row.label} className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#F0EBF8] last:border-b-0">
+              <div className="px-3 py-2 text-xs font-bold uppercase text-[#9CA3AF]">{row.label}</div>
+              {routeOptions.map((route) => (
+                <div
+                  key={`${row.label}-${route.route_type}`}
+                  className={`px-3 py-2 text-xs font-semibold leading-5 ${
+                    route.route_type === activeRoute.route_type ? "bg-[#FFF8FC] text-[#1A1033]" : "text-[#6B7280]"
+                  }`}
+                >
+                  {row.value(route)}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
-        <RouteComparisonRow
-          label="Timeline"
-          selected={`${activeRoute.estimated_months} months`}
-          recommended={`${recommended.estimated_months} months`}
-        />
-        <RouteComparisonRow
-          label="Advantage"
-          selected={componentText(activeAdvantage)}
-          recommended={componentText(recommendedAdvantage)}
-        />
-        <RouteComparisonRow
-          label="Trade-off"
-          selected={componentText(activeTradeoff)}
-          recommended={componentText(recommendedTradeoff)}
-        />
-        <RouteComparisonRow
-          label="Readiness"
-          selected={`${metricValue(activeRoute, "skill_fit")}% skill readiness`}
-          recommended={`${metricValue(recommended, "skill_fit")}% skill readiness`}
-        />
-        <RouteComparisonRow
-          label="Lifestyle"
-          selected={`${metricValue(activeRoute, "lifestyle_fit")}% lifestyle fit`}
-          recommended={`${metricValue(recommended, "lifestyle_fit")}% lifestyle fit`}
-        />
-        <RouteComparisonRow
-          label="Opportunity"
-          selected={`${metricValue(activeRoute, "market_opportunity")}% market opportunity`}
-          recommended={`${metricValue(recommended, "market_opportunity")}% market opportunity`}
-        />
-      </div>
-
-      <div className="mt-4 rounded-lg border border-[#BAF3FF] bg-white p-4">
-        <p className="text-xs font-bold uppercase text-[#0891B2]">Why this route is different</p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{activeRoute.explanation}</p>
       </div>
     </div>
   );
@@ -1561,75 +1547,101 @@ function RouteSelectorShell({
   }
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
-            <Route size={14} />
-            Route selector
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Choose a route view</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-            Switching routes updates your active route only. It does not regenerate the deterministic roadmap.
-          </p>
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E0F9FF] text-[#0891B2]">
+            <Route size={18} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Route selector</p>
+            <h2 className="truncate text-lg font-bold text-[#1A1033]">{activeRoute.title}</h2>
+          </div>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
-          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Roadmap version</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">Version {roadmap.version}</p>
+
+        <div className="grid gap-3 lg:grid-cols-3 xl:min-w-[880px]">
+          {roadmap.routes.map((route) => {
+            const selected = route.route_type === selectedRouteType;
+            const tone = routeTone[route.route_type];
+            const advantage = strongestComponent(route);
+            const tradeoff = weakestComponent(route);
+            return (
+              <button
+                key={route.route_type}
+                type="button"
+                onClick={() => onSelectRoute(route.route_type)}
+                disabled={isSavingSelectedRoute}
+                aria-pressed={selected}
+                className={`min-h-[184px] rounded-lg border px-3 py-3 text-left outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70 ${
+                  selected
+                    ? `${tone.border} ${tone.bg} ring-2 ${tone.ring} shadow-[0_8px_24px_rgba(26,16,51,0.07)]`
+                    : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8] hover:shadow-[0_8px_24px_rgba(26,16,51,0.06)]"
+                }`}
+              >
+                <span className={`flex items-center justify-between gap-2 text-xs font-bold ${selected ? tone.accent : "text-[#6B7280]"}`}>
+                  {routeLabels[route.route_type]}
+                  {selected && <CheckCircle2 size={15} className="shrink-0 text-[#10B981]" />}
+                </span>
+                <span className="mt-1 block line-clamp-2 text-sm font-bold leading-5 text-[#1A1033]">
+                  {route.target_occupation.title}
+                </span>
+                <span className="mt-1 block line-clamp-2 text-xs font-semibold leading-5 text-[#8A7AA8]">
+                  Branch: {routeBranchDecision(route)}
+                </span>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <RouteSelectorMetric label="Timeline" value={`${route.estimated_months} months`} />
+                  <RouteSelectorMetric label="Overall fit" value={`${Math.round(route.score)}%`} />
+                  <RouteSelectorMetric label="Advantage" value={componentText(advantage)} />
+                  <RouteSelectorMetric label="Trade-off" value={componentText(tradeoff)} />
+                  <RouteSelectorMetric label="Confidence" value={confidenceLevel(route.score)} />
+                  <RouteSelectorMetric label="Risk" value={routeRiskLabel(route)} />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {routeSelectionError && (
-        <div className="mt-4">
+        <div className="mt-3">
           <AlertMessage>{routeSelectionError}</AlertMessage>
         </div>
       )}
-
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        {roadmap.routes.map((route) => (
-          <RouteCard
-            key={route.route_type}
-            route={route}
-            selected={route.route_type === selectedRouteType}
-            isSaving={isSavingSelectedRoute}
-            onSelect={() => onSelectRoute(route.route_type)}
-          />
-        ))}
-      </div>
-
-      {activeRoute && <RouteComparison roadmap={roadmap} activeRoute={activeRoute} />}
+      <RouteComparisonMatrix routes={roadmap.routes} activeRoute={activeRoute} />
     </section>
   );
 }
 
 function nodePositions(milestoneCount: number) {
   const milestoneSlots = Math.max(1, milestoneCount);
-  const yPattern = [34, 58, 42, 65, 36, 55];
+  const yPattern = [28, 64, 36, 70, 32, 60, 42, 66];
   return {
-    start: { x: 11, y: 62 },
+    start: { x: 7, y: 54 },
     milestones: Array.from({ length: milestoneCount }, (_, index) => ({
-      x: 24 + ((index + 0.5) * 56) / milestoneSlots,
+      x: 18 + ((index + 0.5) * 61) / milestoneSlots,
       y: yPattern[index % yPattern.length],
     })),
-    destination: { x: 90, y: 42 },
+    destination: { x: 93, y: 46 },
   };
 }
 
-function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntriesByKey, demoMode = false) {
+function buildJourneyNodes(
+  route: CareerGpsRoute,
+  progressByKey: ProgressEntriesByKey,
+  demoMode = false,
+  roadmap: CareerGpsRoadmap | null = null,
+) {
   const positions = nodePositions(route.milestones.length);
   const readiness = readinessFromRoute(route);
   const activeProgressIndex = route.milestones.findIndex(
     (milestone) => progressByKey[progressKey(route.route_type, milestone.sequence)]?.status === "in_progress",
   );
   const firstIncompleteIndex = route.milestones.findIndex(
-    (milestone) => progressByKey[progressKey(route.route_type, milestone.sequence)]?.status !== "completed",
+    (milestone) =>
+      progressByKey[progressKey(route.route_type, milestone.sequence)]?.status !== "completed" &&
+      !(roadmap && isCompletedOnAnyRoute(milestone, roadmap, progressByKey)),
   );
   const activeIndex = activeProgressIndex >= 0 ? activeProgressIndex : firstIncompleteIndex;
-  const allMilestonesCompleted =
-    route.milestones.length > 0 &&
-    route.milestones.every(
-      (milestone) => progressByKey[progressKey(route.route_type, milestone.sequence)]?.status === "completed",
-    );
   const milestoneNodes: JourneyNode[] = route.milestones.map((milestone, index) => ({
     id: `${route.route_type}-milestone-${milestone.sequence}`,
     title: milestone.title,
@@ -1637,7 +1649,8 @@ function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntries
     timing: milestoneTiming(milestone, route),
     readiness,
     status:
-      progressByKey[progressKey(route.route_type, milestone.sequence)]?.status === "completed"
+      progressByKey[progressKey(route.route_type, milestone.sequence)]?.status === "completed" ||
+      (roadmap && isCompletedOnAnyRoute(milestone, roadmap, progressByKey))
         ? "completed"
         : index === activeIndex
           ? "active"
@@ -1670,7 +1683,7 @@ function buildJourneyNodes(route: CareerGpsRoute, progressByKey: ProgressEntries
       stage: route.target_occupation.seniority_level ?? "Destination",
       timing: `${route.estimated_months} months`,
       readiness: Math.round(route.score),
-      status: allMilestonesCompleted || !route.milestones.length ? "active" : "destination",
+      status: "destination",
       missingRequirement: route.skill_gaps[0]?.skill_name ?? "Role evidence",
       milestone: null,
       sequence: route.milestones.length + 1,
@@ -1688,92 +1701,234 @@ function pathFromNodes(nodes: JourneyNode[]) {
   }, `M ${nodes[0].desktop.x} ${nodes[0].desktop.y}`);
 }
 
+function pathBetweenNodes(from: JourneyNode, to: JourneyNode) {
+  const midX = (from.desktop.x + to.desktop.x) / 2;
+  return `M ${from.desktop.x} ${from.desktop.y} C ${midX} ${from.desktop.y}, ${midX} ${to.desktop.y}, ${to.desktop.x} ${to.desktop.y}`;
+}
+
+function pathThroughNodeIndexes(nodes: JourneyNode[], indexes: number[]) {
+  const ordered = indexes
+    .filter((index) => index >= 0 && index < nodes.length)
+    .sort((a, b) => a - b);
+  if (!ordered.length) return "";
+  return pathFromNodes(ordered.map((index) => nodes[index]));
+}
+
+function segmentProgressForNode(route: CareerGpsRoute, node: JourneyNode, progressByKey: ProgressEntriesByKey) {
+  if (!node.milestone) return node.status === "start" || node.status === "completed" ? 1 : 0;
+  if (progressByKey[progressKey(route.route_type, node.milestone.sequence)]?.status === "completed") return 1;
+  if (!node.milestone.actions.length) return 0;
+  const actionProgress = node.milestone.actions.map((action) =>
+    readinessScoreForStatus(progressByKey[progressKey(route.route_type, node.milestone!.sequence, action.sequence)]?.status),
+  );
+  return Math.max(0.08, actionProgress.reduce((total, score) => total + score, 0) / actionProgress.length / 100);
+}
+
 function nodeButtonStyles(node: JourneyNode, selected: boolean) {
-  if (node.status === "start") return "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]";
+  if (node.status === "start") return "border-[#BAF3FF] bg-[#E0F9FF] text-[#087C7E]";
   if (node.status === "completed") return "border-[#10B981] bg-[#10B981] text-white";
   if (node.status === "active") return selected ? "border-[#E8197A] bg-[#E8197A] text-white" : "border-[#E8197A] bg-white text-[#E8197A]";
-  if (node.status === "locked") return "border-[#E2D9F3] bg-[#F8F5FC] text-[#9CA3AF]";
+  if (node.status === "locked") return "border-[#D7D0E7] bg-[#F2EEF8] text-[#8A7AA8]";
   if (node.status === "destination") return "border-[#1A1033] bg-[#1A1033] text-white";
   return selected ? "border-[#6B46C1] bg-[#F5F0FF] text-[#6B46C1]" : "border-[#DDD0F8] bg-white text-[#6B46C1]";
+}
+
+function isDecisionNode(node: JourneyNode) {
+  return /branch|decision/i.test(node.title);
+}
+
+function nodeStateLabel(node: JourneyNode, next: boolean) {
+  if (isDecisionNode(node)) return "Decision point";
+  if (next) return "Next milestone";
+  if (node.status === "active") return "Current milestone";
+  return statusLabel(node.status);
 }
 
 function JourneyCurrentMarker({
   riasecResult,
   employeeName,
   routeColor,
+  reduceMotion,
 }: {
   riasecResult: RiasecResult | null;
   employeeName: string;
   routeColor: string;
+  reduceMotion: boolean;
 }) {
   const label = riasecResult
     ? `${riasecResult.animalName} / ${riasecResult.hollandCode} / ${riasecResult.label}`
     : `${employeeName || "Employee"} current position`;
 
   return (
-    <div
-      className="absolute -right-3 -top-4 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-white text-base font-bold text-[#1A1033]"
-      style={{ boxShadow: `0 0 0 4px ${routeColor}33, 0 8px 22px rgba(26,16,51,0.18)` }}
+    <motion.div
+      layoutId="career-gps-current-marker"
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.92, y: 6 }}
+      animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="absolute left-1/2 top-[-42px] flex -translate-x-1/2 items-center gap-1 rounded-full border border-white bg-white px-1.5 py-1 text-[#1A1033]"
+      style={{ boxShadow: `0 0 0 3px ${routeColor}24, 0 8px 22px rgba(26,16,51,0.16)` }}
       title={label}
       aria-label={label}
     >
-      {riasecResult?.animal ? riasecResult.animal : <MapPin size={17} aria-hidden="true" />}
-    </div>
+      <span className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-black" style={{ backgroundColor: `${routeColor}18` }}>
+        {riasecResult?.animal ? riasecResult.animal : <MapPin size={15} aria-hidden="true" />}
+      </span>
+      <span className="whitespace-nowrap pr-1 text-[10px] font-black uppercase text-[#1A1033]">You are here</span>
+    </motion.div>
   );
 }
 
 function JourneyMilestoneButton({
   node,
+  meta,
   selected,
   active,
+  next,
+  dimmed,
   riasecResult,
   employeeName,
   routeColor,
+  reduceMotion,
   onSelect,
 }: {
   node: JourneyNode;
+  meta: JourneyNodeMeta;
   selected: boolean;
   active: boolean;
+  next: boolean;
+  dimmed: boolean;
   riasecResult: RiasecResult | null;
   employeeName: string;
   routeColor: string;
+  reduceMotion: boolean;
   onSelect: () => void;
 }) {
   const locked = node.status === "locked";
-  const Icon = node.status === "destination" ? Target : node.status === "start" ? BriefcaseBusiness : locked ? Lock : null;
+  const decisionPoint = isDecisionNode(node);
+  const Icon = node.status === "destination" ? Flag : node.status === "start" ? BriefcaseBusiness : locked ? Lock : decisionPoint ? GitBranch : null;
+  const labelAbove = node.status !== "start" && node.status !== "destination" && node.sequence % 2 === 0;
+  const nodeSize = active ? "h-14 w-14 text-base" : "h-12 w-12 text-sm";
+  const requirementText = locked ? `Requirement: ${node.missingRequirement}` : next ? node.missingRequirement : null;
+  const destinationText = node.status === "destination" ? `${node.stage} / ${confidenceLevel(node.readiness)}` : null;
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onSelect}
       disabled={locked}
       aria-pressed={selected}
-      aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${statusLabel(node.status)}, missing requirement ${node.missingRequirement}`}
-      className="group absolute z-10 flex w-[158px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed"
+      title={requirementText ?? destinationText ?? `${node.title}: ${nodeStateLabel(node, next)}`}
+      aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${nodeStateLabel(node, next)}, ${requirementText ?? `missing requirement ${node.missingRequirement}`}`}
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.95, y: 8 }}
+      animate={reduceMotion ? { opacity: dimmed ? 0.42 : 1 } : { opacity: dimmed ? 0.42 : 1, scale: 1, y: 0 }}
+      whileHover={reduceMotion || locked ? undefined : { scale: 1.035 }}
+      whileFocus={reduceMotion || locked ? undefined : { scale: 1.035 }}
+      transition={{ duration: 0.24, ease: "easeOut", delay: reduceMotion ? 0 : Math.min(node.sequence * 0.045, 0.28) }}
+      className={`group absolute z-10 flex w-[152px] -translate-x-1/2 -translate-y-1/2 items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+        labelAbove ? "flex-col-reverse" : "flex-col"
+      }`}
       style={{ left: `${node.desktop.x}%`, top: `${node.desktop.y}%` }}
     >
       <span
-        className={`relative flex h-12 w-12 items-center justify-center rounded-full border-4 text-sm font-black shadow-sm transition group-hover:scale-105 ${nodeButtonStyles(
+        className={`relative flex ${nodeSize} items-center justify-center border-4 font-black shadow-sm transition group-hover:scale-105 ${
+          decisionPoint ? "rotate-45 rounded-lg" : "rounded-full"
+        } ${nodeButtonStyles(
           node,
           selected,
-        )} ${selected ? "ring-4 ring-[#E8197A]/20" : ""}`}
+        )} ${selected ? "ring-4 ring-[#E8197A]/20" : ""} ${next ? "ring-4 ring-[#06B6D4]/25" : ""}`}
       >
-        {Icon ? <Icon size={18} /> : node.status === "completed" ? <CheckCircle2 size={18} /> : node.sequence}
+        {active && (
+          <motion.span
+            className={`absolute inset-[-8px] -z-10 border-2 border-[#E8197A]/30 ${decisionPoint ? "rounded-lg" : "rounded-full"}`}
+            initial={reduceMotion ? false : { opacity: 0.5, scale: 0.9 }}
+            animate={reduceMotion ? { opacity: 0.35 } : { opacity: [0.5, 0.12], scale: [0.9, 1.25] }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        )}
+        {next && !active && (
+          <motion.span
+            className={`absolute inset-[-6px] -z-10 border-2 border-[#06B6D4]/35 ${decisionPoint ? "rounded-lg" : "rounded-full"}`}
+            initial={reduceMotion ? false : { opacity: 0.42, scale: 0.92 }}
+            animate={reduceMotion ? { opacity: 0.28 } : { opacity: [0.42, 0.06], scale: [0.92, 1.18] }}
+            transition={{ duration: 0.72, ease: "easeOut", delay: 0.45 }}
+          />
+        )}
+        <span className={decisionPoint ? "-rotate-45" : ""}>
+          {Icon ? (
+            <Icon size={active ? 22 : 18} />
+          ) : node.status === "completed" ? (
+            <motion.span
+              initial={reduceMotion ? false : { scale: 0.65, rotate: -12 }}
+              animate={reduceMotion ? { scale: 1 } : { scale: [0.65, 1.18, 1], rotate: [-12, 4, 0] }}
+              transition={{ duration: 0.32, ease: "easeOut" }}
+              className="flex"
+            >
+              <CheckCircle2 size={18} />
+            </motion.span>
+          ) : (
+            node.sequence
+          )}
+        </span>
         {active && (
           <JourneyCurrentMarker
             riasecResult={riasecResult}
             employeeName={employeeName}
             routeColor={routeColor}
+            reduceMotion={reduceMotion}
           />
         )}
       </span>
-      <span className="mt-2 line-clamp-2 min-h-9 rounded-md bg-white/90 px-2 text-xs font-bold leading-[18px] text-[#1A1033] shadow-sm">
-        {node.title}
+      <span className={`${labelAbove ? "mb-2" : "mt-2"} max-w-full`}>
+        <span className="line-clamp-2 min-h-9 rounded-md bg-white/95 px-2 text-xs font-bold leading-[18px] text-[#1A1033] shadow-sm ring-1 ring-[#F0EBF8]">
+          {node.title}
+        </span>
+        <span
+          className={`mt-1 inline-flex rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-bold uppercase shadow-sm ${
+            node.status === "completed"
+              ? "text-[#059669]"
+              : active
+                ? "text-[#E8197A]"
+                : next
+                  ? "text-[#0891B2]"
+                  : locked
+                    ? "text-[#8A7AA8]"
+                    : "text-[#6B7280]"
+          }`}
+        >
+          {nodeStateLabel(node, next)}
+        </span>
+        {active && (
+          <span className="mt-1 inline-flex rounded-full bg-[#FFF0F8] px-2 py-0.5 text-[11px] font-black text-[#E8197A] shadow-sm">
+            {node.readiness}% ready
+          </span>
+        )}
+        {next && requirementText && (
+          <span className="mt-1 line-clamp-1 rounded-md bg-[#E0F9FF] px-2 py-0.5 text-[11px] font-bold text-[#087C7E] shadow-sm">
+            Needs {requirementText}
+          </span>
+        )}
+        {meta.sharedCompleted && (
+          <span className="mt-1 line-clamp-1 rounded-md bg-[#ECFDF5] px-2 py-0.5 text-[11px] font-bold text-[#047857] shadow-sm">
+            Completed on matching route
+          </span>
+        )}
+        {meta.changedFromRecommended && (
+          <span className="mt-1 line-clamp-1 rounded-md bg-[#FFF8FC] px-2 py-0.5 text-[11px] font-bold text-[#E8197A] shadow-sm">
+            Changed future stop
+          </span>
+        )}
+        {locked && (
+          <span className="mt-1 line-clamp-1 rounded-md bg-[#F2EEF8] px-2 py-0.5 text-[11px] font-bold text-[#8A7AA8] shadow-sm">
+            {requirementText}
+          </span>
+        )}
+        {node.status === "destination" && (
+          <span className="mt-1 line-clamp-1 rounded-md bg-[#F7F3EA] px-2 py-0.5 text-[11px] font-bold text-[#B08A44] shadow-sm">
+            {destinationText}
+          </span>
+        )}
       </span>
-      <span className="mt-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold uppercase text-[#6B7280] shadow-sm">
-        {node.timing}
-      </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -1784,6 +1939,26 @@ function DetailBlock({ label, value }: { label: string; value: ReactNode }) {
       <div className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{value}</div>
     </div>
   );
+}
+
+function DetailMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+      <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+      <p className="mt-1 truncate text-sm font-black text-[#1A1033]">{value}</p>
+    </div>
+  );
+}
+
+function milestoneEvidenceReadinessFromDetail(
+  node: JourneyNode,
+  milestoneProgress: CareerGpsProgressEntry | null,
+  actionProgressEntries: Array<CareerGpsProgressEntry | null>,
+) {
+  if (milestoneProgress?.status === "completed") return 100;
+  const actionScores = actionProgressEntries.map((entry) => readinessScoreForStatus(entry?.status));
+  if (!actionScores.length) return node.readiness;
+  return Math.round(actionScores.reduce((total, value) => total + value, 0) / actionScores.length);
 }
 
 function ChipList({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
@@ -1814,6 +1989,7 @@ function ActionProgressEditor({
   isSaving: boolean;
   onSaveProgress: SaveProgressHandler;
 }) {
+  const reduceMotion = useReducedMotion() ?? false;
   const [notes, setNotes] = useState(progress?.notes ?? "");
   const [evidenceUrl, setEvidenceUrl] = useState(progress?.evidence_url ?? "");
   const [completedAt, setCompletedAt] = useState(progress?.completed_at?.slice(0, 10) ?? "");
@@ -1834,16 +2010,38 @@ function ActionProgressEditor({
       evidence_url: evidenceUrl,
       completed_at: statusValue === "completed" ? completedAt || todayIsoDate() : null,
     });
+  const isStarted = progress?.status === "in_progress" || progress?.status === "completed";
 
   return (
-    <div className="rounded-lg border border-[#F0EBF8] bg-white p-3">
+    <motion.div
+      layout
+      animate={
+        reduceMotion
+          ? { opacity: 1 }
+          : progress?.status === "completed"
+            ? { scale: [1, 1.015, 1], borderColor: ["#F0EBF8", "#10B981", "#F0EBF8"] }
+            : { scale: 1 }
+      }
+      transition={{ duration: 0.36, ease: "easeOut" }}
+      className="rounded-lg border border-[#F0EBF8] bg-white p-3"
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">{action.action_type}</p>
           <h4 className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{action.title}</h4>
           {action.description && <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">{action.description}</p>}
         </div>
-        <span className="rounded-full bg-[#F5F0FF] px-2.5 py-1 text-xs font-bold text-[#6B46C1]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#F5F0FF] px-2.5 py-1 text-xs font-bold text-[#6B46C1]">
+          {progress?.status === "completed" && (
+            <motion.span
+              initial={reduceMotion ? false : { scale: 0, rotate: -18 }}
+              animate={reduceMotion ? { scale: 1 } : { scale: [0, 1.2, 1], rotate: [-18, 8, 0] }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+              className="flex text-[#10B981]"
+            >
+              <CheckCircle2 size={13} />
+            </motion.span>
+          )}
           {progressStatusLabel(progress?.status)}
         </span>
       </div>
@@ -1855,13 +2053,13 @@ function ActionProgressEditor({
           rows={2}
           maxLength={600}
           placeholder="Short progress note"
-          className="w-full rounded-lg border border-[#E2D9F3] px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+          className="w-full rounded-lg border border-[#E2D9F3] px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
         />
         <input
           value={evidenceUrl}
           onChange={(event) => setEvidenceUrl(event.target.value)}
           placeholder="Evidence URL or internal proof link"
-          className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+          className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
         />
         <label className="grid gap-1 text-xs font-bold uppercase text-[#9CA3AF]">
           Completion date
@@ -1869,38 +2067,49 @@ function ActionProgressEditor({
             type="date"
             value={completedAt}
             onChange={(event) => setCompletedAt(event.target.value)}
-            className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold normal-case text-[#1A1033] outline-none focus:border-[#E8197A]"
+            className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold normal-case text-[#1A1033] outline-none focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
           />
         </label>
       </div>
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-4">
-        {(["not_started", "in_progress", "completed"] as CareerGpsProgressStatus[]).map((statusValue) => (
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        {!isStarted && (
+          <button
+            type="button"
+            onClick={() => save("in_progress")}
+            disabled={isSaving}
+            className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#E8197A] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#CC146A] focus-visible:ring-2 focus-visible:ring-[#1A1033] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+          >
+            <Play size={13} />
+            Start action
+          </button>
+        )}
+        {(["in_progress", "completed"] as CareerGpsProgressStatus[]).map((statusValue) => (
           <button
             key={statusValue}
             type="button"
             onClick={() => save(statusValue)}
             disabled={isSaving}
-            className={`rounded-lg border px-2 py-2 text-xs font-bold transition disabled:cursor-wait disabled:opacity-60 ${
+            className={`rounded-lg border px-2 py-2 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
               progress?.status === statusValue
                 ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
                 : "border-[#DDD0F8] bg-white text-[#6B46C1] hover:border-[#E8197A]"
             }`}
           >
-            {progressStatusLabel(statusValue)}
+            {statusValue === "in_progress" ? "Mark in progress" : "Mark complete"}
           </button>
         ))}
         <button
           type="button"
           onClick={() => save(progress?.status ?? "not_started")}
           disabled={isSaving}
-          className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#1A1033] px-2 py-2 text-xs font-bold text-white disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#1A1033] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#2A1B4A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
           Save
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1915,6 +2124,11 @@ function JourneyDetailPanel({
   isSavingProgress,
   progressError,
   onSaveProgress,
+  onClose,
+  onPrevious,
+  onNext,
+  canPrevious,
+  canNext,
 }: {
   node: JourneyNode;
   route: CareerGpsRoute;
@@ -1926,7 +2140,13 @@ function JourneyDetailPanel({
   isSavingProgress: boolean;
   progressError: string | null;
   onSaveProgress: SaveProgressHandler;
+  onClose: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+  canPrevious: boolean;
+  canNext: boolean;
 }) {
+  const reduceMotion = useReducedMotion() ?? false;
   const milestone = node.milestone;
   const routeRoles = roadmap.routes.map((item) => item.target_occupation.title);
   const requiredSkills = milestoneDetail?.required_skills ?? route.skill_gaps.map((gap) => gap.skill_name);
@@ -1940,6 +2160,11 @@ function JourneyDetailPanel({
     !!milestone &&
     milestone.actions.length > 0 &&
     actionProgressEntries.every((entry) => entry?.status === "completed");
+  const readiness = milestone ? milestoneEvidenceReadinessFromDetail(node, milestoneProgress, actionProgressEntries) : Math.round(route.score);
+  const recommendedAction = milestoneDetail?.immediate_actions[0] ?? milestone?.actions[0] ?? null;
+  const validCertification = milestoneDetail?.recommended_certification && !/no mandatory|no required|none/i.test(milestoneDetail.recommended_certification)
+    ? milestoneDetail.recommended_certification
+    : null;
 
   const saveMilestone = (statusValue: CareerGpsProgressStatus) => {
     if (!milestone) return Promise.resolve();
@@ -1955,14 +2180,22 @@ function JourneyDetailPanel({
   };
 
   return (
-    <aside className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <motion.aside
+      layout
+      initial={reduceMotion ? false : { opacity: 0, x: 18 }}
+      animate={reduceMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 18 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_6px_24px_rgba(26,16,51,0.07)]"
+      aria-label="Selected milestone detail"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
             <Map size={14} />
             Milestone details
           </p>
-          <h3 className="mt-3 text-xl font-bold text-[#1A1033]">{node.title}</h3>
+          <h3 className="mt-3 text-xl font-bold leading-7 text-[#1A1033]">{node.title}</h3>
           {isDetailLoading && (
             <p className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[#6B7280]">
               <Loader2 size={13} className="animate-spin text-[#E8197A]" />
@@ -1970,9 +2203,52 @@ function JourneyDetailPanel({
             </p>
           )}
         </div>
-        <span className="rounded-lg bg-[#FDFCFF] px-3 py-2 text-xs font-bold text-[#6B46C1]">
-          {milestone ? progressStatusLabel(milestoneProgress?.status) : statusLabel(node.status)}
-        </span>
+        <div className="flex items-center gap-2">
+          <motion.span
+            key={milestone ? progressStatusLabel(milestoneProgress?.status) : statusLabel(node.status)}
+            initial={reduceMotion ? false : { opacity: 0.7, scale: 0.96 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+            transition={{ duration: 0.18 }}
+            className="rounded-lg bg-[#FDFCFF] px-3 py-2 text-xs font-bold text-[#6B46C1]"
+          >
+            {milestone ? progressStatusLabel(milestoneProgress?.status) : statusLabel(node.status)}
+          </motion.span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#F0EBF8] bg-white text-[#6B7280] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+            aria-label="Close milestone detail panel"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      <motion.div layout className="mt-3 grid grid-cols-3 gap-2">
+        <DetailMetric label="Status" value={milestone ? progressStatusLabel(milestoneProgress?.status) : statusLabel(node.status)} />
+        <DetailMetric label="Readiness" value={`${readiness}%`} />
+        <DetailMetric label="Timing" value={milestoneDetail?.estimated_timeline ?? node.timing} />
+      </motion.div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onPrevious}
+          disabled={!canPrevious}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ChevronLeft size={15} />
+          Previous
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!canNext}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Next
+          <ChevronRight size={15} />
+        </button>
       </div>
 
       {(detailError || progressError) && (
@@ -1986,13 +2262,26 @@ function JourneyDetailPanel({
       </p>
 
       <div className="mt-4 grid gap-3">
-        <DetailBlock label="Estimated timeline" value={milestoneDetail?.estimated_timeline ?? node.timing} />
+        <DetailBlock label="Why it matters" value={milestoneDetail?.why_recommended ?? milestone?.description ?? route.summary} />
         <DetailBlock label="Required skills" value={<ChipList items={requiredSkills} emptyLabel="No required skills stored." />} />
         <DetailBlock label="Existing skills" value={<ChipList items={existingSkills} emptyLabel="No existing skills stored on profile." />} />
         <DetailBlock label="Missing skills" value={<ChipList items={missingSkills} emptyLabel="No major missing skill stored." />} />
         <DetailBlock
+          label="Recommended action"
+          value={
+            recommendedAction ? (
+              <div>
+                <p>{recommendedAction.title}</p>
+                {recommendedAction.description && <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">{recommendedAction.description}</p>}
+              </div>
+            ) : (
+              "No immediate action is stored for this milestone."
+            )
+          }
+        />
+        <DetailBlock
           label="Recommended certification"
-          value={milestoneDetail?.recommended_certification ?? "No mandatory certification is stored for this route."}
+          value={validCertification ?? "No valid required certification is stored for this milestone."}
         />
         <DetailBlock
           label="Recommended experience"
@@ -2040,8 +2329,19 @@ function JourneyDetailPanel({
               type="button"
               onClick={() => saveMilestone("completed")}
               disabled={!canCompleteMilestone || isSavingProgress}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#10B981] px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className={`relative inline-flex min-h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#10B981] px-3 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#059669] focus-visible:ring-2 focus-visible:ring-[#047857] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                milestoneProgress?.status === "completed" ? "ring-2 ring-[#A7F3D0]" : ""
+              }`}
             >
+              {milestoneProgress?.status === "completed" && (
+                <motion.span
+                  className="absolute inset-0 bg-white/25"
+                  initial={reduceMotion ? false : { x: "-100%" }}
+                  animate={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  aria-hidden="true"
+                />
+              )}
               {isSavingProgress ? <Loader2 size={14} className="animate-spin" /> : <CalendarCheck size={14} />}
               Mark milestone complete
             </button>
@@ -2067,24 +2367,27 @@ function JourneyDetailPanel({
           Select a milestone station to update action progress and evidence.
         </div>
       )}
-    </aside>
+    </motion.aside>
   );
 }
 
 function JourneyLegend() {
-  const items: { label: string; status: JourneyNodeStatus }[] = [
-    { label: "Start", status: "start" },
-    { label: "Active", status: "active" },
-    { label: "Future", status: "future" },
-    { label: "Locked", status: "locked" },
-    { label: "Destination", status: "destination" },
+  const items: Array<{ label: string; node: Pick<JourneyNode, "status" | "title">; extraClass?: string }> = [
+    { label: "Start", node: { status: "start", title: "Start" } },
+    { label: "Completed", node: { status: "completed", title: "Completed" } },
+    { label: "Current", node: { status: "active", title: "Current" }, extraClass: "ring-2 ring-[#E8197A]/25" },
+    { label: "Next", node: { status: "future", title: "Next" }, extraClass: "ring-2 ring-[#06B6D4]/30" },
+    { label: "Future", node: { status: "future", title: "Future" } },
+    { label: "Locked", node: { status: "locked", title: "Locked" } },
+    { label: "Decision", node: { status: "future", title: "Branch decision" }, extraClass: "rotate-45 rounded-sm" },
+    { label: "Destination", node: { status: "destination", title: "Destination" } },
   ];
 
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
         <span key={item.label} className="inline-flex items-center gap-2 rounded-full border border-[#F0EBF8] bg-white px-3 py-1 text-xs font-bold text-[#6B7280]">
-          <span className={`h-3 w-3 rounded-full border ${nodeButtonStyles({ status: item.status } as JourneyNode, false)}`} />
+          <span className={`h-3 w-3 rounded-full border ${nodeButtonStyles(item.node as JourneyNode, false)} ${item.extraClass ?? ""}`} />
           {item.label}
         </span>
       ))}
@@ -2094,51 +2397,131 @@ function JourneyLegend() {
 
 function MobileJourneyPath({
   nodes,
+  nodeMetaById,
   selectedNode,
   activeNodeId,
+  nextNodeId,
   riasecResult,
   employeeName,
   routeColor,
+  reduceMotion,
   onSelectNode,
 }: {
   nodes: JourneyNode[];
+  nodeMetaById: Record<string, JourneyNodeMeta>;
   selectedNode: JourneyNode;
   activeNodeId: string;
+  nextNodeId: string | null;
   riasecResult: RiasecResult | null;
   employeeName: string;
   routeColor: string;
+  reduceMotion: boolean;
   onSelectNode: (node: JourneyNode) => void;
 }) {
   return (
     <div className="mt-5 lg:hidden">
       <div className="relative space-y-3 before:absolute before:bottom-8 before:left-6 before:top-8 before:w-1 before:rounded-full before:bg-[#E2D9F3]">
         {nodes.map((node) => {
+          const meta = nodeMetaById[node.id] ?? { sharedCompleted: false, changedFromRecommended: false };
           const selected = selectedNode.id === node.id;
           const active = activeNodeId === node.id;
+          const next = nextNodeId === node.id;
           const locked = node.status === "locked";
+          const decisionPoint = isDecisionNode(node);
+          const requirementText = locked ? `Requirement: ${node.missingRequirement}` : next ? node.missingRequirement : null;
           return (
-            <button
+            <motion.button
               key={node.id}
               type="button"
               onClick={() => onSelectNode(node)}
               disabled={locked}
               aria-pressed={selected}
-              className={`relative z-10 grid w-full grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-lg border bg-white p-3 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] ${
-                selected ? "border-[#E8197A] ring-2 ring-[#E8197A]/15" : "border-[#F0EBF8]"
+              title={requirementText ?? `${node.title}: ${nodeStateLabel(node, next)}`}
+              aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${nodeStateLabel(node, next)}, ${requirementText ?? `missing requirement ${node.missingRequirement}`}`}
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              whileHover={reduceMotion || locked ? undefined : { scale: 1.01 }}
+              whileFocus={reduceMotion || locked ? undefined : { scale: 1.01 }}
+              transition={{ duration: 0.22, ease: "easeOut", delay: Math.min(node.sequence * 0.035, 0.2) }}
+              className={`relative z-10 grid w-full grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-lg border bg-white p-3 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+                selected
+                  ? "border-[#E8197A] ring-2 ring-[#E8197A]/15"
+                  : next
+                    ? "border-[#BAF3FF] ring-2 ring-[#06B6D4]/15"
+                    : "border-[#F0EBF8]"
               }`}
             >
-              <span className={`relative flex h-12 w-12 items-center justify-center rounded-full border-4 text-sm font-black ${nodeButtonStyles(node, selected)}`}>
-                {node.status === "destination" ? <Target size={17} /> : node.status === "start" ? <BriefcaseBusiness size={17} /> : node.sequence}
-                {active && <JourneyCurrentMarker riasecResult={riasecResult} employeeName={employeeName} routeColor={routeColor} />}
+              <span
+                className={`relative flex ${active ? "h-14 w-14" : "h-12 w-12"} items-center justify-center border-4 text-sm font-black ${
+                  decisionPoint ? "rotate-45 rounded-lg" : "rounded-full"
+                } ${nodeButtonStyles(node, selected)}`}
+              >
+                {active && (
+                  <motion.span
+                    className={`absolute inset-[-7px] -z-10 border-2 border-[#E8197A]/30 ${decisionPoint ? "rounded-lg" : "rounded-full"}`}
+                    initial={reduceMotion ? false : { opacity: 0.5, scale: 0.9 }}
+                    animate={reduceMotion ? { opacity: 0.35 } : { opacity: [0.5, 0.12], scale: [0.9, 1.2] }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                )}
+                {next && !active && (
+                  <motion.span
+                    className={`absolute inset-[-6px] -z-10 border-2 border-[#06B6D4]/35 ${decisionPoint ? "rounded-lg" : "rounded-full"}`}
+                    initial={reduceMotion ? false : { opacity: 0.42, scale: 0.92 }}
+                    animate={reduceMotion ? { opacity: 0.28 } : { opacity: [0.42, 0.06], scale: [0.92, 1.16] }}
+                    transition={{ duration: 0.72, ease: "easeOut", delay: 0.35 }}
+                  />
+                )}
+                <span className={decisionPoint ? "-rotate-45" : ""}>
+                {node.status === "destination" ? (
+                  <Flag size={17} />
+                ) : node.status === "start" ? (
+                  <BriefcaseBusiness size={17} />
+                ) : locked ? (
+                  <Lock size={17} />
+                ) : decisionPoint ? (
+                  <GitBranch size={17} />
+                ) : (
+                  node.sequence
+                )}
+                </span>
+                {active && <JourneyCurrentMarker riasecResult={riasecResult} employeeName={employeeName} routeColor={routeColor} reduceMotion={reduceMotion} />}
               </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-bold text-[#1A1033]">{node.title}</span>
+              <span className="min-w-0 pr-1">
+                <span className="block text-sm font-bold leading-5 text-[#1A1033]">{node.title}</span>
                 <span className="mt-1 block text-xs font-semibold text-[#6B7280]">
                   {node.stage} / {node.timing} / {node.readiness}% ready
                 </span>
-                <span className="mt-1 block text-xs font-bold text-[#E8197A]">{statusLabel(node.status)}</span>
+                <span className="mt-1 block text-xs font-bold text-[#E8197A]">
+                  {nodeStateLabel(node, next)}
+                </span>
+                {next && requirementText && (
+                  <span className="mt-1 block truncate rounded-md bg-[#E0F9FF] px-2 py-1 text-xs font-bold text-[#087C7E]">
+                    Needs {requirementText}
+                  </span>
+                )}
+                {meta.sharedCompleted && (
+                  <span className="mt-1 block truncate rounded-md bg-[#ECFDF5] px-2 py-1 text-xs font-bold text-[#047857]">
+                    Completed on matching route
+                  </span>
+                )}
+                {meta.changedFromRecommended && (
+                  <span className="mt-1 block truncate rounded-md bg-[#FFF8FC] px-2 py-1 text-xs font-bold text-[#E8197A]">
+                    Changed future stop
+                  </span>
+                )}
+                {locked && (
+                  <span className="mt-1 block truncate rounded-md bg-[#F2EEF8] px-2 py-1 text-xs font-bold text-[#8A7AA8]">
+                    {requirementText}
+                  </span>
+                )}
+                {node.status === "destination" && (
+                  <span className="mt-1 block truncate rounded-md bg-[#F7F3EA] px-2 py-1 text-xs font-bold text-[#B08A44]">
+                    {node.stage} / {confidenceLevel(node.readiness)}
+                  </span>
+                )}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
@@ -2167,10 +2550,11 @@ function CareerJourneyMap({
   isDemoMode: boolean;
   onSaveProgress: SaveProgressHandler;
 }) {
+  const reduceMotion = useReducedMotion() ?? false;
   const progressByKey = useMemo(() => progressEntriesByKey(progressEntries), [progressEntries]);
   const nodes = useMemo(
-    () => (activeRoute ? buildJourneyNodes(activeRoute, progressByKey, isDemoMode) : []),
-    [activeRoute, progressByKey, isDemoMode],
+    () => (activeRoute ? buildJourneyNodes(activeRoute, progressByKey, isDemoMode, roadmap) : []),
+    [activeRoute, progressByKey, isDemoMode, roadmap],
   );
   const activeNode = nodes.find((node) => node.status === "active") ?? nodes.find((node) => node.status === "destination") ?? nodes[0];
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -2179,13 +2563,43 @@ function CareerJourneyMap({
   const [detailError, setDetailError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedNodeId(activeNode?.id ?? null);
-  }, [activeNode?.id, activeRoute?.route_type]);
+    setSelectedNodeId((currentSelectedNodeId) => {
+      const selectedSequence = currentSelectedNodeId
+        ? Number(currentSelectedNodeId.match(/(?:milestone-|destination$|start$)(\d+)?/)?.[1] ?? NaN)
+        : NaN;
+      const sameSequenceNode = Number.isFinite(selectedSequence)
+        ? nodes.find((node) => node.sequence === selectedSequence && node.status !== "locked")
+        : null;
+      return sameSequenceNode?.id ?? activeNode?.id ?? null;
+    });
+  }, [activeNode?.id, activeRoute?.route_type, nodes]);
 
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? activeNode;
+  const isDetailOpen = Boolean(selectedNodeId && selectedNode);
+  const milestoneNavNodes = nodes.filter((node) => node.milestone && node.status !== "locked");
+  const milestoneNavIndex = milestoneNavNodes.findIndex((node) => node.id === selectedNode?.id);
+  const previousMilestoneNode =
+    milestoneNavIndex > 0
+      ? milestoneNavNodes[milestoneNavIndex - 1]
+      : selectedNode
+        ? [...milestoneNavNodes].reverse().find((node) => node.sequence < selectedNode.sequence) ?? null
+        : null;
+  const nextMilestoneNode =
+    milestoneNavIndex >= 0 && milestoneNavIndex < milestoneNavNodes.length - 1
+      ? milestoneNavNodes[milestoneNavIndex + 1]
+      : selectedNode
+        ? milestoneNavNodes.find((node) => node.sequence > selectedNode.sequence) ?? null
+        : null;
+  const closeDetailPanel = () => setSelectedNodeId(null);
+  const selectPreviousMilestone = () => {
+    if (previousMilestoneNode) setSelectedNodeId(previousMilestoneNode.id);
+  };
+  const selectNextMilestone = () => {
+    if (nextMilestoneNode) setSelectedNodeId(nextMilestoneNode.id);
+  };
 
   useEffect(() => {
-    if (!roadmap || !activeRoute || !selectedNode?.milestone) {
+    if (!isDetailOpen || !roadmap || !activeRoute || !selectedNode?.milestone) {
       setMilestoneDetail(null);
       setDetailError(null);
       setIsDetailLoading(false);
@@ -2219,7 +2633,7 @@ function CareerJourneyMap({
     return () => {
       cancelled = true;
     };
-  }, [roadmap, activeRoute, selectedNode?.id, selectedNode?.milestone, isDemoMode, progressByKey]);
+  }, [roadmap, activeRoute, selectedNode?.id, selectedNode?.milestone, isDetailOpen, isDemoMode, progressByKey]);
 
   if (!roadmap || !activeRoute || !nodes.length || !activeNode) {
     return (
@@ -2235,56 +2649,172 @@ function CareerJourneyMap({
   const routeColor = routeHexColor[activeRoute.route_type];
   const fullPath = pathFromNodes(nodes);
   const activeIndex = Math.max(0, nodes.findIndex((node) => node.id === activeNode.id));
-  const activePath = pathFromNodes(nodes.slice(0, activeIndex + 1));
+  const completedIndexes = nodes
+    .map((node, index) => (node.status === "start" || node.status === "completed" ? index : -1))
+    .filter((index) => index >= 0);
+  const completedPath = pathThroughNodeIndexes(nodes, completedIndexes);
+  const nextNode = nodes.find((node, index) => index > activeIndex && node.status !== "locked") ?? null;
+  const activeSegment = nextNode ? pathBetweenNodes(activeNode, nextNode) : "";
+  const activeSegmentProgress = activeSegment ? segmentProgressForNode(activeRoute, activeNode, progressByKey) : 0;
+  const selectedIndex = selectedNode ? nodes.findIndex((node) => node.id === selectedNode.id) : -1;
+  const selectedSegment =
+    selectedIndex > 0
+      ? pathBetweenNodes(nodes[selectedIndex - 1], nodes[selectedIndex])
+      : selectedIndex === 0 && nodes[1]
+        ? pathBetweenNodes(nodes[0], nodes[1])
+        : "";
   const branchRoutes = roadmap.routes.filter((route) => route.route_type !== activeRoute.route_type);
+  const baselineRoute = roadmap.routes.find((route) => route.route_type === "recommended") ?? roadmap.routes[0] ?? null;
+  const nodeMetaById = nodes.reduce<Record<string, JourneyNodeMeta>>((accumulator, node) => {
+    const ownCompleted = node.milestone
+      ? progressByKey[progressKey(activeRoute.route_type, node.milestone.sequence)]?.status === "completed"
+      : false;
+    accumulator[node.id] = {
+      sharedCompleted: Boolean(node.milestone && !ownCompleted && isCompletedOnAnyRoute(node.milestone, roadmap, progressByKey)),
+      changedFromRecommended: isChangedFutureMilestone(node, activeRoute, baselineRoute),
+    };
+    return accumulator;
+  }, {});
+  const changedFutureNodes = nodes.filter((node) => nodeMetaById[node.id]?.changedFromRecommended);
+  const sharedCompletedNodes = nodes.filter((node) => nodeMetaById[node.id]?.sharedCompleted);
+  const routeSummary = routeProgressSummary(activeRoute, progressByKey);
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_48px_rgba(232,25,122,0.10)]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_36px_rgba(232,25,122,0.09)] sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
             <Map size={14} />
-            Journey map
+            Main journey map
           </p>
-          <h2 className="mt-3 text-2xl font-bold leading-tight text-[#1A1033] sm:text-3xl">{activeRoute.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-            A metro-style career route using stored milestones from the selected roadmap. Route branches show alternative views, not regenerated recommendations.
+          <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#1A1033] sm:text-3xl">{activeRoute.title}</h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Stored milestones rendered as a curved route. Completed progress, active segment, route alternatives, and the current marker all use real roadmap state.
           </p>
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-4 py-3">
-          <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active route</p>
-          <p className="mt-1 text-sm font-bold" style={{ color: routeColor }}>
-            {routeLabels[activeRoute.route_type]}
-          </p>
+        <div className="grid grid-cols-3 gap-2 text-center sm:min-w-[340px]">
+          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+            <p className="text-lg font-bold text-[#1A1033]">{routeSummary.percent}%</p>
+            <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Progress</p>
+          </div>
+          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+            <p className="text-lg font-bold text-[#1A1033]">{routeSummary.inProgress}</p>
+            <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Active</p>
+          </div>
+          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+            <p className="text-lg font-bold" style={{ color: routeColor }}>{activeRoute.milestones.length}</p>
+            <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Stops</p>
+          </div>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
+        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
+            <GitBranch size={14} />
+            Active branch decision
+          </p>
+          <p className="mt-2 text-sm font-bold leading-5 text-[#1A1033]">{routeBranchDecision(activeRoute)}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">
+            Future route differences are marked against the Recommended Route baseline.
+          </p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#047857]">Shared completed stops</p>
+            <p className="mt-1 text-sm font-black text-[#1A1033]">{sharedCompletedNodes.length}</p>
+          </div>
+          <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#E8197A]">Changed future stops</p>
+            <p className="mt-1 text-sm font-black text-[#1A1033]">{changedFutureNodes.length}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div>
           <div className="hidden lg:block">
-            <div className="relative min-h-[590px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#FFFCFE]">
+            <div className="relative min-h-[620px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#FFFCFE] xl:min-h-[68vh]">
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(226,217,243,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(226,217,243,0.34)_1px,transparent_1px)] bg-[size:44px_44px]" />
               <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <path d={fullPath} fill="none" stroke="#D6C9EA" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                {activePath && (
-                  <path d={activePath} fill="none" stroke={routeColor} strokeWidth="2.2" strokeLinecap="round" />
-                )}
-                {branchRoutes.map((route, index) => {
-                  const branchY = index === 0 ? 20 : 82;
-                  const start = nodes[Math.min(1, nodes.length - 1)] ?? nodes[0];
-                  return (
-                    <path
-                      key={route.route_type}
-                      d={`M ${start.desktop.x} ${start.desktop.y} C 45 ${branchY}, 68 ${branchY}, 84 ${branchY}`}
+                <AnimatePresence mode="wait">
+                  <motion.g
+                    key={activeRoute.route_type}
+                    initial={reduceMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
+                    transition={{ duration: 0.24, ease: "easeOut" }}
+                  >
+                    <motion.path
+                      d={fullPath}
                       fill="none"
-                      stroke={routeHexColor[route.route_type]}
-                      strokeWidth="1"
+                      stroke="#D6C9EA"
+                      strokeWidth="1.8"
                       strokeLinecap="round"
-                      strokeDasharray="2 2"
-                      opacity="0.55"
+                      strokeDasharray="4 4"
+                      opacity="0.75"
+                      initial={reduceMotion ? false : { pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.65, ease: "easeInOut" }}
                     />
-                  );
-                })}
+                    {completedPath && (
+                      <motion.path
+                        d={completedPath}
+                        fill="none"
+                        stroke="#10B981"
+                        strokeWidth="2.6"
+                        strokeLinecap="round"
+                        initial={reduceMotion ? false : { pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
+                      />
+                    )}
+                    {activeSegment && (
+                      <motion.path
+                        d={activeSegment}
+                        fill="none"
+                        stroke={routeColor}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        initial={reduceMotion ? false : { pathLength: 0 }}
+                        animate={{ pathLength: Math.max(0.12, activeSegmentProgress) }}
+                        transition={{ duration: 0.42, ease: "easeOut" }}
+                      />
+                    )}
+                    {selectedSegment && (
+                      <motion.path
+                        d={selectedSegment}
+                        fill="none"
+                        stroke={routeColor}
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        opacity="0.22"
+                        initial={reduceMotion ? false : { pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                      />
+                    )}
+                    {branchRoutes.map((route, index) => {
+                      const branchY = index === 0 ? 18 : 84;
+                      const start = nodes[Math.min(Math.max(2, activeIndex), nodes.length - 2)] ?? nodes[0];
+                      return (
+                        <motion.path
+                          key={route.route_type}
+                          d={`M ${start.desktop.x} ${start.desktop.y} C 48 ${branchY}, 70 ${branchY}, 88 ${branchY}`}
+                          fill="none"
+                          stroke={routeHexColor[route.route_type]}
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                          strokeDasharray="2.5 2.5"
+                          opacity="0.55"
+                          initial={reduceMotion ? false : { opacity: 0, pathLength: 0 }}
+                          animate={{ opacity: 0.55, pathLength: 1 }}
+                          transition={{ duration: 0.38, ease: "easeOut", delay: 0.12 + index * 0.06 }}
+                        />
+                      );
+                    })}
+                  </motion.g>
+                </AnimatePresence>
               </svg>
               <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap gap-2">
                 {isDemoMode && (
@@ -2307,17 +2837,21 @@ function CareerJourneyMap({
                 <JourneyMilestoneButton
                   key={node.id}
                   node={node}
+                  meta={nodeMetaById[node.id] ?? { sharedCompleted: false, changedFromRecommended: false }}
                   selected={selectedNode.id === node.id}
                   active={activeNode.id === node.id}
+                  next={nextNode?.id === node.id}
+                  dimmed={Boolean(selectedNode && selectedNode.id !== node.id && node.id !== activeNode.id && node.id !== nextNode?.id)}
                   riasecResult={riasecResult}
                   employeeName={employeeName}
                   routeColor={routeColor}
+                  reduceMotion={reduceMotion}
                   onSelect={() => setSelectedNodeId(node.id)}
                 />
               ))}
               {isDemoMode && (
                 <div className="absolute bottom-4 left-4 max-w-[280px] rounded-lg border border-[#DDD0F8] bg-white/95 p-3 text-xs font-bold leading-5 text-[#6B46C1] shadow-sm">
-                  Branch decision: Engineering Manager or Principal Engineer after Technical Lead readiness.
+                  Branch decision: {routeBranchDecision(activeRoute)}.
                 </div>
               )}
             </div>
@@ -2325,11 +2859,14 @@ function CareerJourneyMap({
 
           <MobileJourneyPath
             nodes={nodes}
+            nodeMetaById={nodeMetaById}
             selectedNode={selectedNode}
             activeNodeId={activeNode.id}
+            nextNodeId={nextNode?.id ?? null}
             riasecResult={riasecResult}
             employeeName={employeeName}
             routeColor={routeColor}
+            reduceMotion={reduceMotion}
             onSelectNode={(node) => setSelectedNodeId(node.id)}
           />
 
@@ -2341,36 +2878,75 @@ function CareerJourneyMap({
           </div>
         </div>
 
-        <div className="hidden xl:block">
-          <JourneyDetailPanel
-            node={selectedNode}
-            route={activeRoute}
-            roadmap={roadmap}
-            progressByKey={progressByKey}
-            milestoneDetail={milestoneDetail}
-            isDetailLoading={isDetailLoading}
-            detailError={detailError}
-            isSavingProgress={isSavingProgress}
-            progressError={progressError}
-            onSaveProgress={onSaveProgress}
-          />
+        <div className="hidden lg:block">
+          <AnimatePresence mode="wait">
+            {isDetailOpen ? (
+              <JourneyDetailPanel
+                key={selectedNode.id}
+                node={selectedNode}
+                route={activeRoute}
+                roadmap={roadmap}
+                progressByKey={progressByKey}
+                milestoneDetail={milestoneDetail}
+                isDetailLoading={isDetailLoading}
+                detailError={detailError}
+                isSavingProgress={isSavingProgress}
+                progressError={progressError}
+                onSaveProgress={onSaveProgress}
+                onClose={closeDetailPanel}
+                onPrevious={selectPreviousMilestone}
+                onNext={selectNextMilestone}
+                canPrevious={Boolean(previousMilestoneNode)}
+                canNext={Boolean(nextMilestoneNode)}
+              />
+            ) : (
+              <motion.aside
+                key="empty-detail"
+                initial={reduceMotion ? false : { opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 12 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="rounded-lg border border-dashed border-[#DDD0F8] bg-white p-5 text-sm font-semibold leading-6 text-[#6B7280] shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+              >
+                <Map size={18} className="mb-3 text-[#6B46C1]" />
+                Select a milestone on the map to open details, actions, notes, and progress controls.
+              </motion.aside>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="mt-5 xl:hidden">
-        <JourneyDetailPanel
-          node={selectedNode}
-          route={activeRoute}
-          roadmap={roadmap}
-          progressByKey={progressByKey}
-          milestoneDetail={milestoneDetail}
-          isDetailLoading={isDetailLoading}
-          detailError={detailError}
-          isSavingProgress={isSavingProgress}
-          progressError={progressError}
-          onSaveProgress={onSaveProgress}
-        />
-      </div>
+      <AnimatePresence>
+        {isDetailOpen && (
+          <motion.div
+            key={selectedNode.id}
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="sticky bottom-0 z-20 -mx-4 mt-5 max-h-[72vh] overflow-y-auto rounded-t-2xl border border-[#F0EBF8] bg-white p-4 shadow-[0_-18px_44px_rgba(26,16,51,0.14)] sm:-mx-5 lg:hidden"
+          >
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#DDD0F8]" aria-hidden="true" />
+            <JourneyDetailPanel
+              node={selectedNode}
+              route={activeRoute}
+              roadmap={roadmap}
+              progressByKey={progressByKey}
+              milestoneDetail={milestoneDetail}
+              isDetailLoading={isDetailLoading}
+              detailError={detailError}
+              isSavingProgress={isSavingProgress}
+              progressError={progressError}
+              onSaveProgress={onSaveProgress}
+              onClose={closeDetailPanel}
+              onPrevious={selectPreviousMilestone}
+              onNext={selectNextMilestone}
+              canPrevious={Boolean(previousMilestoneNode)}
+              canNext={Boolean(nextMilestoneNode)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
@@ -2485,6 +3061,7 @@ function ReadinessRing({
   value: number;
   tone?: "pink" | "teal" | "purple";
 }) {
+  const reduceMotion = useReducedMotion() ?? false;
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
   const color = tone === "teal" ? "#06B6D4" : tone === "purple" ? "#6B46C1" : "#E8197A";
   const circumference = 2 * Math.PI * 36;
@@ -2494,7 +3071,7 @@ function ReadinessRing({
       <div className="flex items-center gap-4">
         <svg width="88" height="88" viewBox="0 0 88 88" role="img" aria-label={`${label}: ${clamped}%`}>
           <circle cx="44" cy="44" r="36" fill="none" stroke="#F0EBF8" strokeWidth="8" />
-          <circle
+          <motion.circle
             cx="44"
             cy="44"
             r="36"
@@ -2503,7 +3080,9 @@ function ReadinessRing({
             strokeLinecap="round"
             strokeWidth="8"
             strokeDasharray={circumference}
-            strokeDashoffset={offset}
+            initial={reduceMotion ? false : { strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 0.42, ease: "easeOut" }}
             transform="rotate(-90 44 44)"
           />
           <text x="44" y="48" textAnchor="middle" className="fill-[#1A1033] text-xl font-black">
@@ -2545,6 +3124,7 @@ function SkillsReadinessSection({
   activeRoute: CareerGpsRoute | null;
   progressEntries: CareerGpsProgressEntry[];
 }) {
+  const reduceMotion = useReducedMotion() ?? false;
   if (!activeRoute) {
     return (
       <EmptyPanel
@@ -2623,7 +3203,12 @@ function SkillsReadinessSection({
             </span>
           </div>
           <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
-            <div className="h-full rounded-full bg-[#10B981]" style={{ width: `${progress.percent}%` }} />
+            <motion.div
+              className="h-full rounded-full bg-[#10B981]"
+              initial={reduceMotion ? false : { width: 0 }}
+              animate={{ width: `${progress.percent}%` }}
+              transition={{ duration: 0.38, ease: "easeOut" }}
+            />
           </div>
           <p className="mt-3 text-xs font-semibold leading-5 text-[#9CA3AF]">
             Route readiness is the stored deterministic Skill fit score. Milestone readiness is recalculated from focus-skill match and action progress.
@@ -3076,21 +3661,23 @@ function ComparisonTile({
   );
 }
 
-function CareerBuddyPanel({
+export function CareerBuddyPanel({
   roadmap,
   activeRoute,
   riasecResult,
   isDemoMode,
+  defaultOpen = false,
 }: {
   roadmap: CareerGpsRoadmap | null;
   activeRoute: CareerGpsRoute | null;
   riasecResult: RiasecResult | null;
   isDemoMode: boolean;
+  defaultOpen?: boolean;
 }) {
   const [conversation, setConversation] = useState<CareerBuddyConversation | null>(null);
   const [messages, setMessages] = useState<CareerBuddyMessage[]>([]);
   const [draft, setDraft] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -3397,6 +3984,35 @@ function CareerBuddyPanel({
           </aside>
         </div>
       )}
+    </section>
+  );
+}
+
+function CareerBuddyHandoff({ activeRoute }: { activeRoute: CareerGpsRoute | null }) {
+  return (
+    <section className="rounded-lg border border-[#E0F2FE] bg-[#F0FDFF] p-4 shadow-[0_4px_24px_rgba(8,124,126,0.08)]">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-[#087C7E] shadow-sm">
+            <Bot size={20} />
+          </span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#087C7E]">Career Buddy</p>
+            <h2 className="mt-1 text-lg font-bold text-[#1A1033]">Need an explanation for this route?</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#4B5563]">
+              Career GPS stays focused on the map. Open Career Buddy when you want coaching, explanations, or help
+              deciding what to do next{activeRoute ? ` for ${activeRoute.title}` : ""}.
+            </p>
+          </div>
+        </div>
+        <Link
+          href={routes.employeeCareerBuddy}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#087C7E] px-4 text-sm font-bold text-white shadow-sm"
+        >
+          Open Career Buddy
+          <ArrowRight size={16} />
+        </Link>
+      </div>
     </section>
   );
 }
@@ -3810,7 +4426,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
     <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
       <EmployeeTopNav initials={profileInitials} name={profileName} />
 
-      <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-8">
         {isLoading ? (
           <LoadingShell />
         ) : error ? (
@@ -3834,16 +4450,6 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
               onRefresh={() => loadShell(true)}
             />
             {isDemoMode && <DemoModeBanner />}
-            <NorthStarSummary profile={state.profile} />
-            <NextBestAction
-              roadmap={state.roadmap}
-              action={nextBestAction}
-              isLoading={isNextBestActionLoading}
-              isUpdating={isUpdatingNextBestAction}
-              error={nextBestActionError}
-              onUpdateStatus={handleNextBestActionStatus}
-              onRequestAlternative={handleRequestAlternativeAction}
-            />
             <RouteSelectorShell
               roadmap={state.roadmap}
               selectedRouteType={selectedRouteType}
@@ -3862,6 +4468,16 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
               isDemoMode={isDemoMode}
               onSaveProgress={handleSaveProgress}
             />
+            <NextBestAction
+              roadmap={state.roadmap}
+              action={nextBestAction}
+              isLoading={isNextBestActionLoading}
+              isUpdating={isUpdatingNextBestAction}
+              error={nextBestActionError}
+              onUpdateStatus={handleNextBestActionStatus}
+              onRequestAlternative={handleRequestAlternativeAction}
+            />
+            <NorthStarSummary profile={state.profile} />
             <SkillsReadinessSection
               profile={state.profile}
               activeRoute={activeRoute}
@@ -3879,12 +4495,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
               onApply={handleApplyScenario}
               onDiscard={handleDiscardScenario}
             />
-            <CareerBuddyPanel
-              roadmap={state.roadmap}
-              activeRoute={activeRoute}
-              riasecResult={riasecResult}
-              isDemoMode={isDemoMode}
-            />
+            <CareerBuddyHandoff activeRoute={activeRoute} />
             <section className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
               <div className="flex items-start gap-2">
                 <Sparkles size={17} className="mt-0.5 shrink-0" />

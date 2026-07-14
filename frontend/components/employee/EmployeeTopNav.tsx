@@ -7,6 +7,7 @@ import {
   Bot,
   BriefcaseBusiness,
   Building2,
+  ClipboardCheck,
   Compass,
   LayoutDashboard,
   Settings,
@@ -14,7 +15,7 @@ import {
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { routes } from "@/lib/routes";
 
-type EmployeeNavKey = "dashboard" | "career-gps" | "marketplace" | "career-buddy" | "settings";
+type EmployeeNavKey = "dashboard" | "career-gps" | "marketplace" | "applications" | "career-buddy" | "settings";
 
 type EmployeeTopNavProps = {
   initials: string;
@@ -30,19 +31,35 @@ const navItems: Array<{
   { key: "dashboard", label: "Dashboard", href: routes.employeeDashboard, icon: LayoutDashboard },
   { key: "career-gps", label: "Career GPS", href: routes.employeeCareerGps, icon: Compass },
   { key: "marketplace", label: "Marketplace", href: routes.employeeMarketplace, icon: BriefcaseBusiness },
+  { key: "applications", label: "Applications", href: routes.employeeApplications, icon: ClipboardCheck },
   { key: "career-buddy", label: "Career Buddy", href: routes.employeeCareerBuddy, icon: Bot },
   { key: "settings", label: "Settings", href: routes.employeeSettings, icon: Settings },
 ];
 
 function activeKeyFor(pathname: string, hash: string): EmployeeNavKey | null {
   if (pathname === routes.employeeCareerGps) {
-    return hash === "#career-buddy" ? "career-buddy" : "career-gps";
+    return "career-gps";
   }
 
   if (pathname === routes.employeeDashboard) {
-    if (hash === "#marketplace" || hash === "#asia-market-title") return "marketplace";
     if (hash === "#settings") return "settings";
     return "dashboard";
+  }
+
+  if (pathname === routes.employeeMarketplace) {
+    return "marketplace";
+  }
+
+  if (pathname === routes.employeeApplications) {
+    return "applications";
+  }
+
+  if (pathname === routes.employeeCareerBuddy) {
+    return "career-buddy";
+  }
+
+  if (pathname === routes.employeeSettings) {
+    return "settings";
   }
 
   return null;
@@ -113,7 +130,7 @@ export function EmployeeTopNav({ initials, name }: EmployeeTopNavProps) {
           </div>
         </div>
 
-        <nav className="grid grid-cols-2 gap-2 text-sm font-semibold text-[#6B7280] sm:grid-cols-5 lg:hidden" aria-label="Employee mobile navigation">
+        <nav className="grid grid-cols-2 gap-2 text-sm font-semibold text-[#6B7280] sm:grid-cols-3 lg:hidden" aria-label="Employee mobile navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.key === activeKey;

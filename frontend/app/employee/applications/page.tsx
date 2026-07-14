@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  Building2,
   BriefcaseBusiness,
   CalendarDays,
   ChevronRight,
@@ -10,7 +9,7 @@ import {
   Search,
   Send,
 } from "lucide-react";
-import { ProfileMenu } from "@/components/ProfileMenu";
+import { EmployeeTopNav } from "@/components/employee/EmployeeTopNav";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { BackendApplication } from "@/lib/backendTypes";
 import { demoApplicationTimeline } from "@/lib/mock-data";
@@ -80,37 +79,7 @@ export default function EmployeeApplicationsPage() {
 
   return (
     <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
-      <header className="border-b border-[#EAE3D3] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold text-[#B08A44]">
-              Simploy
-            </a>
-            <nav className="hidden items-center gap-1 text-sm font-semibold text-[#6B7280] md:flex">
-              <a href="/employee/dashboard#asia-market-title" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Asia Market Insight
-              </a>
-              <a href="/employee/applications" className="rounded-full bg-[#F6F1E4] px-4 py-2 text-[#B08A44]">
-                Applications
-              </a>
-              <a href="/employee/career-gps" className="rounded-full px-4 py-2 hover:bg-[#F8F5FC]">
-                Career GPS
-              </a>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
-            >
-              <Building2 size={16} />
-              Switch Portal
-            </a>
-            <ProfileMenu role="employee" initials="A" name="Alex" label="Open employee profile menu" />
-          </div>
-        </div>
-      </header>
+      <EmployeeTopNav initials="A" name="Alex" />
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

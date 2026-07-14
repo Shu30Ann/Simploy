@@ -4,6 +4,15 @@ This file is the source of truth for the employee Career GPS redesign work. Read
 
 ## Current Phase Status
 
+- Phase 10 - Career GPS Visual Polish: completed.
+- Phase 9 - Route Selector and Visual Branching: completed.
+- Phase 8 - Map Animations and Transitions: completed.
+- Employee surface differentiation repair: completed.
+- Employee Marketplace route repair: completed.
+- Phase 7 - Milestone Detail Experience: completed.
+- Phase 6 - RIASEC Avatar and Milestone States: completed.
+- Phase 5 - Career GPS Map Visual Redesign: completed.
+- Phase 4 - Simplify the Employee Dashboard: completed.
 - Phase 2 - Simplify Employee Navigation: completed.
 - Phase 1 - Employee Information Architecture Audit: completed.
 - Phase 3K - Integration Testing and Cleanup: completed.
@@ -17,6 +26,56 @@ This file is the source of truth for the employee Career GPS redesign work. Read
 - Phase 3C - Route Selector and Comparison: completed.
 - Phase 3B - Career GPS Page Shell: completed.
 - Phase 3A - UI Audit and Visual Direction: completed.
+- Runtime behavior changed in Marketplace route repair: `/employee/marketplace` now exists as a standalone employee page. Employee navigation points Marketplace to that page instead of the removed dashboard anchor. Applications now uses the shared employee navigation.
+- Visible production UI changed in Marketplace route repair: Marketplace now contains Asia market signals, filters, internal gigs, external roles, backend job data when authenticated, fallback marketplace data, and apply actions for backend jobs.
+- Files changed in Marketplace route repair:
+  - `frontend/app/employee/marketplace/page.tsx`
+  - `frontend/app/employee/applications/page.tsx`
+  - `frontend/components/employee/EmployeeTopNav.tsx`
+  - `frontend/lib/routes.ts`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 8: no backend runtime behavior changed. Career GPS still uses the same authenticated roadmap, route, progress, selected-route, milestone-detail, and RIASEC result data. Animation is presentation-only and respects reduced-motion preferences through Framer Motion.
+- Visible production UI changed in Phase 8: the Career GPS route line now draws progressively, route switches crossfade, completed/current/next nodes reveal with short motion, the RIASEC current marker moves with layout animation, selected route segments highlight, unrelated nodes reduce emphasis while a station is selected, the detail panel slides smoothly, completed actions animate their check state, active route fill reflects action progress toward the next milestone, readiness indicators animate to updated values, and completed milestones receive a small one-shot success shimmer.
+- Files changed in Phase 8:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 9: no backend runtime behavior changed. Route switching still uses the existing selected-route endpoint in production, demo route switching remains local, and no route regeneration is triggered.
+- Visible production UI changed in Phase 9: route choices now show type, timeline, advantage, trade-off, overall fit, confidence, risk, destination, and branch decision. A compact comparison matrix shows timeline, skill-gap, lifestyle, career-risk, and destination differences across Recommended, Accelerated, and Balanced routes. The journey map now marks changed future stops and visually preserves equivalent completed milestones across route views.
+- Files changed in Phase 9:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 10: no backend runtime behavior changed. No new product functionality, endpoints, schema changes, route generation, or persistence behavior were added.
+- Visible production UI changed in Phase 10: dashboard loading/empty/error states, primary action focus states, Settings page hierarchy, Career GPS loading skeletons, route selector spacing, map label placement, current-marker positioning, mobile journey focus states, detail panel hierarchy, progress editor focus states, and mobile bottom-sheet sizing were visually polished for hackathon presentation.
+- Files changed in Phase 10:
+  - `frontend/app/employee/dashboard/page.tsx`
+  - `frontend/app/employee/settings/page.tsx`
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Employee surface differentiation repair: `/employee/career-buddy` and `/employee/settings` now exist as standalone employee pages. Employee navigation no longer sends Career Buddy to the Career GPS anchor or Settings to the dashboard anchor.
+- Visible production UI changed in Employee surface differentiation repair: Dashboard remains overview-only, Career GPS is map-first with a compact Buddy handoff, Career Buddy is a dedicated guidance workspace, and Settings is the dedicated career goal/preferences editor.
+- Files changed in Employee surface differentiation repair:
+  - `frontend/app/employee/career-buddy/page.tsx`
+  - `frontend/app/employee/settings/page.tsx`
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `frontend/components/employee/EmployeeFloatingCoach.tsx`
+  - `frontend/components/employee/EmployeeTopNav.tsx`
+  - `frontend/lib/routes.ts`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 7: no backend runtime behavior changed. The milestone detail panel still uses existing milestone-detail and roadmap-progress endpoints, and action progress continues to persist through authenticated progress updates.
+- Visible production UI changed in Phase 7: selecting a milestone opens a desktop right-side panel or mobile bottom sheet with close, previous/next milestone navigation, readiness/status/timing summary, recommended action, skills, certification, transition, lifestyle, confidence, and progress controls.
+- Files changed in Phase 7:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 6: no backend runtime behavior changed. The Career GPS map still uses existing authenticated route, progress, selected-route, milestone-detail, and locally stored RIASEC result data.
+- Visible production UI changed in Phase 6: the map now has clearer completed, current, next, future, locked, decision-point, and destination states. The active station shows the employee's RIASEC marker or neutral fallback with a visible "You are here" label.
+- Files changed in Phase 6:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
+- Runtime behavior changed in Phase 5: no backend runtime behavior changed. Career GPS still uses existing authenticated profile, roadmap, progress, selected-route, milestone-detail, what-if, and Career Buddy endpoints. The frontend now renders the selected route through a redesigned map-first page layout.
+- Visible production UI changed in Phase 5: `/employee/career-gps` now opens with a compact header, compact route selector, large SVG journey map canvas, right-side milestone detail panel on desktop, sticky bottom-sheet detail panel on mobile, and compact route progress indicators inside the map section.
+- Files changed in Phase 5:
+  - `frontend/components/career-gps/CareerGpsPageShell.tsx`
+  - `docs/career-gps-ui-implementation.md`
 - Runtime behavior changed: no new Career GPS runtime features in Phase 3K. Added one backend test for Gemini timeout/quota fallback behavior and cleaned environment/deployment documentation.
 - Visible production UI changed: no Phase 3K UI changes.
 - Files changed in Phase 3K:
@@ -1672,6 +1731,538 @@ Phase 3H implemented states:
    - Show Next Best Action and Skills and Readiness updating.
    - Run "Prioritise work-life balance" in What-if Career Simulator and apply the local scenario.
    - Open Career Buddy and ask a suggested question; confirm local demo response and no production write.
+
+## Phase 4 - Simplify the Employee Dashboard
+
+Phase 4 turned `/employee/dashboard` into a clean authenticated overview page. It changed frontend UI and dashboard data composition only. No backend endpoints, Supabase schema, authentication behavior, Career GPS recommendation logic, Career Buddy backend behavior, or database migrations were changed.
+
+### Runtime Behavior Changed
+
+- Replaced the prior all-in-one employee dashboard with a focused overview page.
+- The dashboard now fetches:
+  - `GET /dashboard/employee` for employee fallback profile data.
+  - `GET /career-gps/profile` for authenticated Career GPS profile and North Star summary.
+  - `GET /career-gps/roadmaps/latest` for the latest roadmap.
+  - `GET /career-gps/roadmaps/{roadmap_id}/progress` for progress summaries.
+  - `GET /career-gps/roadmaps/{roadmap_id}/next-best-action` for the next action card.
+- Added loading, unauthenticated/error, and no-roadmap empty states.
+- Hid the generic floating employee `ChatWidget` on `/employee/dashboard` through `EmployeeFloatingCoach`, so the dashboard no longer presents a full chat surface.
+
+### Visible Production UI Changed
+
+- `/employee/dashboard` now contains only:
+  - Welcome header with employee name and short journey summary.
+  - Career GPS Preview with current milestone, destination, overall progress, compact route preview, and Open Career GPS button.
+  - Next Best Action with title, reason, estimated effort, status, and Start/Continue in Career GPS button.
+  - Compact Progress Summary with four indicators: milestones completed, route readiness, skill gaps remaining, and active actions.
+  - Career Goal Summary with main goal, top priorities, and Edit in Settings button.
+- Removed from the dashboard:
+  - `CareerNorthStarPanel` editable preference forms.
+  - Dashboard-mounted `CareerGpsRoadmapPanel`/full roadmap surface.
+  - Large skill lists and repeated milestone details.
+  - RIASEC dashboard setup panel.
+  - Marketplace search, internal gigs, external opportunities, apply actions, and Asia market map.
+  - What-if simulator and full Career Buddy/chat surface.
+  - Duplicated route cards.
+
+### Files Changed In Phase 4
+
+- `frontend/app/employee/dashboard/page.tsx`
+- `frontend/app/employee/layout.tsx`
+- `frontend/components/employee/EmployeeFloatingCoach.tsx`
+- `docs/career-gps-ui-implementation.md`
+
+### Phase 4 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because Phase 4 did not change backend code.
+
+### Manual Testing Steps For Phase 4
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with an existing Career GPS roadmap.
+4. Open `/employee/dashboard`.
+5. Confirm the page is understandable at first glance and only shows the welcome header, Career GPS preview, Next Best Action, four progress indicators, and Career Goal Summary.
+6. Confirm no editable career preference form, marketplace list, Asia map, RIASEC setup panel, full roadmap, what-if simulator, or chat widget appears on the dashboard.
+7. Resize desktop, tablet, and mobile widths and confirm cards stack cleanly with no horizontal overflow or overlapping text.
+8. Click Open Career GPS and Start/Continue in Career GPS and confirm they navigate to `/employee/career-gps`.
+9. Log in as an employee without a generated roadmap and confirm the dashboard shows the no-roadmap empty state.
+10. Log out or clear the auth token and confirm the dashboard shows the sign-in/error state instead of mock user data.
+
+### Phase 4 Limitations
+
+- The Edit in Settings button uses `routes.employeeSettings`. A standalone `/employee/settings` route was later added in the employee surface differentiation repair, so career preferences remain outside the dashboard.
+- Marketplace was later repaired as a standalone `/employee/marketplace` route. Settings was later repaired as a standalone `/employee/settings` route.
+- Browser screenshot review was not performed in this phase; responsive behavior was covered by code structure and build verification, with manual browser checks listed above.
+- Overall progress is a compact dashboard summary derived from completed roadmap actions for the selected route; detailed progress editing remains in Career GPS.
+
+## Phase 5 - Career GPS Map Visual Redesign
+
+Phase 5 redesigned the Career GPS route map as the primary visual experience on `/employee/career-gps`. It changed frontend layout and SVG rendering only. No backend endpoints, Supabase schema, authentication behavior, route recommendation logic, what-if logic, or Career Buddy backend behavior changed.
+
+### Runtime Behavior Changed
+
+- The Career GPS page now presents content in this order:
+  - Compact Career GPS header.
+  - Compact route selector.
+  - Large journey-map canvas with milestone detail panel.
+  - Existing Next Best Action, North Star summary, Skills and Readiness, What-if simulator, Career Buddy, and source note below the main map experience.
+- The route selector still persists selected route through the existing selected-route endpoint.
+- Milestone selection still fetches real milestone detail through the existing milestone-detail endpoint.
+- Progress edits still use the existing progress endpoints.
+- Demo mode remains behind `/employee/career-gps?demo=1` and does not write production data.
+
+### Visible Production UI Changed
+
+- Replaced the prior route-card-heavy top layout with a map-first visual hierarchy.
+- Added a larger SVG route canvas that occupies most of the first visible Career GPS page area on desktop.
+- Added segmented path states:
+  - De-emphasised full future path.
+  - Completed path highlight.
+  - Active segment highlight.
+  - Alternative branch hints from other stored route choices.
+- Added node states for start, completed, current, next milestone, future, locked, decision points, and final destination.
+- Milestone labels alternate above and below the desktop route.
+- The RIASEC marker remains the "You are here" marker on the active node.
+- Desktop detail panel opens on the right while the route remains visible.
+- Mobile uses a simplified vertical route and a sticky bottom-sheet-style detail panel to avoid horizontal scrolling.
+- Compact progress indicators now sit inside the map section: progress percent, active action count, and route stop count.
+
+### Files Changed In Phase 5
+
+- `frontend/components/career-gps/CareerGpsPageShell.tsx`
+- `docs/career-gps-ui-implementation.md`
+
+### Phase 5 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because Phase 5 did not change backend code.
+
+### Manual Testing Steps For Phase 5
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm the first visible page is compact header, route selector, and the large journey map.
+6. Confirm the SVG route visually connects start, milestones, branch hints, and destination.
+7. Confirm completed progress appears as a completed path highlight and the active segment is highlighted separately.
+8. Click milestones and confirm the right-side desktop detail panel updates while the route remains visible.
+9. Switch Recommended, Accelerated, and Balanced routes and confirm the map redraws from stored route data without regenerating the roadmap.
+10. Resize to mobile width and confirm the map becomes a vertical tap-friendly route with the detail panel shown as a sticky bottom sheet.
+11. Open `/employee/career-gps?demo=1` and confirm demo locked nodes, decision point, branch hints, and RIASEC marker render without writing production data.
+
+### Phase 5 Limitations
+
+- Production APIs still do not return explicit prerequisite or lock metadata. Locked nodes are therefore still demo-only unless future backend data adds lock/prerequisite state.
+- Branch geometry is derived from stored route choices and selected-route context; it is not a persisted graph model.
+- Decision points are inferred visually from milestone titles containing "branch" or "decision"; no backend decision-point field exists yet.
+- Browser screenshot review was not performed in this phase; responsive behavior was verified through code structure and build checks, with manual browser steps listed above.
+
+## Phase 6 - RIASEC Avatar and Milestone States
+
+Phase 6 made the Career GPS map states more visually distinct and clarified the current-position marker. It changed frontend map rendering only. No backend endpoints, Supabase schema, authentication behavior, route recommendation logic, what-if logic, or Career Buddy backend behavior changed.
+
+### Runtime Behavior Changed
+
+- The active map station still uses the existing `simploy-riasec-result` local storage result loaded through `loadRiasecResult`.
+- If no RIASEC result is available, the map now shows a neutral map-pin fallback marker.
+- The active marker is still derived from stored roadmap progress: in-progress milestone first, then first incomplete milestone, then destination fallback.
+- Locked states remain visual-only for demo data because production APIs still do not expose prerequisite/lock metadata.
+
+### Visible Production UI Changed
+
+- Active/current station now has:
+  - Larger node.
+  - Pulsing ring.
+  - RIASEC or neutral marker.
+  - Visible "You are here" label.
+  - Readiness percentage.
+- Completed stations now have filled nodes, check marks, and Completed labels.
+- Next station now has a bright outline, Next milestone label, and main missing requirement.
+- Future stations remain lower emphasis but clickable for details.
+- Locked stations are dimmed, show a lock icon, and expose requirement text through visible copy plus tooltip/ARIA label.
+- Decision points now use diamond-shaped nodes and Decision point labels.
+- Destination now uses a flag badge, target role title, and confidence label.
+- The map legend now includes Start, Completed, Current, Next, Future, Locked, Decision, and Destination states.
+
+### Files Changed In Phase 6
+
+- `frontend/components/career-gps/CareerGpsPageShell.tsx`
+- `docs/career-gps-ui-implementation.md`
+
+### Phase 6 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because Phase 6 did not change backend code.
+
+### Manual Testing Steps For Phase 6
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm the active station is larger, has a pulsing ring, shows readiness percentage, and displays "You are here".
+6. Save or keep a RIASEC result in local storage and confirm the marker uses that existing character.
+7. Clear the RIASEC result and confirm the marker falls back to the neutral map-pin icon.
+8. Confirm completed milestones show filled nodes, check marks, and Completed labels.
+9. Confirm the next milestone shows a bright outline, Next milestone label, and missing requirement text.
+10. Confirm future milestones are lower emphasis but remain clickable for detail loading.
+11. Open `/employee/career-gps?demo=1` and confirm locked nodes, lock icons, requirement text, decision diamonds, and branch labels are visually distinct.
+12. Resize to mobile and confirm the same state meanings are visible in the vertical route and bottom-sheet detail layout.
+
+### Phase 6 Limitations
+
+- RIASEC persistence remains browser-local only; no backend RIASEC result endpoint was added.
+- Production locked states remain unavailable without explicit backend prerequisite/lock metadata.
+- Decision points are still inferred from milestone titles containing "branch" or "decision"; no structured decision-point field exists yet.
+- Browser screenshot review was not performed in this phase; responsive and accessibility behavior should be manually checked with the steps above.
+
+## Phase 7 - Milestone Detail Experience
+
+Phase 7 improved the interaction after an employee selects a Career GPS milestone. It changed frontend panel behavior and detail presentation only. No backend endpoints, Supabase schema, authentication behavior, route recommendation logic, what-if logic, or Career Buddy backend behavior changed.
+
+### Runtime Behavior Changed
+
+- Selecting a milestone opens the detail experience.
+- Closing the panel hides the detail experience without changing route selection or roadmap data.
+- Desktop uses the existing right-side panel layout so the route remains visible.
+- Mobile uses the existing sticky bottom-sheet layout so the vertical route remains behind/above the panel where practical.
+- Previous and Next controls move through selectable milestone nodes on the active route.
+- Milestone detail loading is now tied to an open detail panel; closed panels do not fetch milestone details.
+- Action progress still persists through existing `PUT /career-gps/roadmaps/{roadmap_id}/progress/actions`.
+- Milestone completion still persists through existing `PUT /career-gps/roadmaps/{roadmap_id}/progress/milestones`.
+
+### Visible Production UI Changed
+
+- Detail panel now shows a close button.
+- Detail panel now shows previous/next milestone navigation.
+- Detail panel summary now includes status, readiness, and timing.
+- Detail panel includes:
+  - Milestone title.
+  - Status.
+  - Readiness.
+  - Why it matters.
+  - Required skills.
+  - Existing skills.
+  - Missing skills.
+  - Recommended action.
+  - Suggested project.
+  - Certification only when a valid certification value exists; otherwise a clear no-valid-certification note.
+  - Transition difficulty.
+  - Lifestyle impact.
+  - Confidence.
+  - Progress controls.
+- Action controls now include Start action, Mark in progress, Mark complete, note/evidence inputs, completion date, and save.
+
+### Files Changed In Phase 7
+
+- `frontend/components/career-gps/CareerGpsPageShell.tsx`
+- `docs/career-gps-ui-implementation.md`
+
+### Phase 7 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because Phase 7 did not change backend code.
+
+### Manual Testing Steps For Phase 7
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Select a milestone and confirm the right-side detail panel opens on desktop.
+6. Resize to mobile and confirm selecting a milestone opens the bottom sheet.
+7. Confirm the panel displays title, status, readiness, why it matters, required/existing/missing skills, recommended action, suggested project, certification note, transition difficulty, lifestyle impact, confidence, and progress controls.
+8. Click Previous and Next and confirm the selected milestone and detail content move through the route.
+9. Click Close and confirm the panel closes while the map remains visible.
+10. Start an action, add a progress note, mark it in progress, then mark it complete.
+11. Refresh the page and confirm the action status/note remains persisted.
+12. Complete all actions for a milestone, mark the milestone complete, refresh, and confirm the map/detail state reflects completion.
+
+### Phase 7 Limitations
+
+- The panel still depends on existing milestone-detail response fields; no new backend detail fields were added.
+- Certification validity is inferred from the existing certification string because there is no structured certification-validity field.
+- Previous/Next navigation skips locked milestones because locked state is not actionable.
+- Browser screenshot review was not performed in this phase; responsive panel behavior should be manually checked with the steps above.
+
+## Employee Marketplace Route Repair
+
+The Marketplace repair restored the employee Marketplace as a standalone frontend page after Phase 4 removed marketplace content from `/employee/dashboard`. It changed frontend routing and UI only. No backend endpoints, Supabase schema, authentication behavior, Career GPS logic, or application persistence behavior changed.
+
+### Runtime Behavior Changed
+
+- Added `/employee/marketplace` as the employee Marketplace route.
+- Updated `routes.employeeMarketplace` from the removed dashboard anchor to `/employee/marketplace`.
+- Updated shared employee navigation so Marketplace highlights on `/employee/marketplace`.
+- Added Applications to the shared employee navigation and made it highlight on `/employee/applications`.
+- Updated `/employee/applications` to use `EmployeeTopNav` instead of a separate local header.
+- Marketplace loads authenticated dashboard job/application data from the existing `GET /dashboard/employee` response when available.
+- Marketplace apply actions for backend jobs use the existing `POST /jobs/{job_id}/apply` endpoint and then refresh dashboard job/application data.
+- Marketplace falls back to existing frontend mock marketplace data when no authenticated backend data is available.
+
+### Visible Production UI Changed
+
+- `/employee/marketplace` now contains:
+  - Compact employee navigation header.
+  - Asia market signal map and regional market indicators.
+  - Search, opportunity type, and work-style filters.
+  - Internal gigs from existing demo data.
+  - External opportunities from authenticated backend jobs or fallback marketplace data.
+  - Loading, empty, success, and error states.
+  - Apply buttons with submitted/disabled states for backend applications.
+
+### Files Changed In Marketplace Repair
+
+- `frontend/app/employee/marketplace/page.tsx`
+- `frontend/app/employee/applications/page.tsx`
+- `frontend/components/employee/EmployeeTopNav.tsx`
+- `frontend/lib/routes.ts`
+- `docs/career-gps-ui-implementation.md`
+
+### Marketplace Repair Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because no backend code changed.
+
+### Manual Testing Steps For Marketplace Repair
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee.
+4. Click Marketplace in the employee top navigation and confirm it opens `/employee/marketplace`, not a dashboard anchor.
+5. Confirm the Asia map, market indicators, filters, internal gigs, and external opportunities render.
+6. Search/filter opportunities and confirm the list updates without layout overflow on desktop, tablet, and mobile widths.
+7. Apply to a backend-backed job and confirm the button changes to submitted/applied after the dashboard data refreshes.
+8. Click Applications in the top navigation and confirm `/employee/applications` opens with the shared employee navigation highlighted.
+
+### Marketplace Repair Limitations
+
+- Internal gigs and Asia market signals still use existing frontend demo/illustrative data.
+- The existing backend jobs data does not yet distinguish internal gigs from external marketplace roles as separate product concepts.
+- Settings is now a standalone `/employee/settings` route, but it still reuses the existing Career GPS goals/preferences backend endpoints.
+
+## Employee Surface Differentiation Repair
+
+This repair separated the employee surfaces that were still visually or navigationally overlapping after the dashboard simplification. It changed frontend routing and UI composition only. No backend endpoints, Supabase schema, authentication behavior, Career GPS scoring logic, Career Buddy persistence, or application persistence behavior changed.
+
+### Final Employee Surface Responsibilities
+
+- Dashboard: overview and next actions. Shows current progress, next best action, compact indicators, and a summary of the main goal. It does not host editable preferences, the job marketplace, or a full chat.
+- Career GPS: visual route and milestone progress. The page stays map-first with route selection, journey map, milestone detail, progress controls, and compact supporting context.
+- Career Buddy: explanations and guidance. The page is now a dedicated coaching workspace at `/employee/career-buddy` using existing Career Buddy conversation and message endpoints.
+- Marketplace: jobs and opportunities. The page owns the Asia map, market signals, opportunity filters, internal gigs, external jobs, and apply actions.
+- Applications: submitted opportunity tracking. The page owns application history, statuses, filtering, and export-style controls.
+- Settings: career goals, lifestyle preferences, constraints, and financial targets. The page is now a dedicated preferences editor at `/employee/settings` using the existing Career North Star form and backend endpoints.
+
+### Runtime Behavior Changed
+
+- Added `/employee/career-buddy` as a standalone employee page.
+- Added `/employee/settings` as a standalone employee page.
+- Updated `routes.employeeCareerBuddy` from `/employee/career-gps#career-buddy` to `/employee/career-buddy`.
+- Updated `routes.employeeSettings` from `/employee/dashboard#settings` to `/employee/settings`.
+- Updated shared employee navigation active states for Career Buddy and Settings.
+- Replaced the full Career Buddy panel inside Career GPS with a compact handoff card.
+- Reused the existing `CareerBuddyPanel` on the standalone Career Buddy page and opened it by default there.
+- Reused the existing `CareerNorthStarPanel` on the standalone Settings page.
+- Hid the generic floating coach on Dashboard, Career Buddy, and Settings so those pages do not duplicate their main experience.
+
+### Visible Production UI Changed
+
+- Dashboard remains a short, white overview page.
+- Career GPS remains a visual route/map page and no longer contains the full chat experience inline.
+- Career Buddy uses a teal guidance workspace with route context cards and the chat panel as the main content.
+- Settings uses a purple preferences workspace with goal, priority, and constraint summary cards above the editable form.
+- Top navigation now sends each item to a distinct surface instead of mixing anchor destinations into Dashboard or Career GPS.
+
+### Files Changed In Surface Differentiation Repair
+
+- `frontend/app/employee/career-buddy/page.tsx`
+- `frontend/app/employee/settings/page.tsx`
+- `frontend/components/career-gps/CareerGpsPageShell.tsx`
+- `frontend/components/employee/EmployeeFloatingCoach.tsx`
+- `frontend/components/employee/EmployeeTopNav.tsx`
+- `frontend/lib/routes.ts`
+- `docs/career-gps-ui-implementation.md`
+
+### Surface Differentiation Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build`.
+- Backend tests/build: not run because no backend code changed.
+
+### Manual Testing Steps For Surface Differentiation Repair
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee.
+4. Open `/employee/dashboard` and confirm it remains overview-only.
+5. Open `/employee/career-gps` and confirm the map remains the main visual experience and the Buddy area is only a compact handoff.
+6. Open `/employee/career-buddy` and confirm the dedicated chat/guidance workspace loads with the latest route context.
+7. Open `/employee/settings` and confirm the career goal/preferences form is editable there.
+8. Use the employee top navigation and confirm Dashboard, Career GPS, Marketplace, Applications, Career Buddy, and Settings each highlight separately.
+9. Resize desktop, tablet, and mobile widths and confirm the new Career Buddy and Settings pages stack without horizontal overflow.
+
+### Surface Differentiation Limitations
+
+- Settings still uses the existing Career North Star form and backend endpoints; this repair did not redesign every field-level control.
+- Career Buddy requires an authenticated employee with a saved Career GPS roadmap for route-specific guidance.
+- The generic profile initials remain fallback values on pages that do not yet load dashboard profile data.
+
+## Phase 8 - Map Animations and Transitions
+
+Phase 8 added subtle professional motion to the existing Career GPS visual journey. It did not change backend behavior, Supabase schema, authentication, route recommendation logic, progress persistence, RIASEC mapping, or demo data.
+
+### Phase 8 Implementation Notes
+
+- Reused the already-installed `framer-motion` dependency; no new animation dependency was added.
+- Added progressive SVG route drawing for the main route, completed route path, active route segment, selected segment, and branch hints.
+- Added route-layer crossfade on selected-route changes.
+- Preserved the selected milestone by sequence across route switches when the equivalent stop exists and is not locked.
+- Added short node reveal animations, hover/focus enlargement, one-shot next-milestone pulse, and reduced opacity on unrelated nodes while a station is selected.
+- Added a layout-animated RIASEC current-position marker so the avatar moves to the active milestone without changing the existing RIASEC result mapping.
+- Added smooth desktop detail-panel and mobile bottom-sheet transitions.
+- Added completed-action check animation, active-segment partial fill based on saved action progress, animated readiness rings, animated progress bar updates, and a small one-shot milestone completion shimmer.
+- Reduced-motion preferences are respected by replacing movement/path draws with non-motion opacity or immediate state changes where appropriate.
+
+### Phase 8 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build` after rerunning outside the sandbox because the sandbox blocked Next.js worker spawning with `spawn EPERM`.
+- Backend tests/build: not run because no backend files changed.
+- Browser screenshot review: attempted through the in-app browser plugin, but the browser target was unavailable (`Browser is not available: iab`).
+
+### Manual Testing Steps For Phase 8
+
+1. Start frontend from `frontend`: `npm run dev`.
+2. Open `/employee/career-gps?demo=1`.
+3. Confirm the route line draws in on load and completed/current/next nodes reveal without blocking clicks.
+4. Confirm the RIASEC current marker appears on the active milestone and moves smoothly after progress changes that advance the current stop.
+5. Switch between Recommended, Accelerated, and Balanced routes and confirm the route crossfades without a disorienting jump.
+6. Select a milestone and confirm its connected route segment highlights while unrelated nodes become less prominent.
+7. Hover and keyboard-focus milestone nodes and confirm they enlarge slightly without shifting the map layout.
+8. Open and close the milestone detail panel on desktop and mobile widths and confirm it slides smoothly.
+9. Mark an action complete and confirm the check animation, route fill, readiness ring, and progress bar update.
+10. Complete all actions for a milestone, mark the milestone complete, and confirm the success treatment is small and one-shot.
+11. Enable reduced-motion in the OS/browser and confirm path drawing, node movement, and panel transitions are minimized.
+
+### Phase 8 Limitations
+
+- Browser screenshot verification could not be completed in this session because the in-app browser target was unavailable.
+- The active route fill is derived from stored action progress for the active milestone; it does not introduce new progress or lock metadata.
+- Production locked milestone behavior remains limited by the existing API, which still does not return explicit prerequisite/lock metadata.
+
+## Phase 9 - Route Selector and Visual Branching
+
+Phase 9 improved route switching clarity for Recommended, Accelerated, and Balanced routes. It changed frontend presentation and route comparison only. It did not change backend endpoints, Supabase schema, authentication, Career GPS scoring, route generation, selected-route persistence, or progress persistence.
+
+### Phase 9 Implementation Notes
+
+- Expanded each route selector option to show route type, estimated timeline, main advantage, main trade-off, overall fit, confidence, risk label, target destination, and branch decision.
+- Added a compact comparison matrix across all stored route choices for:
+  - Timeline difference.
+  - Skill-gap difference.
+  - Lifestyle difference.
+  - Career-risk difference.
+  - Main destination difference.
+- Kept route switching on the existing `PUT /career-gps/roadmaps/{roadmap_id}/selected-route` endpoint in production.
+- Kept demo route switching local to `/employee/career-gps?demo=1`.
+- Updated journey-node construction so equivalent completed milestones can remain visually completed across route views when they match by sequence, focus skill, or title.
+- Added map badges for matching completed stops and changed future stops.
+- Added an active branch-decision summary above the map and updated demo branch copy to use the selected route's stored branch decision.
+- Did not call route regeneration or what-if endpoints when switching routes.
+
+### Phase 9 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build` after rerunning outside the sandbox because the sandbox blocked Next.js worker spawning with `spawn EPERM`.
+- Backend tests/build: not run because no backend files changed.
+
+### Manual Testing Steps For Phase 9
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee with a generated Career GPS roadmap.
+4. Open `/employee/career-gps`.
+5. Confirm each route selector option shows route type, timeline, advantage, trade-off, overall fit, confidence, risk, destination, and branch decision.
+6. Switch between Recommended, Accelerated, and Balanced routes and confirm the map updates without regenerating a roadmap.
+7. Refresh the page and confirm the selected route remains active in production mode.
+8. Confirm the comparison matrix updates its active-route highlight and shows timeline, skill-gap, lifestyle, career-risk, and destination differences.
+9. Complete a milestone on one route, switch to a route with a matching sequence/skill/title, and confirm the matching completed stop remains visually completed.
+10. Switch to a non-recommended route and confirm changed future stops are marked on the desktop and mobile map.
+11. Confirm the active branch-decision summary changes as each route is selected.
+12. Open `/employee/career-gps?demo=1` and confirm route switching remains local and does not write production user data.
+
+### Phase 9 Limitations
+
+- Equivalent completed milestone preservation is a frontend visual match by milestone sequence, focus skill, or title; no backend cross-route canonical milestone ID exists yet.
+- Changed future milestones are compared against the Recommended Route baseline, not against every possible previous route selection.
+- Career-risk labels are derived from existing transition-difficulty and lifestyle score components; no new risk model was added.
+- Browser screenshot verification was not completed in this phase.
+
+## Phase 10 - Career GPS Visual Polish
+
+Phase 10 polished the employee dashboard, Settings, and Career GPS surfaces for hackathon presentation. It was a frontend visual refinement phase only. It did not add major functionality, backend endpoints, Supabase schema changes, authentication changes, Career GPS scoring changes, route generation changes, selected-route persistence changes, or progress persistence changes.
+
+### Phase 10 Implementation Notes
+
+- Dashboard remains overview-only and still does not contain settings forms.
+- Dashboard loading state now uses structured skeleton cards instead of a single spinner-only state.
+- Dashboard primary actions, retry action, and Settings link now have clearer hover and keyboard focus states.
+- Dashboard card shadows, spacing, route-stop labels, and section hierarchy were tightened to avoid overcrowding.
+- Settings now has a clearer header hierarchy, direct links back to Dashboard and Career GPS, stronger summary cards, and a contained form surface around the existing Career North Star panel.
+- Career GPS loading skeletons now better reflect the map-first page structure.
+- Career GPS empty and error states have clearer visual hierarchy and accessible alert semantics.
+- Career GPS route selector cards received better spacing, line clamping, hover motion, selected-state shadow, and keyboard focus rings.
+- Career GPS map node placement was adjusted to improve milestone label readability.
+- The RIASEC "You are here" marker is now centered above the active station to reduce collision with station labels.
+- Desktop map minimum height was stabilized so the route remains the visual centrepiece.
+- Mobile journey rows received stronger focus rings and clearer text spacing.
+- Milestone detail panel hierarchy, buttons, form inputs, progress editor controls, and mobile bottom sheet sizing were polished.
+- Animations remain subtle and no new animation dependency was added.
+
+### Phase 10 Verification
+
+- Frontend lint: passed with `npm run lint`.
+- Frontend type check: passed with `npx tsc --noEmit`.
+- Frontend production build: passed with `npm run build` after rerunning outside the sandbox because the sandbox blocked Next.js worker spawning with `spawn EPERM`.
+- Backend tests/build: not run because no backend files changed.
+
+### Manual Testing Steps For Phase 10
+
+1. Start backend: `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`.
+2. Start frontend from `frontend`: `npm run dev`.
+3. Log in as an employee.
+4. Open `/employee/dashboard` and confirm it is not overcrowded and does not show settings forms.
+5. Confirm Dashboard loading, empty roadmap, and error states are readable and actions have visible focus rings.
+6. Confirm Dashboard clearly links to Career GPS and Settings.
+7. Open `/employee/settings` and confirm the page owns the editable career preferences form and links back to Dashboard/Career GPS.
+8. Open `/employee/career-gps` and confirm the map remains the visual centrepiece.
+9. Confirm route selector cards remain readable and selected/hover/focus states are clear.
+10. Confirm milestone labels, the current RIASEC marker, branch labels, and changed-future badges do not overlap at desktop widths.
+11. Resize to tablet and mobile widths and confirm the vertical route, detail bottom sheet, and action controls remain usable.
+12. Toggle reduced-motion preferences if available and confirm animations remain subtle or reduced.
+
+### Phase 10 Limitations
+
+- Browser screenshot verification was not completed in this phase.
+- Settings still reuses the existing `CareerNorthStarPanel`; this phase polished its container and surrounding page hierarchy rather than redesigning every field.
+- The map still uses frontend-derived SVG geometry; no persisted graph-layout data was added.
 
 ## Database Migrations Added
 
