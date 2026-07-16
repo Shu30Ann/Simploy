@@ -6,7 +6,11 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { routes } from "@/lib/routes";
 
 const NAV = [
-  { label: "Jobs", href: `${routes.employerDashboard}#jobs` },
+  { label: "Dashboard", href: routes.employerDashboard },
+  { label: "Jobs", href: routes.employerJobs },
+  { label: "Attention", href: routes.employerAttention },
+  { label: "Insights", href: routes.employerInsights },
+  { label: "Forecast", href: routes.employerForecast },
   { label: "Workforce Simulator", href: routes.employerSimulator },
   { label: "Workforce Planner", href: routes.employerActionEngine },
 ];
@@ -45,7 +49,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               Switch Portal
             </Link>
             <Link
-              href={`${routes.employerDashboard}#jobs`}
+              href={routes.employerJobs}
               className="inline-flex items-center gap-2 rounded-full bg-[#B08A44] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(70,60,35,0.22)]"
             >
               <BriefcaseBusiness size={16} />
