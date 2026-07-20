@@ -1,21 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
-
-interface TimelineEvent {
-  date: string;
-  label: string;
-  severity: "critical" | "warning" | "medium";
-}
-
-const TIMELINE_EVENTS: TimelineEvent[] = [
-  { date: "Q2 2026", label: "Technician hiring must start", severity: "warning" },
-  { date: "Q1 2027", label: "Maintenance gap turns critical", severity: "critical" },
-  { date: "Q4 2028", label: "Automation engineer demand peaks", severity: "critical" },
-  { date: "Q2 2029", label: "QA analyst shortage appears", severity: "medium" },
-  { date: "2031", label: "Full workforce gap reaches -1,110", severity: "critical" },
-];
+import type { SimulatorTimelineEvent } from "@/lib/simulator/types";
+import { manufacturingTimelineEvents } from "@/lib/mock-data";
 
 const SEV = {
   critical: { dot: "#B08A44", track: "#E3D8BC", text: "#B08A44", badge: "#FFF0F5" },
@@ -23,58 +12,74 @@ const SEV = {
   medium: { dot: "#17694F", track: "#CBDFD4", text: "#0C447C", badge: "#EFF5F0" },
 };
 
-export default function GapTimeline() {
+export default function GapTimeline({ events = manufacturingTimelineEvents }: { events?: SimulatorTimelineEvent[] }) {
+  const [message, setMessage] = useState<string | null>(null);
+  const exportTimeline = () => {
+    setMessage(`Timeline export preview ready: ${events.length} planning milestones prepared.`);
+    window.setTimeout(() => setMessage(null), 2800);
+  };
+
   return (
-    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: "var(--border)" }}>
-      <div className="flex items-start justify-between mb-1">
+    <div className="rounded-2xl border bg-white p-5" style={{ borderColor: "var(--border)" }}>
+      <div className="mb-1 flex items-start justify-between">
         <div>
           <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
             Gap Timeline
           </p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-            When manufacturing shortages hit - plan backwards from these dates
+          <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+            When manufacturing shortages hit - plan backwards from these dates.
           </p>
         </div>
         <button
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors"
+          type="button"
+          onClick={exportTimeline}
+          className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors"
           style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}
         >
           <Download size={12} />
           Export
         </button>
       </div>
+      {message && (
+        <div className="mt-3 rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: "var(--teal-border)", background: "var(--bg-teal-soft)", color: "var(--teal)" }}>
+          {message}
+        </div>
+      )}
 
-      <div className="mt-6 relative">
-        <div className="absolute top-3 left-0 right-0 h-px" style={{ background: "var(--border)" }} />
+      <div className="relative mt-6">
+        <div className="absolute left-0 right-0 top-3 h-px" style={{ background: "var(--border)" }} />
 
-        <div className="flex justify-between relative">
-          {TIMELINE_EVENTS.map((ev, i) => {
-            const s = SEV[ev.severity];
+        <div className="relative flex justify-between">
+          {events.map((event, index) => {
+            const severity = SEV[event.severity];
             return (
               <motion.div
-                key={ev.date}
+                key={`${event.date}-${event.label}`}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08, duration: 0.25 }}
+                transition={{ delay: index * 0.08, duration: 0.25 }}
                 className="flex flex-col items-center"
                 style={{ flex: 1 }}
               >
                 <div
-                  className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center z-10 relative"
-                  style={{ background: s.dot, boxShadow: `0 0 0 3px ${s.track}` }}
+                  className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white"
+                  style={{ background: severity.dot, boxShadow: `0 0 0 3px ${severity.track}` }}
                 >
-                  <div className="w-2 h-2 rounded-full bg-white" />
+                  <div className="h-2 w-2 rounded-full bg-white" />
                 </div>
 
-                <div className="mt-3 text-center px-1">
+                <div className="mt-3 px-1 text-center">
                   <span
-                    className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold mb-1"
-                    style={{ background: s.badge, color: s.text }}
+                    className="mb-1 inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold"
+                    style={{ background: severity.badge, color: severity.text }}
                   >
-                    {ev.date}
+                    {event.date}
                   </span>
-                  <p className="text-[11px] leading-tight" style={{ color: "var(--text-secondary)" }}>
-                    {ev.label}
+                  <p className="text-[11px] font-semibold leading-tight" style={{ color: "var(--text-secondary)" }}>
+                    {event.label}
+                  </p>
+                  <p className="mt-1 line-clamp-3 text-[10px] leading-4" style={{ color: "var(--text-muted)" }}>
+                    {event.detail}
                   </p>
                 </div>
               </motion.div>

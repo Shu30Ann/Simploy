@@ -1,15 +1,19 @@
 "use client";
 
-import { EllipsisVertical, FilePenLine } from "lucide-react";
+import { useState } from "react";
+import { EllipsisVertical, FilePenLine, X } from "lucide-react";
 import { Pill, toneStyles, type EmployerJobView } from "@/components/employer/shared";
 
 export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
+  const [selectedJob, setSelectedJob] = useState<EmployerJobView | null>(null);
+
   return (
-    <section
-      id="jobs"
-      aria-labelledby="jobs-title"
-      className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7"
-    >
+    <>
+      <section
+        id="jobs"
+        aria-labelledby="jobs-title"
+        className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7"
+      >
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Active Hiring Pipeline</p>
@@ -70,6 +74,8 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
                 </td>
                 <td className="border-b border-[#F8F5FC] px-1 py-4 text-right">
                   <button
+                    type="button"
+                    onClick={() => setSelectedJob(job)}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#6B46C1] hover:bg-[#F1EDE0]"
                     aria-label={job.hiringStatus === "Draft" ? `Edit ${job.title}` : `Open actions for ${job.title}`}
                   >
@@ -81,6 +87,54 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
           </tbody>
         </table>
       </div>
-    </section>
+      </section>
+
+      {selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E2A44]/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-[0_24px_80px_rgba(26,16,51,0.28)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">
+                  {selectedJob.hiringStatus === "Draft" ? "Draft job post" : "Hiring actions"}
+                </p>
+                <h3 className="mt-1 text-xl font-bold text-[#1E2A44]">{selectedJob.title}</h3>
+                <p className="mt-2 text-sm font-semibold text-[#6B7280]">
+                  {selectedJob.department} / {selectedJob.workStyle}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedJob(null)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F7F3EA]"
+                aria-label="Close job action preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {[
+                ["Applications", selectedJob.appsReceived.toString()],
+                ["Qualified matches", selectedJob.matches.length ? selectedJob.matches.join(", ") : "Pending"],
+                ["Recommended next step", selectedJob.hiringStatus === "Draft" ? "Review draft and publish" : "Shortlist top matches"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+                  <p className="mt-1 text-sm font-bold text-[#1E2A44]">{value}</p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedJob(null)}
+              className="mt-5 w-full rounded-lg bg-[#B08A44] px-4 py-3 text-sm font-bold text-white"
+            >
+              {selectedJob.hiringStatus === "Draft" ? "Preview Publish Flow" : "Preview Shortlist Flow"}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

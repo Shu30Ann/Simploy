@@ -1,4 +1,14 @@
-import { manufacturingDepartments, manufacturingForecast, manufacturingRoleGaps } from "@/lib/mock-data";
+import {
+  manufacturingCostBreakdown,
+  manufacturingDepartments,
+  manufacturingForecast,
+  manufacturingHiringPlanDrafts,
+  manufacturingInternalTalentPools,
+  manufacturingRecommendations,
+  manufacturingRoleGaps,
+  manufacturingTimelineEvents,
+  manufacturingWorkforceAssumptions,
+} from "@/lib/mock-data";
 import type { SimState, SimResult, ChartPoint, DeptRisk, RoleGap } from "./types";
 
 export const MOCK_ROLE_GAPS: RoleGap[] = [
@@ -9,6 +19,14 @@ export const MOCK_ROLE_GAPS: RoleGap[] = [
     projected: role.projected,
     gap: role.gap,
     marketSupply: role.marketSupply,
+    recommendedAction: role.recommendedAction,
+    avgSalary: role.avgSalary,
+    timeToFillMonths: role.timeToFillMonths,
+    internalReadyNow: role.internalReadyNow,
+    internalTrainable: role.internalTrainable,
+    externalSupplyIndex: role.externalSupplyIndex,
+    riskReason: role.riskReason,
+    prioritySkills: role.prioritySkills,
   })),
 ];
 
@@ -35,6 +53,12 @@ export function runMockSimulation(state: SimState): SimResult {
   const retirePenalty  = presets.massRetirement  ? 1.3 : 1.0;
   const retirementBoost = (retirementExtension ?? 3) * 40;
   const migrationBoost  = (migrationImpact ?? 12) * 30;
+  const automationDemandBoost = presets.aiAutomation ? aiLevel * 18 : aiLevel * 8;
+  const budgetMultiplier = Math.max(0.55, 1 + (hiringBudget * 0.055));
+  const attritionGapPressure = Math.max(0, attritionRate - 10) * 0.018 * attritionBoost;
+  const retirementRelief = Math.max(0, retirementExtension - 3) * 0.025;
+  const migrationRelief = Math.max(0, migrationImpact - 8) * 0.015;
+  const actionEffectiveness = Math.min(1.2, Math.max(0.35, budgetMultiplier + retirementRelief + migrationRelief));
 
   const chartData: ChartPoint[] = years.map((year, i) => {
     const basePoint = manufacturingForecast[i] ?? manufacturingForecast[manufacturingForecast.length - 1];
@@ -46,7 +70,7 @@ export function runMockSimulation(state: SimState): SimResult {
       + retirementBoost * i
       + migrationBoost * i
     ));
-    const demand = Math.round(basePoint.demand + (growthTarget * 120 * i));
+    const demand = Math.round(basePoint.demand + (growthTarget * 120 * i) + automationDemandBoost * i);
     return { year, supply, demand, net: supply - demand };
   });
 
@@ -54,7 +78,7 @@ export function runMockSimulation(state: SimState): SimResult {
   const gap = lastPoint.demand - lastPoint.supply;
 
   const resilienceScore = Math.min(100, Math.max(10,
-    100 - (gap / 80) - (attritionRate * 0.5)
+    100 - (gap / 80) - (attritionRate * 0.5) + (hiringBudget * 1.8) + (retirementExtension * 1.1) + (migrationImpact * 0.6)
   ));
 
   const deptRisks: DeptRisk[] = manufacturingDepartments.slice(0, 6).map((dept) => {
@@ -83,14 +107,71 @@ export function runMockSimulation(state: SimState): SimResult {
     ) as DeptRisk["stability"],
   }));
 
+  const roleGaps: RoleGap[] = MOCK_ROLE_GAPS.map((role) => {
+    const isShortage = role.gap < 0;
+    const automationSensitive = ["Production", "Quality Assurance", "Human Resources"].includes(role.dept);
+    const technicalShortage = ["Maintenance", "Engineering", "Digital Transformation"].includes(role.dept);
+    const pressure =
+      isShortage
+        ? 1 + attritionGapPressure + (technicalShortage ? aiLevel * 0.045 : 0) + (presets.massRetirement ? 0.12 : 0)
+        : 1 + (automationSensitive ? aiLevel * 0.08 : 0);
+    const relief = isShortage ? Math.min(0.32, (hiringBudget + 5) * 0.025 + retirementRelief + migrationRelief) : 0;
+    const nextGap = isShortage
+      ? Math.round(role.gap * Math.max(0.62, pressure - relief))
+      : Math.round(role.gap * Math.max(0.72, pressure));
+    const projected = Math.max(0, role.current - nextGap);
+
+    return {
+      ...role,
+      projected,
+      gap: nextGap,
+      internalReadyNow: Math.round((role.internalReadyNow ?? 0) * actionEffectiveness),
+      internalTrainable: Math.round((role.internalTrainable ?? 0) * actionEffectiveness),
+      timeToFillMonths: Number(((role.timeToFillMonths ?? 3) * (presets.hiringFreeze ? 1.35 : 1) / Math.max(0.8, budgetMultiplier)).toFixed(1)),
+    };
+  });
+
+  const shortageTotal = roleGaps.reduce((sum, role) => sum + Math.max(0, -role.gap), 0);
+  const surplusTotal = roleGaps.reduce((sum, role) => sum + Math.max(0, role.gap), 0);
+  const adjustedGap = Math.max(0, Math.round((gap + shortageTotal - surplusTotal * 0.35) / 2));
+  const costMultiplier = Math.max(0.55, adjustedGap / 1110);
+  const costBreakdown = manufacturingCostBreakdown.map((item) => ({
+    ...item,
+    value: Math.round(item.value * costMultiplier),
+  }));
+  const costOfInaction = costBreakdown.reduce((sum, item) => sum + item.value, 0);
+  const gapReductionPotential = Math.round(
+    manufacturingRecommendations.reduce((sum, action) => sum + (action.gapReduction ?? 0), 0) * actionEffectiveness,
+  );
+  const internalReadyNow = roleGaps.reduce((sum, role) => sum + (role.internalReadyNow ?? 0), 0);
+  const internalTrainable = roleGaps.reduce((sum, role) => sum + (role.internalTrainable ?? 0), 0);
+  const planCost = Math.round(18800000 * Math.max(0.72, budgetMultiplier));
+  const modelNarrative =
+    adjustedGap > 900
+      ? "Critical shortage path: maintenance, automation engineering, and analytics capacity require immediate intervention."
+      : adjustedGap > 500
+        ? "Managed risk path: hiring and mobility reduce the worst shortages, but specialist retention remains exposed."
+        : "Resilient path: current levers materially reduce the forecast gap, with mobility and upskilling doing most of the work.";
+
   return {
     chartData,
     resilienceScore: Math.round(resilienceScore * 10) / 10,
     deptRisks,
-    projectedGap:   Math.max(0, gap),
-    costOfInaction: Math.round(gap * 14200),
-    highRiskRoles:  Math.max(0, Math.round(gap / 300)),
-    roleGaps:       MOCK_ROLE_GAPS,
+    projectedGap:   adjustedGap,
+    costOfInaction,
+    highRiskRoles:  roleGaps.filter((role) => role.gap < -40).length,
+    roleGaps,
+    assumptions: manufacturingWorkforceAssumptions,
+    costBreakdown,
+    talentPools: manufacturingInternalTalentPools,
+    actionPlans: manufacturingRecommendations,
+    hiringDrafts: manufacturingHiringPlanDrafts,
+    timelineEvents: manufacturingTimelineEvents,
+    gapReductionPotential,
+    internalReadyNow,
+    internalTrainable,
+    planCost,
+    modelNarrative,
   };
 }
 

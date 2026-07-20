@@ -9,14 +9,49 @@ import {
   GraduationCap,
   Repeat2,
   Sparkles,
+  X,
   Zap,
 } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { getAuthToken, getJson } from "@/lib/api";
 import type { EmployerDashboardData } from "@/lib/backendTypes";
-import { manufacturingRecommendations, manufacturingSimulationSummary } from "@/lib/mock-data";
+import {
+  manufacturingHiringPlanDrafts,
+  manufacturingInternalTalentPools,
+  manufacturingRecommendations,
+  manufacturingSimulationSummary,
+} from "@/lib/mock-data";
+import type { SimResult, SimState, SimulatorActionPlan } from "@/lib/simulator/types";
 
-const actions = [
+const LAST_SIMULATION_KEY = "simploy-employer-last-simulation";
+const HIRING_PLAN_KEY = "simploy-employer-hiring-plan";
+
+type LastSimulationContext = {
+  savedAt: string;
+  state: SimState;
+  result: SimResult;
+};
+
+type ActionCard = {
+  id: string;
+  priority: number;
+  title: string;
+  category: SimulatorActionPlan["category"];
+  problem: string;
+  recommendation: string;
+  impact: SimulatorActionPlan["impact"];
+  cost: string;
+  timeline: string;
+  buttonLabel: string;
+  label: SimulatorActionPlan["priority"];
+  owner?: string;
+  gapReduction?: number;
+  confidence?: number;
+  linkedRoles?: string[];
+  nextStep?: string;
+};
+
+const actions: ActionCard[] = [
   ...manufacturingRecommendations.map((item, index) => ({
     id: item.id,
     priority: index + 1,
@@ -35,8 +70,30 @@ const actions = [
     label: item.priority,
   })),
 ];
-
-type ActionCard = (typeof actions)[number];
+function actionFromPlan(item: SimulatorActionPlan, index: number): ActionCard {
+  return {
+    id: item.id,
+    priority: index + 1,
+    title: item.title,
+    category: item.category,
+    problem: item.problem,
+    recommendation: item.recommendation,
+    impact: item.impact,
+    cost: item.estimatedCost,
+    timeline: item.timeline,
+    buttonLabel:
+      item.category === "Hire" ? "Create Hiring Plan" :
+      item.category === "Upskill" ? "Generate Learning Path" :
+      item.category === "Mobility" ? "View Transition Pool" :
+      item.category === "Automate" ? "View Automation Plan" : "Create Retention Plan",
+    label: item.priority,
+    owner: item.owner,
+    gapReduction: item.gapReduction,
+    confidence: item.confidence,
+    linkedRoles: item.linkedRoles,
+    nextStep: item.nextStep,
+  };
+}
 
 interface RecommendationResponse {
   recommendations: Array<{
@@ -111,6 +168,19 @@ const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
 export default function ActionEnginePage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [dbActions, setDbActions] = useState<ActionCard[] | null>(null);
+  const [simulationContext, setSimulationContext] = useState<LastSimulationContext | null>(null);
+  const [selectedAction, setSelectedAction] = useState<ActionCard | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(LAST_SIMULATION_KEY);
+      if (raw) {
+        setSimulationContext(JSON.parse(raw) as LastSimulationContext);
+      }
+    } catch {
+      setSimulationContext(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (!getAuthToken()) return;
@@ -124,12 +194,24 @@ export default function ActionEnginePage() {
       .catch(() => setDbActions(null));
   }, []);
 
-  const visibleActions = dbActions?.length ? dbActions : actions;
+  const simulationActions = simulationContext?.result.actionPlans?.map(actionFromPlan);
+  const visibleActions = simulationActions?.length ? simulationActions : dbActions?.length ? dbActions : actions;
+  const summary = simulationContext?.result;
 
   const filteredActions = useMemo(
     () => visibleActions.filter((action) => selectedFilter === "All" || action.category === selectedFilter),
     [selectedFilter, visibleActions]
   );
+
+  const openPlan = (action: ActionCard) => {
+    setSelectedAction(action);
+    if (action.category === "Hire") {
+      const draft = manufacturingHiringPlanDrafts.find((plan) =>
+        action.linkedRoles?.some((role) => plan.role.toLowerCase().includes(role.toLowerCase().split(" ")[0])),
+      ) ?? manufacturingHiringPlanDrafts[0];
+      window.localStorage.setItem(HIRING_PLAN_KEY, JSON.stringify({ createdAt: new Date().toISOString(), draft, sourceAction: action.title }));
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#FFF8FC] text-[#1E2A44]">
@@ -153,7 +235,7 @@ export default function ActionEnginePage() {
           <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-center">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Gap detected</p>
-              <p className="mt-1 font-bold text-[#1E2A44]">{manufacturingSimulationSummary.projectedGap.toLocaleString()} roles</p>
+              <p className="mt-1 font-bold text-[#1E2A44]">{(summary?.projectedGap ?? manufacturingSimulationSummary.projectedGap).toLocaleString()} roles</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Main risk</p>
@@ -164,7 +246,7 @@ export default function ActionEnginePage() {
               <p className="mt-1 font-bold text-[#087C7E]">{manufacturingSimulationSummary.strongestActionMix.join(" + ")}</p>
             </div>
             <span className="rounded-full bg-[#E7F0E9] px-4 py-2 text-xs font-bold text-[#087C7E]">
-              Based on current gap signals
+              {simulationContext ? "Loaded from latest simulator run" : "Based on current gap signals"}
             </span>
           </div>
         </section>
@@ -241,9 +323,27 @@ export default function ActionEnginePage() {
                         </div>
                       ))}
                     </div>
+                    {(action.owner || action.gapReduction || action.confidence) && (
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        {[
+                          ["Owner", action.owner ?? "HR", "text-[#1E2A44]"],
+                          ["Gap cut", action.gapReduction ? `${action.gapReduction} roles` : "TBD", "text-[#087C7E]"],
+                          ["Confidence", action.confidence ? `${action.confidence}%` : "TBD", "text-[#B08A44]"],
+                        ].map(([label, value, color]) => (
+                          <div key={label} className="rounded-lg bg-[#F7F3EA] p-2">
+                            <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+                            <p className={`mt-1 truncate text-xs font-bold ${color}`}>{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="mt-auto pt-5">
-                      <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#97742F] hover:shadow-[0_10px_22px_rgba(70,60,35,0.22)]">
+                      <button
+                        type="button"
+                        onClick={() => openPlan(action)}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#97742F] hover:shadow-[0_10px_22px_rgba(70,60,35,0.22)]"
+                      >
                         {action.buttonLabel}
                         <ArrowRight size={15} />
                       </button>
@@ -311,6 +411,101 @@ export default function ActionEnginePage() {
           </aside>
         </div>
       </section>
+
+      {selectedAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E2A44]/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_24px_80px_rgba(26,16,51,0.28)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">{selectedAction.category} plan</p>
+                <h3 className="mt-1 text-2xl font-bold text-[#1E2A44]">{selectedAction.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#5D6470]">{selectedAction.nextStep ?? selectedAction.recommendation}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedAction(null)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F7F3EA]"
+                aria-label="Close plan preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                ["Owner", selectedAction.owner ?? "HR"],
+                ["Gap reduction", selectedAction.gapReduction ? `${selectedAction.gapReduction} roles` : "TBD"],
+                ["Confidence", selectedAction.confidence ? `${selectedAction.confidence}%` : "TBD"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
+                  <p className="mt-1 text-sm font-bold text-[#1E2A44]">{value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 rounded-lg border border-[#EAE3D3] bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Execution preview</p>
+              {selectedAction.category === "Hire" ? (
+                <div className="mt-3 grid gap-3">
+                  {manufacturingHiringPlanDrafts.slice(0, 2).map((plan) => (
+                    <div key={plan.id} className="rounded-lg bg-[#F7F3EA] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-[#1E2A44]">{plan.role}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#6B7280]">{plan.department} / {plan.targetStart}</p>
+                        </div>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#B08A44]">{plan.targetHires} hires</span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-[#5D6470]">{plan.successMetric}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : selectedAction.category === "Mobility" || selectedAction.category === "Upskill" ? (
+                <div className="mt-3 grid gap-3">
+                  {manufacturingInternalTalentPools.slice(0, 3).map((pool) => (
+                    <div key={pool.id} className="rounded-lg bg-[#F7F3EA] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-[#1E2A44]">{pool.sourceRole} to {pool.targetRole}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#6B7280]">{pool.program}</p>
+                        </div>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#087C7E]">
+                          {pool.employeesReadyNow + pool.employeesTrainable} people
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-[#5D6470]">
+                        {pool.employeesReadyNow} ready now, {pool.employeesTrainable} trainable in {pool.timeToProductive}.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 rounded-lg bg-[#F7F3EA] p-4 text-sm leading-6 text-[#5D6470]">
+                  Create workflow inventory, validate automation exposure, assign owner, and track savings against the simulation plan.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <a
+                href={selectedAction.category === "Hire" ? "/employer/jobs" : "/employer/action-engine"}
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 text-sm font-bold text-white"
+              >
+                {selectedAction.category === "Hire" ? "Open Jobs / Hiring Plan" : "Keep in Action Engine"}
+                <ArrowRight size={15} />
+              </a>
+              <button
+                type="button"
+                onClick={() => setSelectedAction(null)}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-[#EAE3D3] bg-white px-4 text-sm font-bold text-[#6B7280]"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

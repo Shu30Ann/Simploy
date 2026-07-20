@@ -112,6 +112,16 @@ export interface DepartmentWorkforcePlan {
   automationExposure: number;
   skillReadiness: number;
   stability: DepartmentStability;
+  site?: string;
+  avgAge?: number;
+  avgTenure?: number;
+  openRoles?: number;
+  retirementEligible10Y?: number;
+  pendingResignations?: number;
+  flightRiskCount?: number;
+  inUpskilling?: number;
+  criticalProcesses?: string[];
+  topSkills?: string[];
 }
 
 export interface SimulationRoleGap {
@@ -123,6 +133,12 @@ export interface SimulationRoleGap {
   marketSupply: MarketSupply;
   prioritySkills: string[];
   recommendedAction: RecommendationCategory;
+  avgSalary?: number;
+  timeToFillMonths?: number;
+  internalReadyNow?: number;
+  internalTrainable?: number;
+  externalSupplyIndex?: number;
+  riskReason?: string;
 }
 
 export interface SimulationSkillGap {
@@ -131,6 +147,10 @@ export interface SimulationSkillGap {
   targetReadiness: number;
   affectedRoles: string[];
   recommendedProgram: string;
+  trainingCostPerPerson?: number;
+  programLengthWeeks?: number;
+  availableCohort?: number;
+  businessImpact?: string;
 }
 
 export interface SimulationRecommendation {
@@ -143,6 +163,58 @@ export interface SimulationRecommendation {
   estimatedCost: string;
   timeline: string;
   impact: "High" | "Medium-High" | "Medium";
+  owner?: string;
+  gapReduction?: number;
+  confidence?: number;
+  linkedRoles?: string[];
+  nextStep?: string;
+}
+
+export interface WorkforceAssumption {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+}
+
+export interface InternalTalentPool {
+  id: string;
+  sourceRole: string;
+  targetRole: string;
+  department: string;
+  employeesReadyNow: number;
+  employeesTrainable: number;
+  readinessScore: number;
+  program: string;
+  estimatedCost: string;
+  timeToProductive: string;
+  skillsToClose: string[];
+}
+
+export interface HiringPlanDraft {
+  id: string;
+  role: string;
+  department: string;
+  targetHires: number;
+  priority: "Critical" | "High" | "Medium";
+  targetStart: string;
+  budget: string;
+  channels: string[];
+  successMetric: string;
+}
+
+export interface CostBreakdownItem {
+  label: string;
+  value: number;
+  detail: string;
+}
+
+export interface WorkforceTimelineEvent {
+  date: string;
+  label: string;
+  severity: "critical" | "warning" | "medium";
+  detail: string;
+  linkedActionId: string;
 }
 
 export interface EmployeeDemoProfile {

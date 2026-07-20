@@ -13,16 +13,26 @@ import GapTimeline             from "@/components/simulator/GapTimeline";
 import StrategyPanel           from "@/components/simulator/StrategyPanel";
 import DemographicContextPanel from "@/components/simulator/DemographicContextPanel";
 import ActionEngine            from "@/components/simulator/ActionEngine";
+import { AssumptionsPanel } from "@/components/simulator/AssumptionsPanel";
+import { SimulationRunSummary } from "@/components/simulator/SimulationRunSummary";
 
 const DEFAULT_STATE_B: SimState = {
   ...DEFAULT_STATE,
   attritionRate: 25,
   aiLevel: 3,
 };
+const LAST_SIMULATION_KEY = "simploy-employer-last-simulation";
 
 interface SimulationRecord {
   id: number;
   result: SimResult;
+}
+
+function hydrateSimulationResult(state: SimState, incoming: SimResult): SimResult {
+  return {
+    ...runMockSimulation(state),
+    ...incoming,
+  };
 }
 
 export default function SimulatorPage() {
@@ -47,10 +57,10 @@ export default function SimulatorPage() {
       };
       if (getAuthToken()) {
         const saved = await postJson<SimulationRecord, typeof payload>("/simulations", payload, { auth: true });
-        r = saved.result;
+        r = hydrateSimulationResult(simState, saved.result);
         setLastSavedSimulationId(saved.id);
       } else {
-        r = await postJson<SimResult, typeof payload>("/simulations/preview", payload);
+        r = hydrateSimulationResult(simState, await postJson<SimResult, typeof payload>("/simulations/preview", payload));
         setLastSavedSimulationId(null);
       }
     } catch {
@@ -59,6 +69,16 @@ export default function SimulatorPage() {
       setLastSavedSimulationId(null);
     }
     setResult(r);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        LAST_SIMULATION_KEY,
+        JSON.stringify({
+          savedAt: new Date().toISOString(),
+          state: simState,
+          result: r,
+        }),
+      );
+    }
     setHasSimulated(true);
     if (compareMode) setResultB(runMockSimulation(stateB));
     setIsRunning(false);
@@ -104,6 +124,7 @@ export default function SimulatorPage() {
             compareMode={compareMode}
             onToggleCompare={handleToggleCompare}
           />
+          <SimulationRunSummary result={result} hasSimulated={hasSimulated} />
           {lastSavedSimulationId && (
             <div className="rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] px-4 py-3 text-sm font-bold text-[#087C7E]">
               Saved simulation #{lastSavedSimulationId} to the database.
@@ -118,13 +139,14 @@ export default function SimulatorPage() {
             resultB={compareMode ? resultB : undefined}
           />
           {hasSimulated && <RoleGapTable roleGaps={result.roleGaps} />}
-          {hasSimulated && <GapTimeline />}
+          {hasSimulated && <GapTimeline events={result.timelineEvents} />}
           <StrategyPanel />
         </div>
 
         {/* Right column */}
         <div className="flex flex-col gap-4 flex-shrink-0" style={{ width: "var(--sim-right-w)" }}>
           <DemographicContextPanel />
+          <AssumptionsPanel assumptions={result.assumptions} />
           <ActionEngine result={result} />
         </div>
       </div>

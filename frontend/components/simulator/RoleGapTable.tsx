@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Download, AlertTriangle } from "lucide-react";
 import type { RoleGap } from "@/lib/simulator/types";
 
@@ -16,6 +17,12 @@ interface Props {
 
 export default function RoleGapTable({ roleGaps }: Props) {
   const criticalCount = roleGaps.filter(r => r.marketSupply === "Critical").length;
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
+
+  const exportPreview = () => {
+    setExportMessage(`CSV export preview ready: ${roleGaps.length} role-gap rows prepared.`);
+    window.setTimeout(() => setExportMessage(null), 2800);
+  };
 
   return (
     <div className="bg-white rounded-2xl border p-5" style={{ borderColor: "var(--border)" }}>
@@ -29,19 +36,27 @@ export default function RoleGapTable({ roleGaps }: Props) {
             {criticalCount} critical roles with no viable market supply
           </p>
         </div>
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors hover:bg-gray-50"
+        <button
+          type="button"
+          onClick={exportPreview}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors hover:bg-gray-50"
           style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
           <Download size={12} />
           Export CSV
         </button>
       </div>
+      {exportMessage && (
+        <div className="mb-3 rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: "var(--teal-border)", background: "var(--bg-teal-soft)", color: "var(--teal)" }}>
+          {exportMessage}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              {["Role", "Department", "Current", "2030 Need", "Gap", "Market Supply"].map(col => (
+              {["Role", "Department", "Current", "2031 Need", "Gap", "Internal Pool", "Market Supply"].map(col => (
                 <th key={col} className="text-left pb-2 pr-4"
                   style={{ color: "var(--text-muted)", fontSize: 10, fontWeight: 600,
                     letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -60,9 +75,16 @@ export default function RoleGapTable({ roleGaps }: Props) {
                   <td className="py-2.5 pr-4">
                     <div className="flex items-center gap-1.5">
                       {isCritical && <AlertTriangle size={11} color="#B08A44" />}
-                      <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-                        {row.role}
-                      </span>
+                      <div>
+                        <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                          {row.role}
+                        </span>
+                        {row.riskReason && (
+                          <p className="mt-0.5 max-w-[260px] text-[10px] leading-4" style={{ color: "var(--text-muted)" }}>
+                            {row.riskReason}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="py-2.5 pr-4">
@@ -83,6 +105,14 @@ export default function RoleGapTable({ roleGaps }: Props) {
                       style={{ color: "var(--risk-critical)" }}>
                       {row.gap}
                     </span>
+                  </td>
+                  <td className="py-2.5 pr-4">
+                    <div className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                      {(row.internalReadyNow ?? 0).toLocaleString()} ready
+                    </div>
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                      {(row.internalTrainable ?? 0).toLocaleString()} trainable
+                    </p>
                   </td>
                   <td className="py-2.5">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
