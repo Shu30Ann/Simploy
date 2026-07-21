@@ -77,6 +77,8 @@ type ShellState = {
 };
 
 type JourneyNodeStatus = "start" | "completed" | "active" | "future" | "locked" | "destination";
+type JourneyMapMode = "roadmap" | "skills" | "decisions";
+type JourneyMapFocus = "overview" | "current" | "destination";
 
 type JourneyNode = {
   id: string;
@@ -89,6 +91,8 @@ type JourneyNode = {
   milestone: CareerGpsMilestone | null;
   sequence: number;
   desktop: { x: number; y: number };
+  lane: number;
+  mapModeHint: JourneyMapMode;
 };
 
 type JourneyNodeMeta = {
@@ -151,6 +155,30 @@ const routeHexColor: Record<CareerGpsRouteType, string> = {
   accelerated: "#06B6D4",
   balanced: "#6B46C1",
 };
+
+const journeyMapModes: Array<{ value: JourneyMapMode; label: string; description: string }> = [
+  {
+    value: "roadmap",
+    label: "Route",
+    description: "See the complete path from current role to destination.",
+  },
+  {
+    value: "skills",
+    label: "Skills",
+    description: "Highlight the missing skill or evidence behind each stop.",
+  },
+  {
+    value: "decisions",
+    label: "Decisions",
+    description: "Emphasize branch points and route trade-offs.",
+  },
+];
+
+const journeyMapFocusModes: Array<{ value: JourneyMapFocus; label: string }> = [
+  { value: "overview", label: "Overview" },
+  { value: "current", label: "Current" },
+  { value: "destination", label: "Goal" },
+];
 
 const scenarioOptions: { code: CareerGpsScenarioCode; label: string; description: string }[] = [
   {
@@ -1661,6 +1689,8 @@ function buildJourneyNodes(
     milestone,
     sequence: milestone.sequence,
     desktop: positions.milestones[index],
+    lane: index % 3,
+    mapModeHint: isDecisionNode({ title: milestone.title } as JourneyNode) ? "decisions" : "skills",
   }));
 
   return [
@@ -1675,6 +1705,8 @@ function buildJourneyNodes(
       milestone: null,
       sequence: 0,
       desktop: positions.start,
+      lane: 1,
+      mapModeHint: "roadmap",
     },
     ...milestoneNodes,
     {
@@ -1688,6 +1720,8 @@ function buildJourneyNodes(
       milestone: null,
       sequence: route.milestones.length + 1,
       desktop: positions.destination,
+      lane: 1,
+      mapModeHint: "roadmap",
     },
   ] satisfies JourneyNode[];
 }
@@ -1785,6 +1819,7 @@ function JourneyMilestoneButton({
   active,
   next,
   dimmed,
+  mapMode,
   riasecResult,
   employeeName,
   routeColor,
@@ -1797,6 +1832,7 @@ function JourneyMilestoneButton({
   active: boolean;
   next: boolean;
   dimmed: boolean;
+  mapMode: JourneyMapMode;
   riasecResult: RiasecResult | null;
   employeeName: string;
   routeColor: string;
@@ -1810,21 +1846,39 @@ function JourneyMilestoneButton({
   const nodeSize = active ? "h-14 w-14 text-base" : "h-12 w-12 text-sm";
   const requirementText = locked ? `Requirement: ${node.missingRequirement}` : next ? node.missingRequirement : null;
   const destinationText = node.status === "destination" ? `${node.stage} / ${confidenceLevel(node.readiness)}` : null;
+  const modeHighlighted =
+    mapMode === "roadmap" ||
+    node.mapModeHint === mapMode ||
+    active ||
+    next ||
+    selected ||
+    node.status === "start" ||
+    node.status === "destination";
+  const lensText =
+    mapMode === "skills"
+      ? node.missingRequirement
+      : mapMode === "decisions"
+        ? decisionPoint
+          ? "Branch point"
+          : node.status === "destination"
+            ? "Route outcome"
+            : "Route checkpoint"
+        : node.timing;
 
   return (
     <motion.button
       type="button"
       onClick={onSelect}
-      disabled={locked}
       aria-pressed={selected}
       title={requirementText ?? destinationText ?? `${node.title}: ${nodeStateLabel(node, next)}`}
       aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${nodeStateLabel(node, next)}, ${requirementText ?? `missing requirement ${node.missingRequirement}`}`}
       initial={reduceMotion ? false : { opacity: 0, scale: 0.95, y: 8 }}
-      animate={reduceMotion ? { opacity: dimmed ? 0.42 : 1 } : { opacity: dimmed ? 0.42 : 1, scale: 1, y: 0 }}
-      whileHover={reduceMotion || locked ? undefined : { scale: 1.035 }}
-      whileFocus={reduceMotion || locked ? undefined : { scale: 1.035 }}
+      animate={reduceMotion ? { opacity: dimmed || !modeHighlighted ? 0.46 : 1 } : { opacity: dimmed || !modeHighlighted ? 0.46 : 1, scale: 1, y: 0 }}
+      whileHover={reduceMotion ? undefined : { scale: 1.045, y: -2 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+      whileFocus={reduceMotion ? undefined : { scale: 1.035 }}
       transition={{ duration: 0.24, ease: "easeOut", delay: reduceMotion ? 0 : Math.min(node.sequence * 0.045, 0.28) }}
-      className={`group absolute z-10 flex w-[152px] -translate-x-1/2 -translate-y-1/2 items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+      className={`group absolute z-10 flex w-[170px] -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center rounded-lg px-2 py-1 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
         labelAbove ? "flex-col-reverse" : "flex-col"
       }`}
       style={{ left: `${node.desktop.x}%`, top: `${node.desktop.y}%` }}
@@ -1879,7 +1933,11 @@ function JourneyMilestoneButton({
         )}
       </span>
       <span className={`${labelAbove ? "mb-2" : "mt-2"} max-w-full`}>
-        <span className="line-clamp-2 min-h-9 rounded-md bg-white/95 px-2 text-xs font-bold leading-[18px] text-[#1A1033] shadow-sm ring-1 ring-[#F0EBF8]">
+        <span
+          className={`line-clamp-2 min-h-9 rounded-md bg-white/95 px-2 text-xs font-bold leading-[18px] text-[#1A1033] shadow-sm ring-1 transition group-hover:ring-[#E8197A]/30 ${
+            selected ? "ring-[#E8197A]/40" : modeHighlighted ? "ring-[#DDEAF0]" : "ring-[#F0EBF8]"
+          }`}
+        >
           {node.title}
         </span>
         <span
@@ -1896,6 +1954,9 @@ function JourneyMilestoneButton({
           }`}
         >
           {nodeStateLabel(node, next)}
+        </span>
+        <span className="mt-1 line-clamp-1 rounded-md bg-white/95 px-2 py-0.5 text-[11px] font-bold text-[#526071] shadow-sm">
+          {lensText}
         </span>
         {active && (
           <span className="mt-1 inline-flex rounded-full bg-[#FFF0F8] px-2 py-0.5 text-[11px] font-black text-[#E8197A] shadow-sm">
@@ -2147,6 +2208,7 @@ function JourneyDetailPanel({
   canNext: boolean;
 }) {
   const reduceMotion = useReducedMotion() ?? false;
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const milestone = node.milestone;
   const routeRoles = roadmap.routes.map((item) => item.target_occupation.title);
   const requiredSkills = milestoneDetail?.required_skills ?? route.skill_gaps.map((gap) => gap.skill_name);
@@ -2165,6 +2227,10 @@ function JourneyDetailPanel({
   const validCertification = milestoneDetail?.recommended_certification && !/no mandatory|no required|none/i.test(milestoneDetail.recommended_certification)
     ? milestoneDetail.recommended_certification
     : null;
+
+  useEffect(() => {
+    setActionMessage(null);
+  }, [node.id]);
 
   const saveMilestone = (statusValue: CareerGpsProgressStatus) => {
     if (!milestone) return Promise.resolve();
@@ -2229,6 +2295,56 @@ function JourneyDetailPanel({
         <DetailMetric label="Readiness" value={`${readiness}%`} />
         <DetailMetric label="Timing" value={milestoneDetail?.estimated_timeline ?? node.timing} />
       </motion.div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <Link
+          href={routes.employeeCareerBuddy}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#FFD0E8] bg-[#FFF0F8] px-3 text-xs font-bold text-[#E8197A] outline-none transition hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+        >
+          <Bot size={15} />
+          Ask Buddy
+        </Link>
+        <button
+          type="button"
+          onClick={() => setActionMessage(`Focus saved for ${node.title}. Demo mode would pin this station to your weekly plan.`)}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#BAF3FF] bg-[#E0F9FF] px-3 text-xs font-bold text-[#087C7E] outline-none transition hover:border-[#06B6D4] focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-2"
+        >
+          <Save size={15} />
+          Save Focus
+        </button>
+        <button
+          type="button"
+          onClick={() => setActionMessage(`${routeLabels[route.route_type]} comparison opened for ${node.title}. Demo proof uses stored route scores and milestones.`)}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#6B46C1] focus-visible:ring-2 focus-visible:ring-[#6B46C1] focus-visible:ring-offset-2"
+        >
+          <SlidersHorizontal size={15} />
+          Compare
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {actionMessage && (
+          <motion.div
+            key={actionMessage}
+            initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="mt-3 flex items-start justify-between gap-3 rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2 text-xs font-bold leading-5 text-[#047857]"
+            role="status"
+          >
+            <span>{actionMessage}</span>
+            <button
+              type="button"
+              onClick={() => setActionMessage(null)}
+              className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#047857] outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-[#047857]"
+              aria-label="Dismiss action confirmation"
+            >
+              <X size={13} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
@@ -2401,6 +2517,7 @@ function MobileJourneyPath({
   selectedNode,
   activeNodeId,
   nextNodeId,
+  mapMode,
   riasecResult,
   employeeName,
   routeColor,
@@ -2412,15 +2529,56 @@ function MobileJourneyPath({
   selectedNode: JourneyNode;
   activeNodeId: string;
   nextNodeId: string | null;
+  mapMode: JourneyMapMode;
   riasecResult: RiasecResult | null;
   employeeName: string;
   routeColor: string;
   reduceMotion: boolean;
   onSelectNode: (node: JourneyNode) => void;
 }) {
+  const completedStops = nodes.filter((node) => node.status === "start" || node.status === "completed").length;
+  const progressPercent = Math.round((completedStops / Math.max(nodes.length, 1)) * 100);
+  const activeNode = nodes.find((node) => node.id === activeNodeId) ?? nodes[0];
+  const destinationNode = nodes[nodes.length - 1];
+
   return (
     <div className="mt-5 lg:hidden">
-      <div className="relative space-y-3 before:absolute before:bottom-8 before:left-6 before:top-8 before:w-1 before:rounded-full before:bg-[#E2D9F3]">
+      <div className="mb-3 rounded-lg border border-[#DDEAF0] bg-white p-3 shadow-[0_8px_28px_rgba(26,16,51,0.08)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-[#1A1033]">
+              <Compass size={14} style={{ color: routeColor }} />
+              Mobile GPS
+            </p>
+            <p className="mt-1 truncate text-sm font-bold text-[#526071]">
+              {activeNode?.title ?? "Current stop"} to {destinationNode?.title ?? "goal"}
+            </p>
+          </div>
+          <span className="rounded-lg bg-[#FDFCFF] px-3 py-2 text-xs font-black text-[#1A1033]">
+            {progressPercent}%
+          </span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E2D9F3]" aria-hidden="true">
+          <motion.div
+            className="h-full rounded-full"
+            style={{ backgroundColor: routeColor }}
+            initial={reduceMotion ? false : { width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.38, ease: "easeOut" }}
+          />
+        </div>
+      </div>
+
+      <div className="relative space-y-3">
+        <span className="absolute bottom-8 left-6 top-8 w-1 rounded-full bg-[#E2D9F3]" aria-hidden="true" />
+        <motion.span
+          className="absolute left-6 top-8 w-1 origin-top rounded-full"
+          style={{ backgroundColor: routeColor }}
+          initial={reduceMotion ? false : { scaleY: 0 }}
+          animate={{ scaleY: Math.max(0.08, progressPercent / 100) }}
+          transition={{ duration: 0.42, ease: "easeOut" }}
+          aria-hidden="true"
+        />
         {nodes.map((node) => {
           const meta = nodeMetaById[node.id] ?? { sharedCompleted: false, changedFromRecommended: false };
           const selected = selectedNode.id === node.id;
@@ -2429,12 +2587,21 @@ function MobileJourneyPath({
           const locked = node.status === "locked";
           const decisionPoint = isDecisionNode(node);
           const requirementText = locked ? `Requirement: ${node.missingRequirement}` : next ? node.missingRequirement : null;
+          const lensText =
+            mapMode === "skills"
+              ? node.missingRequirement
+              : mapMode === "decisions"
+                ? decisionPoint
+                  ? "Branch point"
+                  : node.status === "destination"
+                    ? "Route outcome"
+                    : "Route checkpoint"
+                : node.timing;
           return (
             <motion.button
               key={node.id}
               type="button"
               onClick={() => onSelectNode(node)}
-              disabled={locked}
               aria-pressed={selected}
               title={requirementText ?? `${node.title}: ${nodeStateLabel(node, next)}`}
               aria-label={`${node.title}, ${node.stage}, ${node.timing}, readiness ${node.readiness}%, ${nodeStateLabel(node, next)}, ${requirementText ?? `missing requirement ${node.missingRequirement}`}`}
@@ -2443,7 +2610,7 @@ function MobileJourneyPath({
               whileHover={reduceMotion || locked ? undefined : { scale: 1.01 }}
               whileFocus={reduceMotion || locked ? undefined : { scale: 1.01 }}
               transition={{ duration: 0.22, ease: "easeOut", delay: Math.min(node.sequence * 0.035, 0.2) }}
-              className={`relative z-10 grid w-full grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-lg border bg-white p-3 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+              className={`relative z-10 grid w-full cursor-pointer grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-lg border bg-white p-3 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
                 selected
                   ? "border-[#E8197A] ring-2 ring-[#E8197A]/15"
                   : next
@@ -2491,6 +2658,9 @@ function MobileJourneyPath({
                 <span className="block text-sm font-bold leading-5 text-[#1A1033]">{node.title}</span>
                 <span className="mt-1 block text-xs font-semibold text-[#6B7280]">
                   {node.stage} / {node.timing} / {node.readiness}% ready
+                </span>
+                <span className="mt-1 block truncate rounded-md bg-[#FDFCFF] px-2 py-1 text-xs font-bold text-[#526071]">
+                  {lensText}
                 </span>
                 <span className="mt-1 block text-xs font-bold text-[#E8197A]">
                   {nodeStateLabel(node, next)}
@@ -2558,6 +2728,8 @@ function CareerJourneyMap({
   );
   const activeNode = nodes.find((node) => node.status === "active") ?? nodes.find((node) => node.status === "destination") ?? nodes[0];
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [mapMode, setMapMode] = useState<JourneyMapMode>("roadmap");
+  const [mapFocus, setMapFocus] = useState<JourneyMapFocus>("overview");
   const [milestoneDetail, setMilestoneDetail] = useState<CareerGpsMilestoneDetail | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -2678,18 +2850,55 @@ function CareerJourneyMap({
   const changedFutureNodes = nodes.filter((node) => nodeMetaById[node.id]?.changedFromRecommended);
   const sharedCompletedNodes = nodes.filter((node) => nodeMetaById[node.id]?.sharedCompleted);
   const routeSummary = routeProgressSummary(activeRoute, progressByKey);
+  const focusNodeByMode: Record<JourneyMapFocus, JourneyNode | null> = {
+    overview: null,
+    current: activeNode,
+    destination: nodes[nodes.length - 1] ?? null,
+  };
+  const mapModeSummary =
+    mapMode === "skills"
+      ? "Skill lens is on: each stop emphasizes the missing proof or capability behind the next move."
+      : mapMode === "decisions"
+        ? "Decision lens is on: branch points and route trade-offs are emphasized for comparison."
+        : "Route lens is on: follow the full GPS path from today to the target role.";
+  const handleMapFocus = (focus: JourneyMapFocus) => {
+    setMapFocus(focus);
+    const focusNode = focusNodeByMode[focus];
+    if (focusNode && focusNode.status !== "locked") setSelectedNodeId(focusNode.id);
+  };
+  const handleSelectJourneyNode = (node: JourneyNode) => {
+    setSelectedNodeId(node.id);
+    if (node.id === activeNode.id) {
+      setMapFocus("current");
+      return;
+    }
+    if (node.id === nodes[nodes.length - 1]?.id) {
+      setMapFocus("destination");
+      return;
+    }
+    setMapFocus("overview");
+  };
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_36px_rgba(232,25,122,0.09)] sm:p-5">
+    <section
+      className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_36px_rgba(232,25,122,0.09)] sm:p-5"
+      aria-labelledby="career-gps-map-heading"
+      aria-describedby="career-gps-map-summary"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
             <Map size={14} />
             Main journey map
           </p>
-          <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#1A1033] sm:text-3xl">{activeRoute.title}</h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
+          <h2 id="career-gps-map-heading" className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#1A1033] sm:text-3xl">
+            {activeRoute.title}
+          </h2>
+          <p id="career-gps-map-summary" className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Stored milestones rendered as a curved route. Completed progress, active segment, route alternatives, and the current marker all use real roadmap state.
+          </p>
+          <p className="sr-only" aria-live="polite">
+            {mapModeSummary}
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center sm:min-w-[340px]">
@@ -2705,6 +2914,46 @@ function CareerJourneyMap({
             <p className="text-lg font-bold" style={{ color: routeColor }}>{activeRoute.milestones.length}</p>
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Stops</p>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="flex flex-wrap gap-2" aria-label="Career GPS map mode">
+          {journeyMapModes.map((mode) => (
+            <button
+              key={mode.value}
+              type="button"
+              onClick={() => setMapMode(mode.value)}
+              aria-pressed={mapMode === mode.value}
+              title={mode.description}
+              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+                mapMode === mode.value
+                  ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
+                  : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#DDD0F8] hover:text-[#1A1033]"
+              }`}
+            >
+              {mode.value === "roadmap" ? <Route size={14} /> : mode.value === "skills" ? <Target size={14} /> : <GitBranch size={14} />}
+              {mode.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 lg:justify-end" aria-label="Career GPS map focus">
+          {journeyMapFocusModes.map((focus) => (
+            <button
+              key={focus.value}
+              type="button"
+              onClick={() => handleMapFocus(focus.value)}
+              aria-pressed={mapFocus === focus.value}
+              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+                mapFocus === focus.value
+                  ? "border-[#06B6D4] bg-[#E0F9FF] text-[#087C7E]"
+                  : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#BAF3FF] hover:text-[#087C7E]"
+              }`}
+            >
+              {focus.value === "overview" ? <Map size={14} /> : focus.value === "current" ? <MapPin size={14} /> : <Flag size={14} />}
+              {focus.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -2734,9 +2983,23 @@ function CareerJourneyMap({
       <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div>
           <div className="hidden lg:block">
-            <div className="relative min-h-[620px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#FFFCFE] xl:min-h-[68vh]">
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(226,217,243,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(226,217,243,0.34)_1px,transparent_1px)] bg-[size:44px_44px]" />
+            <div className="relative min-h-[640px] overflow-hidden rounded-lg border border-[#DDEAF0] bg-[#F8FBFD] shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_18px_52px_rgba(26,16,51,0.12)] xl:min-h-[70vh]">
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,145,178,0.12)_1px,transparent_1px),linear-gradient(0deg,rgba(107,70,193,0.10)_1px,transparent_1px)] bg-[size:40px_40px]" />
+              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/90 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/85 to-transparent" />
+              <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-white/80 to-transparent" />
+              <div className="absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white/80 to-transparent" />
               <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="careerGpsRouteGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                    <stop offset="0%" stopColor="#10B981" />
+                    <stop offset="48%" stopColor={routeColor} />
+                    <stop offset="100%" stopColor="#1A1033" />
+                  </linearGradient>
+                  <filter id="careerGpsRouteGlow" x="-20%" y="-60%" width="140%" height="220%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="1.2" floodColor={routeColor} floodOpacity="0.42" />
+                  </filter>
+                </defs>
                 <AnimatePresence mode="wait">
                   <motion.g
                     key={activeRoute.route_type}
@@ -2748,22 +3011,45 @@ function CareerJourneyMap({
                     <motion.path
                       d={fullPath}
                       fill="none"
-                      stroke="#D6C9EA"
-                      strokeWidth="1.8"
+                      stroke="#FFFFFF"
+                      strokeWidth="8"
                       strokeLinecap="round"
-                      strokeDasharray="4 4"
-                      opacity="0.75"
+                      opacity="0.9"
+                      initial={reduceMotion ? false : { pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.72, ease: "easeInOut" }}
+                    />
+                    <motion.path
+                      d={fullPath}
+                      fill="none"
+                      stroke="#B7C4D6"
+                      strokeWidth="4.4"
+                      strokeLinecap="round"
+                      opacity="0.52"
                       initial={reduceMotion ? false : { pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.65, ease: "easeInOut" }}
+                    />
+                    <motion.path
+                      d={fullPath}
+                      fill="none"
+                      stroke="url(#careerGpsRouteGradient)"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeDasharray="1.2 4.4"
+                      opacity="0.78"
+                      initial={reduceMotion ? false : { pathLength: 0 }}
+                      animate={reduceMotion ? { pathLength: 1 } : { pathLength: 1, strokeDashoffset: [0, -10] }}
+                      transition={reduceMotion ? { duration: 0.4 } : { pathLength: { duration: 0.7 }, strokeDashoffset: { duration: 2.2, repeat: Infinity, ease: "linear" } }}
                     />
                     {completedPath && (
                       <motion.path
                         d={completedPath}
                         fill="none"
                         stroke="#10B981"
-                        strokeWidth="2.6"
+                        strokeWidth="5.2"
                         strokeLinecap="round"
+                        filter="url(#careerGpsRouteGlow)"
                         initial={reduceMotion ? false : { pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
@@ -2774,8 +3060,9 @@ function CareerJourneyMap({
                         d={activeSegment}
                         fill="none"
                         stroke={routeColor}
-                        strokeWidth="3"
+                        strokeWidth="6"
                         strokeLinecap="round"
+                        filter="url(#careerGpsRouteGlow)"
                         initial={reduceMotion ? false : { pathLength: 0 }}
                         animate={{ pathLength: Math.max(0.12, activeSegmentProgress) }}
                         transition={{ duration: 0.42, ease: "easeOut" }}
@@ -2786,9 +3073,9 @@ function CareerJourneyMap({
                         d={selectedSegment}
                         fill="none"
                         stroke={routeColor}
-                        strokeWidth="4"
+                        strokeWidth="8"
                         strokeLinecap="round"
-                        opacity="0.22"
+                        opacity="0.16"
                         initial={reduceMotion ? false : { pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 0.22, ease: "easeOut" }}
@@ -2803,12 +3090,12 @@ function CareerJourneyMap({
                           d={`M ${start.desktop.x} ${start.desktop.y} C 48 ${branchY}, 70 ${branchY}, 88 ${branchY}`}
                           fill="none"
                           stroke={routeHexColor[route.route_type]}
-                          strokeWidth="1.4"
+                          strokeWidth={mapMode === "decisions" ? "2.4" : "1.5"}
                           strokeLinecap="round"
                           strokeDasharray="2.5 2.5"
-                          opacity="0.55"
+                          opacity={mapMode === "decisions" ? "0.82" : "0.48"}
                           initial={reduceMotion ? false : { opacity: 0, pathLength: 0 }}
-                          animate={{ opacity: 0.55, pathLength: 1 }}
+                          animate={{ opacity: mapMode === "decisions" ? 0.82 : 0.48, pathLength: 1 }}
                           transition={{ duration: 0.38, ease: "easeOut", delay: 0.12 + index * 0.06 }}
                         />
                       );
@@ -2833,6 +3120,19 @@ function CareerJourneyMap({
                   </span>
                 ))}
               </div>
+              <motion.div
+                key={`${mapMode}-${mapFocus}`}
+                initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="absolute right-4 top-4 max-w-[330px] rounded-lg border border-[#DDEAF0] bg-white/95 p-3 text-xs font-semibold leading-5 text-[#526071] shadow-[0_10px_28px_rgba(26,16,51,0.10)]"
+              >
+                <p className="inline-flex items-center gap-2 font-black uppercase text-[#1A1033]">
+                  <Compass size={14} style={{ color: routeColor }} />
+                  {journeyMapModes.find((mode) => mode.value === mapMode)?.label} lens / {journeyMapFocusModes.find((focus) => focus.value === mapFocus)?.label}
+                </p>
+                <p className="mt-1">{mapModeSummary}</p>
+              </motion.div>
               {nodes.map((node) => (
                 <JourneyMilestoneButton
                   key={node.id}
@@ -2842,11 +3142,12 @@ function CareerJourneyMap({
                   active={activeNode.id === node.id}
                   next={nextNode?.id === node.id}
                   dimmed={Boolean(selectedNode && selectedNode.id !== node.id && node.id !== activeNode.id && node.id !== nextNode?.id)}
+                  mapMode={mapMode}
                   riasecResult={riasecResult}
                   employeeName={employeeName}
                   routeColor={routeColor}
                   reduceMotion={reduceMotion}
-                  onSelect={() => setSelectedNodeId(node.id)}
+                  onSelect={() => handleSelectJourneyNode(node)}
                 />
               ))}
               {isDemoMode && (
@@ -2863,11 +3164,12 @@ function CareerJourneyMap({
             selectedNode={selectedNode}
             activeNodeId={activeNode.id}
             nextNodeId={nextNode?.id ?? null}
+            mapMode={mapMode}
             riasecResult={riasecResult}
             employeeName={employeeName}
             routeColor={routeColor}
             reduceMotion={reduceMotion}
-            onSelectNode={(node) => setSelectedNodeId(node.id)}
+            onSelectNode={handleSelectJourneyNode}
           />
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
