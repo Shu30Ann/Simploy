@@ -14,11 +14,30 @@ const EMPLOYER_TAGS = ["Workforce data", "Gap simulation", "Action plans"];
 
 export default function RoleSelect({ role, onSelect }: RoleSelectProps) {
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-16"
-      style={{ background: "var(--bg-page)" }}
-    >
-      <p className="text-xl font-bold mb-12" style={{ color: "var(--pink)" }}>
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 overflow-hidden bg-[#0B1526]">
+      {/* Video background — CRT style, matches landing hero */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          filter:
+            "sepia(0.3) hue-rotate(175deg) saturate(1.6) contrast(1.2) brightness(0.85)",
+        }}
+        src="/videos/busy_street.mp4"
+      />
+      <div className="absolute inset-0 bg-[#16345E]/35 mix-blend-multiply" />
+      <div className="absolute inset-0 crt-scanlines" />
+      <div className="absolute inset-0 crt-vignette" />
+      <div className="absolute inset-0 bg-[#081022]/55" />
+
+      <p
+        className="relative z-10 text-xl font-bold mb-12 text-[#F7F3EA]"
+        style={{ textShadow: "0 1px 12px rgba(8,16,35,0.7)" }}
+      >
         Simploy
       </p>
 
@@ -26,12 +45,18 @@ export default function RoleSelect({ role, onSelect }: RoleSelectProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="w-full max-w-[600px]"
+        className="relative z-10 w-full max-w-[600px]"
       >
-        <h1 className="text-3xl font-bold text-center" style={{ color: "var(--text-primary)" }}>
+        <h1
+          className="text-3xl font-bold text-center text-[#F7F3EA]"
+          style={{ textShadow: "0 2px 16px rgba(8,16,35,0.7)" }}
+        >
           How will you use Simploy?
         </h1>
-        <p className="text-sm mt-2 text-center" style={{ color: "var(--text-secondary)" }}>
+        <p
+          className="text-sm mt-2 text-center text-white/80"
+          style={{ textShadow: "0 1px 8px rgba(8,16,35,0.7)" }}
+        >
           We&apos;ll tailor your experience based on your answer.
         </p>
 
@@ -151,9 +176,12 @@ export default function RoleSelect({ role, onSelect }: RoleSelectProps) {
           Continue <ArrowRight size={15} />
         </button>
 
-        <p className="text-sm text-center mt-5" style={{ color: "var(--text-secondary)" }}>
+        <p
+          className="text-sm text-center mt-5 text-white/80"
+          style={{ textShadow: "0 1px 8px rgba(8,16,35,0.7)" }}
+        >
           Already have an account?{" "}
-          <a href={authRouteWithRole(routes.login, role)} className="font-medium hover:underline" style={{ color: "var(--pink)" }}>
+          <a href={authRouteWithRole(routes.login, role)} className="font-medium hover:underline text-[#C8A45F]">
             Sign in
           </a>
         </p>

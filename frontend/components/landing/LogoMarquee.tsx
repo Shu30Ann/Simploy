@@ -24,13 +24,13 @@ const logos = [
 
 // Deterministic first paint (SSR-safe); positions randomize on every respawn
 const SLOT_DEFAULTS = [
-  { x: 0, y: 12, size: 108, hide: "" },
-  { x: 0, y: -10, size: 124, hide: "" },
-  { x: 0, y: 8, size: 96, hide: "" },
-  { x: 0, y: -16, size: 130, hide: "" },
-  { x: 0, y: 14, size: 100, hide: "hidden sm:block" },
-  { x: 0, y: -8, size: 118, hide: "hidden md:block" },
-  { x: 0, y: 10, size: 110, hide: "hidden lg:block" },
+  { x: 0, y: 12, size: 100, hide: "" },
+  { x: 0, y: -10, size: 168, hide: "" },
+  { x: 0, y: 8, size: 92, hide: "" },
+  { x: 0, y: -16, size: 190, hide: "" },
+  { x: 0, y: 14, size: 112, hide: "hidden sm:block" },
+  { x: 0, y: -8, size: 140, hide: "hidden md:block" },
+  { x: 0, y: 10, size: 96, hide: "hidden lg:block" },
 ];
 const CYCLE_MS = 3400;
 const BURST_MS = 450;
@@ -41,7 +41,7 @@ function randomPos(): Pos {
   return {
     x: Math.random() * 64 - 32,
     y: Math.random() * 56 - 28,
-    size: 94 + Math.random() * 44,
+    size: 90 + Math.random() * 110,
   };
 }
 
@@ -122,7 +122,7 @@ function Bubble({ slot }: { slot: number }) {
   const logo = logos[idx];
 
   return (
-    <div className={`relative flex-1 ${SLOT_DEFAULTS[slot].hide}`} style={{ height: 190 }}>
+    <div className={`relative flex-1 ${SLOT_DEFAULTS[slot].hide}`} style={{ height: 260 }}>
       <div
         className="absolute left-1/2 top-1/2 flex items-center justify-center"
         style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }}
@@ -155,9 +155,9 @@ function Bubble({ slot }: { slot: number }) {
                 height: pos.size,
                 // Transparent film: invisible center, light gathers at the rim
                 background:
-                  "radial-gradient(circle at 50% 45%, rgba(255,255,255,0) 55%, rgba(255,255,255,0.05) 72%, rgba(255,255,255,0.22) 88%, rgba(255,255,255,0.5) 96%, rgba(255,255,255,0.12) 100%)",
+                  "radial-gradient(circle at 50% 45%, rgba(255,255,255,0) 52%, rgba(255,255,255,0.10) 70%, rgba(255,255,255,0.40) 87%, rgba(255,255,255,0.85) 96%, rgba(255,255,255,0.35) 100%)",
                 boxShadow:
-                  "0 8px 24px rgba(70,60,35,0.10), inset 0 0 10px rgba(255,255,255,0.35), inset 0 0 2px rgba(255,255,255,0.9)",
+                  "0 0 22px rgba(255,255,255,0.30), 0 8px 24px rgba(8,16,35,0.35), inset 0 0 14px rgba(255,255,255,0.55), inset 0 0 3px rgba(255,255,255,1)",
               }}
             >
               {/* Iridescent rim (rainbow film, masked to the edge) */}
@@ -166,13 +166,13 @@ function Bubble({ slot }: { slot: number }) {
                 className="absolute inset-0 rounded-full"
                 style={{
                   background:
-                    "conic-gradient(from 200deg, rgba(255,140,200,0.55), rgba(140,190,255,0.55), rgba(150,255,210,0.5), rgba(255,225,150,0.55), rgba(200,150,255,0.5), rgba(255,140,200,0.55))",
+                    "conic-gradient(from 200deg, rgba(255,150,210,0.7), rgba(150,200,255,0.7), rgba(160,255,220,0.65), rgba(255,235,160,0.7), rgba(210,160,255,0.65), rgba(255,150,210,0.7))",
                   WebkitMaskImage:
-                    "radial-gradient(circle, transparent 60%, black 82%, black 94%, transparent 100%)",
+                    "radial-gradient(circle, transparent 58%, black 82%, black 94%, transparent 100%)",
                   maskImage:
-                    "radial-gradient(circle, transparent 60%, black 82%, black 94%, transparent 100%)",
+                    "radial-gradient(circle, transparent 58%, black 82%, black 94%, transparent 100%)",
                   filter: "blur(1px)",
-                  opacity: 0.8,
+                  opacity: 0.95,
                 }}
               />
               {/* Top-left highlight arc */}
@@ -184,17 +184,20 @@ function Bubble({ slot }: { slot: number }) {
                   left: "8%",
                   width: "55%",
                   height: "55%",
-                  borderTop: "3px solid rgba(255,255,255,0.95)",
+                  borderTop: "3px solid rgba(255,255,255,1)",
                   borderLeft: "2px solid transparent",
                   borderRight: "2px solid transparent",
                   borderBottom: "2px solid transparent",
                   transform: "rotate(-12deg)",
-                  filter: "blur(1.5px)",
+                  filter: "blur(1px)",
                 }}
               />
               <span
-                className={`text-sm text-center px-2 leading-tight ${logo.style}`}
-                style={{ textShadow: "0 1px 2px rgba(255,255,255,0.6)" }}
+                className={`text-center px-2 leading-tight ${logo.style}`}
+                style={{
+                  textShadow: "0 1px 2px rgba(255,255,255,0.6)",
+                  fontSize: Math.max(9, Math.min(18, pos.size * 0.13)),
+                }}
               >
                 {logo.name}
               </span>
@@ -208,49 +211,24 @@ function Bubble({ slot }: { slot: number }) {
 
 export default function LogoMarquee() {
   return (
-    <section className="relative bg-[#FBF8F1] border-y border-[#EAE3D3] py-10 overflow-hidden">
-      {/* Soft color blobs so the glass has something to refract */}
-      <div aria-hidden className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 340,
-            height: 340,
-            left: "12%",
-            top: "30%",
-            background:
-              "radial-gradient(circle, rgba(176,138,68,0.18) 0%, transparent 70%)",
-            filter: "blur(10px)",
-          }}
-        />
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 300,
-            height: 300,
-            left: "48%",
-            top: "10%",
-            background:
-              "radial-gradient(circle, rgba(23,105,79,0.14) 0%, transparent 70%)",
-            filter: "blur(10px)",
-          }}
-        />
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 320,
-            height: 320,
-            right: "8%",
-            top: "35%",
-            background:
-              "radial-gradient(circle, rgba(86,97,140,0.15) 0%, transparent 70%)",
-            filter: "blur(10px)",
-          }}
-        />
-      </div>
+    <section className="relative py-10">
+      {/* Strip band behind the label + bubbles */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 bottom-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, transparent 0%, rgba(6,14,30,0.62) 18%, rgba(6,14,30,0.62) 82%, transparent 100%)",
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+        }}
+      />
 
-      <p className="relative text-center font-mono text-xs font-semibold tracking-[0.3em] uppercase text-[#8B7434] mb-4 px-6">
-        Trusted by <span className="text-[#B08A44]">Fortune 500</span> and the
+      <p
+        className="relative text-center font-mono text-xs font-semibold tracking-[0.3em] uppercase text-[#E8D9B8] mb-4 px-6"
+        style={{ textShadow: "0 1px 10px rgba(8,16,35,0.7)" }}
+      >
+        Trusted by <span className="text-[#F0C77E]">Fortune 500</span> and the
         world&apos;s largest companies
       </p>
 

@@ -1,6 +1,7 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import LogoMarquee from "@/components/landing/LogoMarquee";
+import VideoBackdrop from "@/components/landing/VideoBackdrop";
 import SocialProof from "@/components/landing/SocialProof";
 import HowItWorks from "@/components/landing/HowItWorks";
 import ForEmployees from "@/components/landing/ForEmployees";
@@ -14,8 +15,11 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-        <Hero />
-        <LogoMarquee />
+        <div className="relative isolate overflow-hidden bg-[#0B1526]">
+          <VideoBackdrop />
+          <Hero />
+          <LogoMarquee />
+        </div>
         <SocialProof />
         <HowItWorks />
         <ForEmployees />

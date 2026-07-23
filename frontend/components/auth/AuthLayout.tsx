@@ -9,36 +9,29 @@ export default function AuthLayout({ children, leftPanel }: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — hidden on mobile */}
-      <div
-        className="hidden md:flex md:w-1/2 relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--bg-pink-soft), var(--pink-lighter), var(--purple-light))",
-        }}
-      >
-        {/* Background decoration */}
-        <div
-          className="absolute rounded-full"
+      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#0B1526]">
+        {/* Video background — CRT style, matches landing hero */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
           style={{
-            top: -80,
-            right: -80,
-            width: 256,
-            height: 256,
-            background: "var(--pink)",
-            opacity: 0.05,
+            filter:
+              "sepia(0.3) hue-rotate(175deg) saturate(1.6) contrast(1.2) brightness(0.85)",
           }}
+          src="/videos/busy_street.mp4"
         />
-        <div
-          className="absolute rounded-full"
-          style={{
-            bottom: -60,
-            left: -60,
-            width: 192,
-            height: 192,
-            background: "#a78bfa",
-            opacity: 0.05,
-          }}
-        />
+        {/* Blue tint */}
+        <div className="absolute inset-0 bg-[#16345E]/35 mix-blend-multiply" />
+        {/* CRT scanlines + vignette */}
+        <div className="absolute inset-0 crt-scanlines" />
+        <div className="absolute inset-0 crt-vignette" />
+        {/* Dark scrim for text legibility */}
+        <div className="absolute inset-0 bg-[#081022]/45" />
+
         <div className="relative z-10 w-full">{leftPanel}</div>
       </div>
 
