@@ -2,6 +2,7 @@
 
 import { ArrowRight, UserCircle2, Building2, Check } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { authRouteWithRole, routes } from "@/lib/routes";
 
 interface RoleSelectProps {
@@ -34,12 +35,13 @@ export default function RoleSelect({ role, onSelect }: RoleSelectProps) {
       <div className="absolute inset-0 crt-vignette" />
       <div className="absolute inset-0 bg-[#081022]/55" />
 
-      <p
+      <Link
+        href={routes.home}
         className="relative z-10 text-xl font-bold mb-12 text-[#F7F3EA]"
         style={{ textShadow: "0 1px 12px rgba(8,16,35,0.7)" }}
       >
         Simploy
-      </p>
+      </Link>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
@@ -140,9 +141,9 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
         <StepIndicator current={2} total={2} />
       </div>
 
-      <p className="text-xl font-bold mb-4 md:hidden" style={{ color: "var(--pink)" }}>
+      <Link href={routes.home} className="block w-fit text-xl font-bold mb-4 md:hidden" style={{ color: "var(--pink)" }}>
         Simploy
-      </p>
+      </Link>
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>

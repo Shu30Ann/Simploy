@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Lock, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { routes } from "@/lib/routes";
 
 interface AuthLeftPanelProps {
   headline: string;
@@ -13,12 +15,13 @@ export default function AuthLeftPanel({ headline, subtext, features }: AuthLeftP
   return (
     <div className="flex flex-col h-full p-10">
       {/* Logo */}
-      <p
-        className="text-xl font-bold text-[#F7F3EA]"
+      <Link
+        href={routes.home}
+        className="text-xl font-bold text-[#F7F3EA] w-fit"
         style={{ textShadow: "0 1px 12px rgba(8,16,35,0.7)" }}
       >
         Simploy
-      </p>
+      </Link>
 
       {/* Middle */}
       <div className="flex-1 flex flex-col justify-center">

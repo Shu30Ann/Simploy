@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
@@ -91,9 +92,9 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
     >
       {/* Header */}
       <div className="mb-6">
-        <p className="text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
+        <Link href={routes.home} className="block w-fit text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
           Simploy
-        </p>
+        </Link>
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
           Sign in
         </h1>

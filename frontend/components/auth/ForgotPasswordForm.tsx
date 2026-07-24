@@ -6,7 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, KeyRound, Loader2, MailCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import FormError from "./FormError";
+import { routes } from "@/lib/routes";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -45,9 +47,9 @@ export default function ForgotPasswordForm() {
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
           {/* Mobile logo */}
-          <p className="text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
+          <Link href={routes.home} className="block w-fit text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
             Simploy
-          </p>
+          </Link>
 
           {/* Back to login */}
           <a
