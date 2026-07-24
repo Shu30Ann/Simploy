@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { BriefcaseBusiness, Building2 } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { routes } from "@/lib/routes";
@@ -8,9 +8,7 @@ import { routes } from "@/lib/routes";
 const NAV = [
   { label: "Dashboard", href: routes.employerDashboard },
   { label: "Jobs", href: routes.employerJobs },
-  { label: "Attention", href: routes.employerAttention },
-  { label: "Insights", href: routes.employerInsights },
-  { label: "Forecast", href: routes.employerForecast },
+  { label: "Market Insight", href: routes.employerMarketInsight },
   { label: "Workforce Simulator", href: routes.employerSimulator },
   { label: "Workforce Planner", href: routes.employerActionEngine },
 ];
@@ -47,13 +45,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             >
               <Building2 size={16} />
               Switch Portal
-            </Link>
-            <Link
-              href={routes.employerJobs}
-              className="inline-flex items-center gap-2 rounded-full bg-[#B08A44] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(70,60,35,0.22)]"
-            >
-              <BriefcaseBusiness size={16} />
-              Post a Job
             </Link>
             <Link
               href={routes.employerSimulator}

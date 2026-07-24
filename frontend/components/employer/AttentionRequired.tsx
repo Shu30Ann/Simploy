@@ -9,6 +9,12 @@ import { Pill, toneStyles } from "@/components/employer/shared";
 const attentionItems = employerAttentionItems.map((item, index) => ({
   ...item,
   icon: [Users, FilePenLine, Target][index] ?? Target,
+  href:
+    item.action === "Find candidates"
+      ? routes.employerJobs
+      : item.action === "View transition pool"
+        ? routes.employerActionEngine
+        : routes.employerActionEngine,
 }));
 
 export function AttentionRequired() {
@@ -29,7 +35,7 @@ export function AttentionRequired() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          {attentionItems.map(({ title, detail, meta, action, icon: Icon, tone }) => (
+          {attentionItems.map(({ title, detail, meta, action, href, icon: Icon, tone }) => (
             <article key={title} className="rounded-2xl border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(70,60,35,0.08)]">
               <div className="flex items-start justify-between gap-4">
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border ${toneStyles[tone]}`}>
@@ -39,10 +45,10 @@ export function AttentionRequired() {
               </div>
               <h3 className="mt-5 text-xl font-bold">{title}</h3>
               <p className="mt-2 min-h-[48px] text-sm leading-6 text-[#6B7280]">{detail}</p>
-              <button className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#B08A44]">
+              <Link href={href} className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#B08A44] hover:underline">
                 {action}
                 <ArrowUpRight size={15} />
-              </button>
+              </Link>
             </article>
           ))}
         </div>

@@ -107,7 +107,7 @@ export default function ActionEngine({ result: _result }: { result: SimResult })
             className="fixed bottom-5 right-5 text-white text-sm px-4 py-3 rounded-xl z-50"
             style={{ background: "var(--text-primary)" }}
           >
-            ✓ Action plan created · 4 tasks added to your pipeline
+            Action plan created - 4 tasks added to your pipeline
           </motion.div>
         )}
       </AnimatePresence>

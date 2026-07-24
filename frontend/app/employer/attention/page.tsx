@@ -1,9 +1,6 @@
-import { AttentionRequired } from "@/components/employer/AttentionRequired";
+import { redirect } from "next/navigation";
+import { routes } from "@/lib/routes";
 
 export default function EmployerAttentionPage() {
-  return (
-    <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
-      <AttentionRequired />
-    </main>
-  );
+  redirect(routes.employerMarketInsight);
 }

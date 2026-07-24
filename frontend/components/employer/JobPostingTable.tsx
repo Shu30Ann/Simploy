@@ -6,6 +6,9 @@ import { Pill, toneStyles, type EmployerJobView } from "@/components/employer/sh
 
 export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
   const [selectedJob, setSelectedJob] = useState<EmployerJobView | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const hiringCount = jobs.filter((job) => job.hiringStatus === "Hiring").length;
+  const draftCount = jobs.filter((job) => job.hiringStatus === "Draft").length;
 
   return (
     <>
@@ -25,8 +28,8 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Pill tone="pink">Hiring (8)</Pill>
-          <Pill tone="purple">Draft (3)</Pill>
+          <Pill tone="pink">Hiring ({hiringCount})</Pill>
+          <Pill tone="purple">Draft ({draftCount})</Pill>
         </div>
       </div>
 
@@ -75,7 +78,10 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
                 <td className="border-b border-[#F8F5FC] px-1 py-4 text-right">
                   <button
                     type="button"
-                    onClick={() => setSelectedJob(job)}
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setActionMessage(null);
+                    }}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#6B46C1] hover:bg-[#F1EDE0]"
                     aria-label={job.hiringStatus === "Draft" ? `Edit ${job.title}` : `Open actions for ${job.title}`}
                   >
@@ -104,7 +110,10 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedJob(null)}
+                onClick={() => {
+                  setSelectedJob(null);
+                  setActionMessage(null);
+                }}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F7F3EA]"
                 aria-label="Close job action preview"
               >
@@ -125,9 +134,21 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
               ))}
             </div>
 
+            {actionMessage && (
+              <div className="mt-4 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#087C7E]">
+                {actionMessage}
+              </div>
+            )}
+
             <button
               type="button"
-              onClick={() => setSelectedJob(null)}
+              onClick={() =>
+                setActionMessage(
+                  selectedJob.hiringStatus === "Draft"
+                    ? `${selectedJob.title} is ready for publish review.`
+                    : `Shortlist preview opened for ${selectedJob.title}.`,
+                )
+              }
               className="mt-5 w-full rounded-lg bg-[#B08A44] px-4 py-3 text-sm font-bold text-white"
             >
               {selectedJob.hiringStatus === "Draft" ? "Preview Publish Flow" : "Preview Shortlist Flow"}

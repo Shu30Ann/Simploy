@@ -47,7 +47,7 @@ export function WorkforceCommandCenter({
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#B08A44] bg-transparent px-6 py-3 text-sm font-medium text-[#B08A44] transition-colors hover:bg-[#F6F1E4]"
               >
                 <Send size={16} />
-                Post Job
+                Manage Jobs
               </Link>
             </div>
           </div>

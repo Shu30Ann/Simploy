@@ -10,6 +10,7 @@ export const routes = {
   employeeApplications: "/employee/applications",
   employerDashboard: "/employer/dashboard",
   employerJobs: "/employer/jobs",
+  employerMarketInsight: "/employer/market-insight",
   employerAttention: "/employer/attention",
   employerInsights: "/employer/insights",
   employerForecast: "/employer/forecast",

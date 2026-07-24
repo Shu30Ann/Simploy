@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart3, ClipboardList, LineChart, ShieldAlert, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BarChart3, ClipboardList, LineChart, ShieldAlert, Zap } from "lucide-react";
 import { routes } from "@/lib/routes";
 import { WorkforceCommandCenter } from "@/components/employer/CommandCenter";
 import { metricsFromDashboard, toneStyles, useEmployerDashboard } from "@/components/employer/shared";
@@ -20,25 +20,25 @@ const topics = [
     tone: "pink",
   },
   {
-    title: "Attention Required",
-    detail: "Clear the blockers first: stalled roles, pending drafts, and unreviewed candidates.",
-    href: routes.employerAttention,
-    icon: AlertTriangle,
-    tone: "orange",
-  },
-  {
-    title: "Workforce Insights",
-    detail: "Hiring velocity, supply, demand, and competition signals before you post or source.",
-    href: routes.employerInsights,
+    title: "Market Insight",
+    detail: "Attention signals, hiring velocity, market supply, and forecast pressure in one page.",
+    href: routes.employerMarketInsight,
     icon: BarChart3,
     tone: "teal",
   },
   {
-    title: "Workforce Forecast",
-    detail: "Long-range supply signals for planning roles, mobility, and hiring demand.",
-    href: routes.employerForecast,
+    title: "Workforce Simulator",
+    detail: "Model timeline, attrition, AI adoption, hiring budget, and workforce gap scenarios.",
+    href: routes.employerSimulator,
     icon: LineChart,
     tone: "purple",
+  },
+  {
+    title: "Workforce Planner",
+    detail: "Turn simulation outputs into prioritized hiring, upskilling, mobility, and retention actions.",
+    href: routes.employerActionEngine,
+    icon: Zap,
+    tone: "orange",
   },
 ];
 
@@ -111,7 +111,7 @@ export default function EmployerDashboardPage() {
           <div className="mb-8">
             <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Explore</p>
             <h2 id="topics-title" className="mt-2 text-3xl font-bold tracking-tight sm:text-[40px]">
-              Everything, one topic per page.
+              A simpler employer workspace.
             </h2>
           </div>
 
