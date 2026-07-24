@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Loader2, Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { Check, ChevronDown, Loader2, Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { SimState } from "@/lib/simulator/types";
 import ScenarioSlider from "./ScenarioSlider";
 
@@ -111,39 +112,40 @@ function SliderSet({
         formatValue={v => `${v}%`}
         benchmark={condensed ? undefined : { value: 5.5, label: "Industry avg", format: v => `${v}%` }}
       />
+    </div>
+  );
+}
 
-      {/* ── Demographic Levers ── */}
-      {!condensed && (
-        <>
-          <p className="text-[10px] font-semibold tracking-widest uppercase mt-1"
-            style={{ color: "var(--text-muted)" }}>
-            Demographic Levers
-          </p>
-          <ScenarioSlider
-            label="Retirement Extension"
-            min={0} max={10} step={1}
-            value={state.retirementExtension}
-            onChange={v => set("retirementExtension", v)}
-            color="#A855F7"
-            formatValue={v => `+${v} yrs`}
-            benchmark={{ value: 1.5, label: "Regional avg", format: v => `+${v} yrs` }}
-          />
-          <ScenarioSlider
-            label="Migration Impact"
-            min={-5} max={20} step={1}
-            value={state.migrationImpact}
-            onChange={v => set("migrationImpact", v)}
-            color="var(--teal)"
-            formatValue={v => `${v >= 0 ? "+" : ""}${v}% Inflow`}
-            benchmark={{ value: 8, label: "Regional avg", format: v => `+${v}%` }}
-          />
-        </>
-      )}
+function DemographicLevers({ state, setState }: { state: SimState; setState: (s: SimState) => void }) {
+  const set = <K extends keyof SimState>(key: K, val: SimState[K]) =>
+    setState({ ...state, [key]: val });
+
+  return (
+    <div className="flex flex-col gap-5">
+      <ScenarioSlider
+        label="Retirement Extension"
+        min={0} max={10} step={1}
+        value={state.retirementExtension}
+        onChange={v => set("retirementExtension", v)}
+        color="#A855F7"
+        formatValue={v => `+${v} yrs`}
+        benchmark={{ value: 1.5, label: "Regional avg", format: v => `+${v} yrs` }}
+      />
+      <ScenarioSlider
+        label="Migration Impact"
+        min={-5} max={20} step={1}
+        value={state.migrationImpact}
+        onChange={v => set("migrationImpact", v)}
+        color="var(--teal)"
+        formatValue={v => `${v >= 0 ? "+" : ""}${v}% Inflow`}
+        benchmark={{ value: 8, label: "Regional avg", format: v => `+${v}%` }}
+      />
     </div>
   );
 }
 
 export default function SimulatorSidebar({ state, setState, isRunning, onRun, compareMode, stateB, setStateB }: Props) {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const togglePreset = (key: keyof SimState["presets"]) =>
     setState({ ...state, presets: { ...state.presets, [key]: !state.presets[key] } });
 
@@ -196,29 +198,61 @@ export default function SimulatorSidebar({ state, setState, isRunning, onRun, co
           <SectionLabel>Simulation Variables</SectionLabel>
           <SliderSet state={state} setState={setState} showAttritionSplit />
 
-          {/* Presets */}
+          {/* Advanced options — Demographic Levers + Presets, collapsed by default */}
           <div className="mt-6">
-            <SectionLabel>Scenario Presets</SectionLabel>
-            <div className="flex flex-col gap-3">
-              {PRESETS.map(({ key, label }) => {
-                const checked = state.presets[key];
-                return (
-                  <label key={key} className="flex items-center gap-2.5 cursor-pointer">
-                    <div
-                      className="w-4 h-4 rounded flex items-center justify-center transition-all flex-shrink-0"
-                      style={{
-                        background: checked ? "var(--pink)" : "white",
-                        border: `1px solid ${checked ? "var(--pink)" : "#D3D1C7"}`,
-                      }}
-                      onClick={() => togglePreset(key)}
-                    >
-                      {checked && <Check size={10} color="white" strokeWidth={3} />}
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen((v) => !v)}
+              className="flex w-full items-center justify-between"
+            >
+              <SectionLabel>Advanced options</SectionLabel>
+              <ChevronDown
+                size={14}
+                style={{ color: "var(--text-muted)", transform: advancedOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}
+              />
+            </button>
+            <AnimatePresence initial={false}>
+              {advancedOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-4">
+                    <p className="text-[10px] font-semibold tracking-widest uppercase mb-3"
+                      style={{ color: "var(--text-muted)" }}>
+                      Demographic Levers
+                    </p>
+                    <DemographicLevers state={state} setState={setState} />
+                  </div>
+
+                  <div className="mt-6">
+                    <SectionLabel>Scenario Presets</SectionLabel>
+                    <div className="flex flex-col gap-3">
+                      {PRESETS.map(({ key, label }) => {
+                        const checked = state.presets[key];
+                        return (
+                          <label key={key} className="flex items-center gap-2.5 cursor-pointer">
+                            <div
+                              className="w-4 h-4 rounded flex items-center justify-center transition-all flex-shrink-0"
+                              style={{
+                                background: checked ? "var(--pink)" : "white",
+                                border: `1px solid ${checked ? "var(--pink)" : "#D3D1C7"}`,
+                              }}
+                              onClick={() => togglePreset(key)}
+                            >
+                              {checked && <Check size={10} color="white" strokeWidth={3} />}
+                            </div>
+                            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{label}</span>
+                          </label>
+                        );
+                      })}
                     </div>
-                    <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{label}</span>
-                  </label>
-                );
-              })}
-            </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </>
       )}

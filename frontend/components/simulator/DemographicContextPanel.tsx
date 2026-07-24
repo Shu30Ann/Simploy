@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
 interface MarketRow {
   code:    string;
   country: string;
@@ -40,6 +44,8 @@ function Row({ r }: { r: MarketRow }) {
 }
 
 export default function DemographicContextPanel() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="bg-white rounded-2xl border p-5" style={{ borderColor: "var(--border)" }}>
       <p className="text-[10px] font-semibold uppercase tracking-widest mb-0.5"
@@ -49,36 +55,59 @@ export default function DemographicContextPanel() {
       <p className="text-base font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
         Global Workforce Trends
       </p>
-      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-        Working-age population trends for markets you operate in
-      </p>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {DECLINING.length} declining, {GROWING.length} growing markets
+        </p>
+        <ChevronDown
+          size={14}
+          style={{ color: "var(--text-muted)", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}
+        />
+      </button>
 
-      {/* Declining */}
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: "#FFF0F5", color: "#B08A44" }}>
-          DECLINING
-        </span>
-      </div>
-      <div className="mb-4">
-        {DECLINING.map(r => <Row key={r.code} r={r} />)}
-      </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-4">
+              {/* Declining */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: "#FFF0F5", color: "#B08A44" }}>
+                  DECLINING
+                </span>
+              </div>
+              <div className="mb-4">
+                {DECLINING.map(r => <Row key={r.code} r={r} />)}
+              </div>
 
-      {/* Growing */}
-      <div className="flex items-center gap-2 mb-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: "#E1F5EE", color: "#10B981" }}>
-          GROWING
-        </span>
-      </div>
-      <div>
-        {GROWING.map(r => <Row key={r.code} r={r} />)}
-      </div>
+              {/* Growing */}
+              <div className="flex items-center gap-2 mb-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: "#E1F5EE", color: "#10B981" }}>
+                  GROWING
+                </span>
+              </div>
+              <div>
+                {GROWING.map(r => <Row key={r.code} r={r} />)}
+              </div>
 
-      <p className="text-[10px] leading-relaxed mt-3 pt-3 border-t"
-        style={{ color: "var(--text-muted)", borderColor: "var(--border)" }}>
-        Opportunity markets can offset declining local supply. Adjust the Migration Impact slider to model this.
-      </p>
+              <p className="text-[10px] leading-relaxed mt-3 pt-3 border-t"
+                style={{ color: "var(--text-muted)", borderColor: "var(--border)" }}>
+                Opportunity markets can offset declining local supply. Adjust the Migration Impact slider to model this.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

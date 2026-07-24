@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LayoutGrid, Table2 } from "lucide-react";
 import { getAuthToken, postJson } from "@/lib/api";
 import { DEFAULT_STATE, DEFAULT_RESULT, runMockSimulation } from "@/lib/simulator/mockCompute";
 import type { SimState, SimResult } from "@/lib/simulator/types";
@@ -10,11 +11,9 @@ import DepartmentPieChart      from "@/components/simulator/DepartmentPieChart";
 import SupplyDemandChart       from "@/components/simulator/SupplyDemandChart";
 import RoleGapTable            from "@/components/simulator/RoleGapTable";
 import GapTimeline             from "@/components/simulator/GapTimeline";
-import StrategyPanel           from "@/components/simulator/StrategyPanel";
 import DemographicContextPanel from "@/components/simulator/DemographicContextPanel";
 import ActionEngine            from "@/components/simulator/ActionEngine";
 import { AssumptionsPanel } from "@/components/simulator/AssumptionsPanel";
-import { SimulationRunSummary } from "@/components/simulator/SimulationRunSummary";
 
 const DEFAULT_STATE_B: SimState = {
   ...DEFAULT_STATE,
@@ -35,12 +34,19 @@ function hydrateSimulationResult(state: SimState, incoming: SimResult): SimResul
   };
 }
 
+const TABS = [
+  { id: "overview", label: "Overview", icon: LayoutGrid },
+  { id: "detail", label: "Detail", icon: Table2 },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
+
 export default function SimulatorPage() {
   const [simState, setSimState]   = useState<SimState>(DEFAULT_STATE);
   const [result, setResult]       = useState<SimResult>(DEFAULT_RESULT);
   const [isRunning, setIsRunning] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
   const [lastSavedSimulationId, setLastSavedSimulationId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   // Compare mode
   const [compareMode, setCompareMode] = useState(false);
@@ -119,35 +125,71 @@ export default function SimulatorPage() {
         <div className="flex flex-col flex-1 gap-4 min-w-0">
           <SimulatorHeader
             result={result}
+            hasSimulated={hasSimulated}
             timeframe={simState.timeframe}
             onTimeframeChange={handleTimeframeChange}
             compareMode={compareMode}
             onToggleCompare={handleToggleCompare}
           />
-          <SimulationRunSummary result={result} hasSimulated={hasSimulated} />
           {lastSavedSimulationId && (
             <div className="rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] px-4 py-3 text-sm font-bold text-[#087C7E]">
               Saved simulation #{lastSavedSimulationId} to the database.
             </div>
           )}
-          <DepartmentPieChart hasSimulated={hasSimulated} />
-          <SupplyDemandChart
-            result={result}
-            aiPresetActive={simState.presets.aiAutomation}
-            timeframe={simState.timeframe}
-            compareMode={compareMode}
-            resultB={compareMode ? resultB : undefined}
-          />
-          {hasSimulated && <RoleGapTable roleGaps={result.roleGaps} />}
-          {hasSimulated && <GapTimeline events={result.timelineEvents} />}
-          <StrategyPanel />
+
+          {/* Tabs */}
+          <div className="flex items-center gap-1 rounded-lg border p-1 w-fit" style={{ borderColor: "var(--border)", background: "white" }}>
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                  style={{
+                    background: active ? "var(--pink)" : "transparent",
+                    color: active ? "white" : "var(--text-secondary)",
+                  }}
+                >
+                  <Icon size={13} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab === "overview" ? (
+            <>
+              <DepartmentPieChart hasSimulated={hasSimulated} />
+              <SupplyDemandChart
+                result={result}
+                aiPresetActive={simState.presets.aiAutomation}
+                timeframe={simState.timeframe}
+                compareMode={compareMode}
+                resultB={compareMode ? resultB : undefined}
+              />
+            </>
+          ) : hasSimulated ? (
+            <>
+              <RoleGapTable roleGaps={result.roleGaps} />
+              <GapTimeline events={result.timelineEvents} />
+            </>
+          ) : (
+            <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: "var(--border)" }}>
+              <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                Run a simulation to see the role gap breakdown and timeline.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Right column */}
         <div className="flex flex-col gap-4 flex-shrink-0" style={{ width: "var(--sim-right-w)" }}>
+          <ActionEngine result={result} />
           <DemographicContextPanel />
           <AssumptionsPanel assumptions={result.assumptions} />
-          <ActionEngine result={result} />
         </div>
       </div>
     </div>
