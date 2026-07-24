@@ -97,7 +97,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#FF7BAE" }} />
+                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#D9C08C" }} />
                 <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                   B Demand
                 </span>
@@ -189,8 +189,8 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
               {compareMode && resultB && (
                 <>
                   <Bar dataKey="supplyB" fill="#F1EFE8" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
-                  <Bar dataKey="demandB" fill="#FF7BAE" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
-                  <Line type="monotone" dataKey="netB" stroke="#B0ACEE" strokeWidth={1.5} dot={false} />
+                  <Bar dataKey="demandB" fill="#D9C08C" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
+                  <Line type="monotone" dataKey="netB" stroke="#9BA5C9" strokeWidth={1.5} dot={false} />
                 </>
               )}
             </ComposedChart>

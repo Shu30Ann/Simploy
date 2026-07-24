@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={routes.home}
-              className="inline-flex items-center gap-2 rounded-full border border-[#6B46C1] bg-white px-4 py-2 text-sm font-bold text-[#6B46C1] shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-[#EAE3D3] bg-white px-4 py-2 text-sm font-bold text-[#1E2A44] shadow-sm transition hover:bg-[#F8F5FC]"
             >
               <Building2 size={16} />
               Switch Portal

@@ -81,7 +81,7 @@ export default function DemographicContextPanel() {
               {/* Declining */}
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: "#FFF0F5", color: "#B08A44" }}>
+                  style={{ background: "var(--pink-lighter)", color: "#B08A44" }}>
                   DECLINING
                 </span>
               </div>
@@ -92,7 +92,7 @@ export default function DemographicContextPanel() {
               {/* Growing */}
               <div className="flex items-center gap-2 mb-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: "#E1F5EE", color: "#10B981" }}>
+                  style={{ background: "var(--risk-growing-bg)", color: "#10B981" }}>
                   GROWING
                 </span>
               </div>

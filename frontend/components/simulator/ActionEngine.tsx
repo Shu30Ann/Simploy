@@ -20,7 +20,7 @@ const ACTIONS = [
   {
     id:        "upskill",
     icon:      GraduationCap,
-    iconBg:    "#EEEDFE",
+    iconBg:    "#F1EDE0",
     iconColor: "#56618C",
     title:     "Upskill",
     detail:    manufacturingRecommendations[3].recommendation,

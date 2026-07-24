@@ -17,7 +17,7 @@ const PRESETS = [
 
 const ATTRITION_SPLIT = [
   { label: "Voluntary resignation",      pct: 8, color: "#B08A44", note: "Retention programs can reduce"  },
-  { label: "Retirement-eligible",        pct: 3, color: "#A855F7", note: "Succession planning needed"      },
+  { label: "Retirement-eligible",        pct: 3, color: "#56618C", note: "Succession planning needed"      },
   { label: "Performance / involuntary",  pct: 2, color: "#17694F", note: "Manageable"                     },
 ];
 
@@ -127,7 +127,7 @@ function DemographicLevers({ state, setState }: { state: SimState; setState: (s:
         min={0} max={10} step={1}
         value={state.retirementExtension}
         onChange={v => set("retirementExtension", v)}
-        color="#A855F7"
+        color="#56618C"
         formatValue={v => `+${v} yrs`}
         benchmark={{ value: 1.5, label: "Regional avg", format: v => `+${v} yrs` }}
       />

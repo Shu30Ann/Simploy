@@ -80,6 +80,15 @@
   --risk-at-risk:      #F59E0B;
   --risk-stable:       #17694F;
   --risk-growing:      #10B981;
+
+  --risk-critical-bg:     #FBEEEB;
+  --risk-critical-border: #E7C9C0;
+  --risk-at-risk-bg:      #FEF6E7;
+  --risk-at-risk-border:  #F5DFAE;
+  --risk-stable-bg:       #E7F0E9;
+  --risk-stable-border:   #CBDFD4;
+  --risk-growing-bg:      #E5F7EE;
+  --risk-growing-border:  #BFEBD5;
 }
 
 /* Simulator slider thumb */

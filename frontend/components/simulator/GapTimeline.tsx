@@ -7,9 +7,9 @@ import type { SimulatorTimelineEvent } from "@/lib/simulator/types";
 import { manufacturingTimelineEvents } from "@/lib/mock-data";
 
 const SEV = {
-  critical: { dot: "#B08A44", track: "#E3D8BC", text: "#B08A44", badge: "#FFF0F5" },
-  warning: { dot: "#F59E0B", track: "#FEE4A0", text: "#854F0B", badge: "#FFFBEB" },
-  medium: { dot: "#17694F", track: "#CBDFD4", text: "#0C447C", badge: "#EFF5F0" },
+  critical: { dot: "var(--risk-critical)", track: "var(--risk-critical-border)", text: "var(--risk-critical)", badge: "var(--risk-critical-bg)" },
+  warning: { dot: "var(--risk-at-risk)", track: "var(--risk-at-risk-border)", text: "var(--risk-at-risk)", badge: "var(--risk-at-risk-bg)" },
+  medium: { dot: "var(--risk-stable)", track: "var(--risk-stable-border)", text: "var(--risk-stable)", badge: "var(--risk-stable-bg)" },
 };
 
 export default function GapTimeline({ events = manufacturingTimelineEvents }: { events?: SimulatorTimelineEvent[] }) {

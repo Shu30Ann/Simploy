@@ -5,10 +5,10 @@ import { Download, AlertTriangle } from "lucide-react";
 import type { RoleGap } from "@/lib/simulator/types";
 
 const SUPPLY_STYLE: Record<RoleGap["marketSupply"], { dot: string; bg: string; text: string }> = {
-  Critical: { dot: "#B08A44", bg: "#FFF0F5", text: "#B08A44" },
-  Scarce:   { dot: "#F59E0B", bg: "#FFFBEB", text: "#D97706" },
-  Balanced: { dot: "#17694F", bg: "#EFF5F0", text: "#0E7490" },
-  Abundant: { dot: "#10B981", bg: "#F0FDF4", text: "#065F46" },
+  Critical: { dot: "var(--risk-critical)", bg: "var(--risk-critical-bg)", text: "var(--risk-critical)" },
+  Scarce:   { dot: "var(--risk-at-risk)", bg: "var(--risk-at-risk-bg)", text: "var(--risk-at-risk)" },
+  Balanced: { dot: "var(--risk-stable)", bg: "var(--risk-stable-bg)", text: "var(--risk-stable)" },
+  Abundant: { dot: "var(--risk-growing)", bg: "var(--risk-growing-bg)", text: "var(--risk-growing)" },
 };
 
 interface Props {
@@ -74,7 +74,7 @@ export default function RoleGapTable({ roleGaps }: Props) {
                   style={{ borderColor: "var(--border)" }}>
                   <td className="py-2.5 pr-4">
                     <div className="flex items-center gap-1.5">
-                      {isCritical && <AlertTriangle size={11} color="#B08A44" />}
+                      {isCritical && <AlertTriangle size={11} color="var(--risk-critical)" />}
                       <div>
                         <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
                           {row.role}
