@@ -125,7 +125,7 @@ export default function ForEmployers() {
                   {[
                     { dept: "Engineering", pct: 80, color: "#B08A44" },
                     { dept: "Sales", pct: 45, color: "#F59E0B" },
-                    { dept: "Operations", pct: 30, color: "#10B981" },
+                    { dept: "Operations", pct: 30, color: "#17694F" },
                   ].map((r) => (
                     <div key={r.dept} className="flex items-center justify-between mb-1">
                       <span className="text-[10px] text-[#6B7280]">{r.dept}</span>
@@ -145,7 +145,7 @@ export default function ForEmployers() {
                   {[
                     { region: "North America", val: "-450", color: "#B08A44" },
                     { region: "EMEA", val: "-120", color: "#F59E0B" },
-                    { region: "APAC", val: "+85", color: "#10B981" },
+                    { region: "APAC", val: "+85", color: "#17694F" },
                   ].map((r) => (
                     <div key={r.region} className="flex items-center justify-between mb-1">
                       <span className="text-[10px] text-[#6B7280]">{r.region}</span>

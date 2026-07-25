@@ -25,7 +25,7 @@ interface Props {
 }
 
 const LEGEND = [
-  { color: "#E8E6E0", label: "Projected Supply", shape: "bar" },
+  { color: "#EAE3D3", label: "Projected Supply", shape: "bar" },
   { color: "#B08A44", label: "Projected Demand", shape: "bar" },
   { color: "#56618C", label: "Net Position", shape: "line" },
 ];
@@ -91,13 +91,13 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
           {compareMode && (
             <>
               <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#F1EFE8" }} />
+                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#F7F3EA" }} />
                 <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                   B Supply
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#D9C08C" }} />
+                <div className="h-3 w-3 rounded-sm opacity-60" style={{ background: "#C8A45F" }} />
                 <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                   B Demand
                 </span>
@@ -134,7 +134,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
         {chartReady && (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={mergedData} barCategoryGap="35%" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1EFE8" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F7F3EA" vertical={false} />
               <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
               <YAxis
                 tick={{ fontSize: 11, fill: "#9CA3AF" }}
@@ -145,7 +145,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
               <Tooltip
                 contentStyle={{
                   background: "white",
-                  border: "0.5px solid #E8E6E0",
+                  border: "0.5px solid #EAE3D3",
                   borderRadius: 10,
                   fontSize: 12,
                   boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
@@ -167,7 +167,7 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
                               : String(name),
                 ]}
               />
-              <ReferenceLine y={0} stroke="#E8E6E0" strokeWidth={1} />
+              <ReferenceLine y={0} stroke="#EAE3D3" strokeWidth={1} />
               {aiPresetActive && (
                 <ReferenceLine
                   x="2028"
@@ -183,14 +183,14 @@ export default function SupplyDemandChart({ result, aiPresetActive, compareMode,
                   }}
                 />
               )}
-              <Bar dataKey="supplyA" fill="#E8E6E0" radius={[6, 6, 0, 0]} maxBarSize={40} animationDuration={600} />
+              <Bar dataKey="supplyA" fill="#EAE3D3" radius={[6, 6, 0, 0]} maxBarSize={40} animationDuration={600} />
               <Bar dataKey="demandA" fill="#B08A44" radius={[6, 6, 0, 0]} maxBarSize={40} animationDuration={600} />
               <Line type="monotone" dataKey="netA" stroke="#56618C" strokeWidth={2} dot={false} animationDuration={800} />
               {compareMode && resultB && (
                 <>
-                  <Bar dataKey="supplyB" fill="#F1EFE8" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
-                  <Bar dataKey="demandB" fill="#D9C08C" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
-                  <Line type="monotone" dataKey="netB" stroke="#9BA5C9" strokeWidth={1.5} dot={false} />
+                  <Bar dataKey="supplyB" fill="#F7F3EA" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
+                  <Bar dataKey="demandB" fill="#C8A45F" radius={[6, 6, 0, 0]} maxBarSize={40} opacity={0.6} />
+                  <Line type="monotone" dataKey="netB" stroke="#56618C" strokeWidth={1.5} dot={false} />
                 </>
               )}
             </ComposedChart>

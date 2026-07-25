@@ -132,7 +132,7 @@ export default function SimulatorPage() {
             onToggleCompare={handleToggleCompare}
           />
           {lastSavedSimulationId && (
-            <div className="rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] px-4 py-3 text-sm font-bold text-[#087C7E]">
+            <div className="rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] px-4 py-3 text-sm font-bold text-[#17694F]">
               Saved simulation #{lastSavedSimulationId} to the database.
             </div>
           )}

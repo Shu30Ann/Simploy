@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
 import StepIndicator from "./StepIndicator";
 import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
+import { BrandLogo } from "@/components/BrandLogo";
 import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes } from "@/lib/routes";
 import RiasecAssessment from "@/components/RiasecAssessment";
@@ -141,9 +141,7 @@ export default function SignupForm({ role, onBack }: SignupFormProps) {
         <StepIndicator current={2} total={2} />
       </div>
 
-      <Link href={routes.home} className="block w-fit text-xl font-bold mb-4 md:hidden" style={{ color: "var(--pink)" }}>
-        Simploy
-      </Link>
+      <BrandLogo className="mb-4 md:hidden" imageClassName="h-16 w-auto" />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>

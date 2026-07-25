@@ -11,7 +11,7 @@ const insights = [
     label: "Engineering",
     benchmark: "14 days",
     value: 86,
-    color: "bg-[#087C7E]",
+    color: "bg-[#17694F]",
   },
   {
     label: "Sales",
@@ -23,7 +23,7 @@ const insights = [
     label: "Marketing",
     benchmark: "19 days",
     value: 72,
-    color: "bg-[#6B46C1]",
+    color: "bg-[#17694F]",
   },
 ];
 
@@ -73,10 +73,10 @@ export function WorkforceInsights() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <section className="rounded-2xl border border-[#F0D9E6] bg-[#F7F3EA] p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7" aria-labelledby="velocity-title">
+          <section className="rounded-2xl border border-[#E3D8BC] bg-[#F7F3EA] p-5 shadow-[0_8px_48px_rgba(70,60,35,0.08)] sm:p-7" aria-labelledby="velocity-title">
             <div className="mb-6 flex items-center justify-between gap-3">
               <h3 id="velocity-title" className="flex items-center gap-2 text-2xl font-bold">
-                <BarChart3 size={22} className="text-[#087C7E]" />
+                <BarChart3 size={22} className="text-[#17694F]" />
                 Hiring Velocity
               </h3>
               <LineChart size={20} className="text-[#1E2A44]" />
@@ -87,7 +87,7 @@ export function WorkforceInsights() {
                 <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Time-to-hire</p>
                 <div className="mt-1 flex items-end gap-2">
                   <p className="text-3xl font-bold text-[#1E2A44]">18 Days</p>
-                  <span className="pb-1 text-xs font-bold text-[#087C7E]">-2.4%</span>
+                  <span className="pb-1 text-xs font-bold text-[#17694F]">-2.4%</span>
                 </div>
               </div>
               <div className="rounded-lg bg-white p-4">
@@ -106,15 +106,15 @@ export function WorkforceInsights() {
                     <span>{insight.label}</span>
                     <span className="text-[#6B7280]">{insight.benchmark}</span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#E8E3EA]">
+                  <div className="h-3 rounded-full bg-[#EAE3D3]">
                     <div className={`h-3 rounded-full ${insight.color}`} style={{ width: `${insight.value}%` }} />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 rounded-lg border border-[#CBDFD4] bg-[#D8F7FF] p-4">
-              <p className="text-sm leading-6 text-[#34616F]">
+            <div className="mt-6 rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] p-4">
+              <p className="text-sm leading-6 text-[#17694F]">
                 Hiring velocity is <span className="font-bold">15% faster</span> for candidates with existing skill
                 certifications.
               </p>

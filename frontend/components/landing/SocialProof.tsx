@@ -13,7 +13,7 @@ export default function SocialProof() {
           <div
             key={m.label}
             className={`text-center ${
-              i < metrics.length - 1 ? "md:border-r md:border-[#E3DCC9]" : ""
+              i < metrics.length - 1 ? "md:border-r md:border-[#EAE3D3]" : ""
             }`}
           >
             <p className="font-serif text-3xl font-bold text-[#1E2A44]">

@@ -6,6 +6,7 @@ import {
   ArrowRight,
   BarChart3,
   BriefcaseBusiness,
+  FileText,
   GraduationCap,
   Repeat2,
   Sparkles,
@@ -132,14 +133,14 @@ const filters = ["All", "Hire", "Upskill", "Mobility", "Automate", "Retain"];
 
 const labelStyles: Record<string, string> = {
   Critical: "bg-[#F6F1E4] text-[#B08A44] border-[#E3D8BC]",
-  High: "bg-[#F1EDE0] text-[#6B46C1] border-[#DFD6BE]",
-  Medium: "bg-[#E7F0E9] text-[#087C7E] border-[#CBDFD4]",
+  High: "bg-[#F1EDE0] text-[#17694F] border-[#DFD6BE]",
+  Medium: "bg-[#E7F0E9] text-[#17694F] border-[#CBDFD4]",
 };
 
 const impactStyles: Record<string, string> = {
   High: "text-[#B08A44]",
-  "Medium-High": "text-[#087C7E]",
-  Medium: "text-[#6B46C1]",
+  "Medium-High": "text-[#17694F]",
+  Medium: "text-[#17694F]",
 };
 
 const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
@@ -149,21 +150,80 @@ const actionVisuals: Record<string, { icon: ElementType; accent: string }> = {
   },
   Upskill: {
     icon: GraduationCap,
-    accent: "text-[#6B46C1] bg-[#F1EDE0]",
+    accent: "text-[#17694F] bg-[#F1EDE0]",
   },
   Mobility: {
     icon: Repeat2,
-    accent: "text-[#087C7E] bg-[#E7F0E9]",
+    accent: "text-[#17694F] bg-[#E7F0E9]",
   },
   Automate: {
     icon: Zap,
-    accent: "text-[#C2410C] bg-[#FFF3E8]",
+    accent: "text-[#8B7434] bg-[#F6F1E4]",
   },
   Retain: {
     icon: Sparkles,
     accent: "text-[#B08A44] bg-[#F6F1E4]",
   },
 };
+
+const reportPrintDocumentStyles = `
+  @page { margin: 14mm; size: A4; }
+  body { margin: 0; background: #FFFFFF; color: #1E2A44; font-family: Arial, sans-serif; line-height: 1.45; }
+  #action-engine-pdf-report { display: block; width: 100%; background: #FFFFFF; color: #1E2A44; }
+  #action-engine-pdf-report article { max-width: 760px; margin: 0 auto; }
+  #action-engine-pdf-report header {
+    border: 1px solid #EAE3D3;
+    border-top: 7px solid #B08A44;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    background: #FFFFFF;
+  }
+  #action-engine-pdf-report .report-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  #action-engine-pdf-report .report-logo-img { display: block; width: 86px; height: auto; }
+  #action-engine-pdf-report .report-kicker {
+    margin: 0 0 6px; color: #B08A44; font-size: 11px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  #action-engine-pdf-report .report-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+  #action-engine-pdf-report .report-date-card {
+    min-width: 116px; border-radius: 10px; background: #FFFFFF; border: 1px solid #EAE3D3; padding: 10px; text-align: right;
+  }
+  #action-engine-pdf-report .report-date-card span {
+    display: block; color: #6B7280; font-size: 10px; font-weight: 800; text-transform: uppercase;
+  }
+  #action-engine-pdf-report .report-date-card strong { display: block; color: #1E2A44; font-size: 12px; margin-top: 4px; }
+  #action-engine-pdf-report h1 { margin: 0; font-size: 28px; line-height: 1.15; }
+  #action-engine-pdf-report .report-section {
+    border: 1px solid #EAE3D3; border-radius: 12px; padding: 14px; margin-bottom: 12px; break-inside: avoid;
+  }
+  #action-engine-pdf-report .report-summary { background: #F6F1E4; border-color: #E3D8BC; }
+  #action-engine-pdf-report h2 { margin: 0 0 8px; color: #1E2A44; font-size: 16px; line-height: 1.25; }
+  #action-engine-pdf-report p, #action-engine-pdf-report li { font-size: 12px; }
+  #action-engine-pdf-report ul, #action-engine-pdf-report ol { margin: 8px 0 0; padding-left: 18px; }
+  #action-engine-pdf-report li { margin-bottom: 7px; }
+  #action-engine-pdf-report .report-card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  #action-engine-pdf-report .report-card {
+    border: 1px solid #EAE3D3; border-radius: 10px; padding: 10px; background: #FFFFFF;
+  }
+  #action-engine-pdf-report .report-card span {
+    display: block; color: #8B7434; font-size: 10px; font-weight: 800; text-transform: uppercase;
+  }
+  #action-engine-pdf-report .report-card strong { display: block; margin-top: 3px; color: #1E2A44; font-size: 12px; }
+  #action-engine-pdf-report .report-action-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  #action-engine-pdf-report .report-action-list li {
+    border: 1px solid #EAE3D3; border-left: 4px solid #B08A44; border-radius: 10px; padding: 10px; margin-bottom: 9px;
+  }
+  #action-engine-pdf-report .report-action-meta {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+  }
+  #action-engine-pdf-report .report-chip {
+    border-radius: 999px; background: #F7F3EA; color: #8B7434; font-size: 10px; font-weight: 800; padding: 4px 8px;
+  }
+  #action-engine-pdf-report footer {
+    margin-top: 16px; border-top: 1px solid #EAE3D3; padding-top: 10px; color: #6B7280; font-size: 10px;
+  }
+`;
 
 export default function ActionEnginePage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -197,6 +257,10 @@ export default function ActionEnginePage() {
   const simulationActions = simulationContext?.result.actionPlans?.map(actionFromPlan);
   const visibleActions = simulationActions?.length ? simulationActions : dbActions?.length ? dbActions : actions;
   const summary = simulationContext?.result;
+  const generatedOn = useMemo(() => new Date().toLocaleDateString(), []);
+  const criticalActions = visibleActions.filter((action) => action.label === "Critical").length;
+  const totalGapReduction = visibleActions.reduce((sum, action) => sum + (action.gapReduction ?? 0), 0);
+  const actionMix = Array.from(new Set(visibleActions.map((action) => action.category)));
 
   const filteredActions = useMemo(
     () => visibleActions.filter((action) => selectedFilter === "All" || action.category === selectedFilter),
@@ -213,8 +277,37 @@ export default function ActionEnginePage() {
     }
   };
 
+  const exportReport = () => {
+    const report = document.getElementById("action-engine-pdf-report");
+    if (!report) return;
+
+    const printWindow = window.open("", "_blank", "width=900,height=1200");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+      <html>
+        <head>
+          <title>Simploy Action Engine Report</title>
+          <style>${reportPrintDocumentStyles}</style>
+        </head>
+        <body>
+          <div id="action-engine-pdf-report">${report.innerHTML}</div>
+        </body>
+      </html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
   return (
-    <main className="min-h-screen bg-[#FFF8FC] text-[#1E2A44]">
+    <main className="min-h-screen bg-[#F6F1E4] text-[#1E2A44]">
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
           <div>
@@ -225,7 +318,7 @@ export default function ActionEnginePage() {
                 {visibleActions.length} plans
               </span>
             </div>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4B5563]">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#5D6470]">
               Layer 2 detected the gap. Layer 3 turns it into a prioritized execution plan.
             </p>
           </div>
@@ -243,9 +336,9 @@ export default function ActionEnginePage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#9CA3AF]">Recommended strategy</p>
-              <p className="mt-1 font-bold text-[#087C7E]">{manufacturingSimulationSummary.strongestActionMix.join(" + ")}</p>
+              <p className="mt-1 font-bold text-[#17694F]">{manufacturingSimulationSummary.strongestActionMix.join(" + ")}</p>
             </div>
-            <span className="rounded-full bg-[#E7F0E9] px-4 py-2 text-xs font-bold text-[#087C7E]">
+            <span className="rounded-full bg-[#E7F0E9] px-4 py-2 text-xs font-bold text-[#17694F]">
               {simulationContext ? "Loaded from latest simulator run" : "Based on current gap signals"}
             </span>
           </div>
@@ -327,7 +420,7 @@ export default function ActionEnginePage() {
                       <div className="mt-3 grid grid-cols-3 gap-2">
                         {[
                           ["Owner", action.owner ?? "HR", "text-[#1E2A44]"],
-                          ["Gap cut", action.gapReduction ? `${action.gapReduction} roles` : "TBD", "text-[#087C7E]"],
+                          ["Gap cut", action.gapReduction ? `${action.gapReduction} roles` : "TBD", "text-[#17694F]"],
                           ["Confidence", action.confidence ? `${action.confidence}%` : "TBD", "text-[#B08A44]"],
                         ].map(([label, value, color]) => (
                           <div key={label} className="rounded-lg bg-[#F7F3EA] p-2">
@@ -361,7 +454,7 @@ export default function ActionEnginePage() {
                   <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Layer 3 Output</p>
                   <h2 className="mt-1 text-xl font-bold text-[#1E2A44]">Execution Summary</h2>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#E7F0E9] text-[#087C7E]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#E7F0E9] text-[#17694F]">
                   <BarChart3 size={20} />
                 </div>
               </div>
@@ -381,8 +474,8 @@ export default function ActionEnginePage() {
                 {[
                   ["Total plans", "7", "text-[#1E2A44]"],
                   ["Critical actions", "2", "text-[#B08A44]"],
-                  ["Estimated cost", "RM 18.8M", "text-[#087C7E]"],
-                  ["Time horizon", "12-36 mo", "text-[#6B46C1]"],
+                  ["Estimated cost", "RM 18.8M", "text-[#17694F]"],
+                  ["Time horizon", "12-36 mo", "text-[#17694F]"],
                 ].map(([label, value, color]) => (
                   <div key={label} className="rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] p-3">
                     <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
@@ -393,7 +486,7 @@ export default function ActionEnginePage() {
 
 
               <div className="mt-4 rounded-lg bg-[#E7F0E9] p-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-[#087C7E]">Execution result</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#17694F]">Execution result</p>
                 <div className="mt-3 space-y-3">
                   {[
                     ["Shortage reduced", "1,517 roles"],
@@ -401,7 +494,7 @@ export default function ActionEnginePage() {
                     ["Residual risk", "Senior leadership retention"],
                   ].map(([label, value]) => (
                     <div key={label} className="border-b border-white/70 pb-3 last:border-b-0 last:pb-0">
-                      <p className="text-[10px] font-bold uppercase text-[#087C7E]">{label}</p>
+                      <p className="text-[10px] font-bold uppercase text-[#17694F]">{label}</p>
                       <p className="mt-1 text-sm font-bold leading-5 text-[#1E2A44]">{value}</p>
                     </div>
                   ))}
@@ -410,6 +503,153 @@ export default function ActionEnginePage() {
             </div>
           </aside>
         </div>
+
+        <section className="mt-8 rounded-lg border border-[#1E2A44] bg-white p-5 shadow-[0_10px_36px_rgba(26,16,51,0.12)]">
+          <div className="action-engine-no-print flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#1E2A44] text-white">
+                <FileText size={20} />
+              </span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#1E2A44]">Action report</p>
+                <h2 className="mt-1 text-xl font-bold text-[#1E2A44]">Export PDF report</h2>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-[#5D6470]">
+                  Creates a printable report with the workforce gap, action mix, priority plans, owners, costs,
+                  timelines, and execution recommendations.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={exportReport}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 text-sm font-bold text-white shadow-sm outline-none transition hover:bg-[#97742F] focus-visible:ring-2 focus-visible:ring-[#1E2A44] focus-visible:ring-offset-2"
+            >
+              <FileText size={16} />
+              Export PDF Report
+            </button>
+          </div>
+
+          <div id="action-engine-pdf-report" className="action-engine-print-report">
+            <article>
+              <header>
+                <div className="report-brand">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="report-logo-img" src="/brand/simploy-logo.png" alt="Simploy" />
+                  <div>
+                    <p className="report-kicker">Action Engine Report</p>
+                  </div>
+                </div>
+                <div className="report-title-row">
+                  <div>
+                    <h1>Workforce action plan report</h1>
+                    <p>
+                      Source: {simulationContext ? "Latest workforce simulator run" : "Current workforce gap signals"}
+                    </p>
+                  </div>
+                  <div className="report-date-card">
+                    <span>Generated</span>
+                    <strong>{generatedOn}</strong>
+                  </div>
+                </div>
+              </header>
+
+              <section className="report-section report-summary">
+                <h2>Execution Snapshot</h2>
+                <p>
+                  Action Engine turns the detected workforce gap into a prioritized execution plan across hiring,
+                  upskilling, internal mobility, automation, and retention.
+                </p>
+                <div className="report-card-grid">
+                  <div className="report-card">
+                    <span>Gap detected</span>
+                    <strong>{(summary?.projectedGap ?? manufacturingSimulationSummary.projectedGap).toLocaleString()} roles</strong>
+                  </div>
+                  <div className="report-card">
+                    <span>Total plans</span>
+                    <strong>{visibleActions.length}</strong>
+                  </div>
+                  <div className="report-card">
+                    <span>Critical actions</span>
+                    <strong>{criticalActions}</strong>
+                  </div>
+                  <div className="report-card">
+                    <span>Gap reduction</span>
+                    <strong>{totalGapReduction ? `${totalGapReduction.toLocaleString()} roles` : "82% potential"}</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section className="report-section">
+                <h2>Recommended Strategy</h2>
+                <p>
+                  Main risk: maintenance technician shortage. Recommended strategy:{" "}
+                  {(actionMix.length ? actionMix : manufacturingSimulationSummary.strongestActionMix).join(" + ")}.
+                </p>
+                <div className="report-action-meta">
+                  {actionMix.map((category) => (
+                    <span key={category} className="report-chip">{category}</span>
+                  ))}
+                </div>
+              </section>
+
+              <section className="report-section">
+                <h2>Priority Actions</h2>
+                <ol className="report-action-list">
+                  {visibleActions.map((action) => (
+                    <li key={action.id}>
+                      <strong>{action.priority}. {action.title}</strong>
+                      <div className="report-action-meta">
+                        <span className="report-chip">{action.category}</span>
+                        <span className="report-chip">{action.label}</span>
+                        <span className="report-chip">Impact: {action.impact}</span>
+                        <span className="report-chip">Cost: {action.cost}</span>
+                        <span className="report-chip">Timeline: {action.timeline}</span>
+                      </div>
+                      <p>{action.problem}</p>
+                      <p>{action.recommendation}</p>
+                      {(action.owner || action.gapReduction || action.confidence) && (
+                        <p>
+                          Owner: {action.owner ?? "HR"} / Gap reduction:{" "}
+                          {action.gapReduction ? `${action.gapReduction.toLocaleString()} roles` : "TBD"} / Confidence:{" "}
+                          {action.confidence ? `${action.confidence}%` : "TBD"}.
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              <section className="report-section">
+                <h2>Execution Notes</h2>
+                <ul>
+                  <li>Sequence the highest-risk actions first, then validate cost, owner, and delivery timeline.</li>
+                  <li>Use hiring plans for hard-to-fill external roles and mobility/upskilling plans for internal pools.</li>
+                  <li>Refresh the workforce simulation after major hiring, automation, or attrition assumptions change.</li>
+                </ul>
+              </section>
+
+              <footer>
+                Generated by Simploy Action Engine. This report is based on the currently loaded execution plan.
+              </footer>
+            </article>
+          </div>
+
+          <style jsx>{`
+            .action-engine-print-report {
+              display: none;
+            }
+
+            @media print {
+              .action-engine-no-print {
+                display: none !important;
+              }
+
+              .action-engine-print-report {
+                display: block;
+              }
+            }
+          `}</style>
+        </section>
       </section>
 
       {selectedAction && (
@@ -470,7 +710,7 @@ export default function ActionEnginePage() {
                           <p className="font-bold text-[#1E2A44]">{pool.sourceRole} to {pool.targetRole}</p>
                           <p className="mt-1 text-xs font-semibold text-[#6B7280]">{pool.program}</p>
                         </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#087C7E]">
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#17694F]">
                           {pool.employeesReadyNow + pool.employeesTrainable} people
                         </span>
                       </div>

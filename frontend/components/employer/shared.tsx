@@ -57,8 +57,8 @@ export const commandMetrics: EmployerMetricView[] = [
 export const toneStyles: Record<string, string> = {
   pink: "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]",
   teal: "border-[#CBDFD4] bg-[#E7F0E9] text-[#114F3B]",
-  purple: "border-[#DFD6BE] bg-[#F1EDE0] text-[#6B46C1]",
-  orange: "border-[#FED7AA] bg-[#FFF7ED] text-[#C2410C]",
+  purple: "border-[#DFD6BE] bg-[#F1EDE0] text-[#17694F]",
+  orange: "border-[#E3D8BC] bg-[#F6F1E4] text-[#8B7434]",
 };
 
 export function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: string }) {

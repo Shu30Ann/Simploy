@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navLinks = [
   { label: "Solutions", href: "#solutions" },
@@ -24,61 +25,53 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 bg-[#FBF8F1]/95 backdrop-blur-sm border-b border-[#EAE3D3] px-6 py-4 flex items-center transition-shadow ${
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-[#EAE3D3] bg-[#F7F3EA]/95 backdrop-blur-sm transition-shadow ${
           scrolled ? "shadow-sm" : ""
         }`}
       >
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-serif text-xl font-black tracking-wide text-[#1E2A44]">
-            SIMPLOY
-          </span>
-          <span className="font-mono text-[10px] font-semibold bg-[#E7F0E9] text-[#17694F] rounded-full px-2 py-0.5">
-            .ai
-          </span>
-        </Link>
+        <div className="mx-auto flex min-h-20 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+          <BrandLogo imageClassName="h-14 w-auto" />
 
-        {/* Center nav */}
-        <div className="hidden md:flex gap-8 ml-12">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-sm text-[#5D6470] hover:text-[#1E2A44] transition-colors"
+          <div className="hidden gap-8 md:ml-12 md:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm text-[#5D6470] transition-colors hover:text-[#1E2A44]"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="ml-auto flex items-center gap-5">
+            <Link
+              href="/login"
+              className="hidden text-sm font-medium text-[#8B7434] transition-colors hover:text-[#1E2A44] md:block"
             >
-              {link.label}
-            </a>
-          ))}
-        </div>
-
-        {/* Right CTAs */}
-        <div className="flex items-center gap-5 ml-auto">
-          <Link
-            href="/login"
-            className="hidden md:block text-sm font-medium text-[#8B6D2F] hover:text-[#1E2A44] transition-colors"
-          >
-            Sign in
-          </Link>
-          <span className="hidden md:block w-px h-6 bg-[#EAE3D3]" aria-hidden />
-          <Link
-            href="/signup"
-            className="hidden md:inline-flex items-center gap-2 bg-[#1E2A44] hover:bg-[#16233C] text-white text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors"
-          >
-            Get started <ArrowRight size={15} />
-          </Link>
-          <button
-            className="md:hidden p-1 text-[#5D6470]"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+              Sign in
+            </Link>
+            <span className="hidden h-6 w-px bg-[#EAE3D3] md:block" aria-hidden />
+            <Link
+              href="/signup"
+              className="hidden items-center gap-2 rounded-full bg-[#1E2A44] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#16233C] md:inline-flex"
+            >
+              Get started <ArrowRight size={15} />
+            </Link>
+            <button
+              className="p-1 text-[#5D6470] md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="fixed top-[65px] left-0 right-0 z-40 bg-[#FBF8F1] border-b border-[#EAE3D3] px-6 py-4 flex flex-col gap-4 shadow-md">
+        <div className="fixed left-0 right-0 top-20 z-40 flex flex-col gap-4 border-b border-[#EAE3D3] bg-[#F7F3EA] px-6 py-4 shadow-md">
           {navLinks.map((link) => (
             <a
               key={link.label}

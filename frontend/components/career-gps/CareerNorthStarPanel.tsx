@@ -225,15 +225,15 @@ function summaryPriorityEntries(summary: CareerGpsNorthStarSummary) {
 }
 
 function fieldClass(hasError = false) {
-  return `mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm font-semibold text-[#1A1033] outline-none transition placeholder:text-[#9CA3AF] ${
-    hasError ? "border-[#FCA5A5] focus:border-[#DC2626]" : "border-[#E2D9F3] focus:border-[#E8197A]"
+  return `mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm font-semibold text-[#1E2A44] outline-none transition placeholder:text-[#9CA3AF] ${
+    hasError ? "border-[#FCA5A5] focus:border-[#DC2626]" : "border-[#DFD6BE] focus:border-[#B08A44]"
   }`;
 }
 
 function AlertMessage({ tone, children }: { tone: "error" | "success"; children: React.ReactNode }) {
   const styles =
     tone === "success"
-      ? "border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]"
+      ? "border-[#CBDFD4] bg-[#EFF5F0] text-[#17694F]"
       : "border-[#FECACA] bg-[#FFF5F5] text-[#DC2626]";
   return (
     <div className={`flex items-start gap-2 rounded-lg border px-4 py-3 text-sm font-bold ${styles}`}>
@@ -263,10 +263,10 @@ function StepBadge({
       onClick={onClick}
       className={`flex min-h-16 items-center gap-3 rounded-lg border px-3 py-3 text-left transition ${
         active
-          ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
+          ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
           : complete
-            ? "border-[#BAF3FF] bg-[#F0FDFF] text-[#0891B2]"
-            : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#DDD0F8]"
+            ? "border-[#CBDFD4] bg-[#EFF5F0] text-[#114F3B]"
+            : "border-[#EAE3D3] bg-white text-[#6B7280] hover:border-[#DFD6BE]"
       }`}
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white">
@@ -302,15 +302,15 @@ function SummaryCard({
     <section
       id="career-north-star"
       aria-labelledby="career-north-star-title"
-      className="rounded-lg border border-[#BAF3FF] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+      className="rounded-lg border border-[#CBDFD4] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Compass size={14} />
             Career GPS
           </p>
-          <h2 id="career-north-star-title" className="mt-3 text-2xl font-bold text-[#1A1033]">
+          <h2 id="career-north-star-title" className="mt-3 text-2xl font-bold text-[#1E2A44]">
             Career North Star
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
@@ -320,7 +320,7 @@ function SummaryCard({
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] hover:bg-[#F8F5FC]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] hover:bg-[#F7F3EA]"
         >
           <Pencil size={16} />
           Edit North Star
@@ -328,49 +328,49 @@ function SummaryCard({
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 xl:col-span-2">
+        <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4 xl:col-span-2">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Main goal</p>
-          <p className="mt-2 text-lg font-bold text-[#1A1033]">
+          <p className="mt-2 text-lg font-bold text-[#1E2A44]">
             {summary.career_ambition ?? "Define your main career goal"}
           </p>
           {summary.target_industry && (
             <p className="mt-2 text-sm font-semibold text-[#6B7280]">Target industry: {summary.target_industry}</p>
           )}
         </div>
-        <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-4">
+        <div className="rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Readiness state</p>
-          <p className="mt-2 text-lg font-bold text-[#E8197A]">{completionLabel}</p>
+          <p className="mt-2 text-lg font-bold text-[#B08A44]">{completionLabel}</p>
           {!summary.is_onboarding_complete && summary.missing_sections.length > 0 && (
             <p className="mt-2 text-xs font-semibold leading-5 text-[#6B7280]">
               Missing: {summary.missing_sections.map((item) => item.replace(/_/g, " ")).join(", ")}
             </p>
           )}
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Target role</p>
-          <p className="mt-2 text-lg font-bold text-[#1A1033]">{summary.target_role ?? "Not set"}</p>
+          <p className="mt-2 text-lg font-bold text-[#1E2A44]">{summary.target_role ?? "Not set"}</p>
           {summary.target_timeline_months && (
-            <p className="mt-2 text-sm font-semibold text-[#0891B2]">{summary.target_timeline_months} month timeline</p>
+            <p className="mt-2 text-sm font-semibold text-[#114F3B]">{summary.target_timeline_months} month timeline</p>
           )}
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Top priorities</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {topPriorityLabels.map((priority) => (
-              <span key={priority} className="rounded-full bg-[#E0F9FF] px-3 py-1 text-xs font-bold text-[#0891B2]">
+              <span key={priority} className="rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold text-[#114F3B]">
                 {priority}
               </span>
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Constraints</p>
           {constraints.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {constraints.slice(0, 4).map((constraint) => (
                 <span
                   key={`${constraint.constraint_type}-${constraint.label}`}
-                  className="rounded-full bg-[#F8F5FC] px-3 py-1 text-xs font-bold text-[#6B46C1]"
+                  className="rounded-full bg-[#F7F3EA] px-3 py-1 text-xs font-bold text-[#17694F]"
                 >
                   {constraint.label}
                 </span>
@@ -380,9 +380,9 @@ function SummaryCard({
             <p className="mt-2 text-sm font-semibold text-[#6B7280]">No constraints saved</p>
           )}
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Retirement target</p>
-          <p className="mt-2 text-lg font-bold text-[#1A1033]">
+          <p className="mt-2 text-lg font-bold text-[#1E2A44]">
             {summary.target_retirement_age ? `Age ${summary.target_retirement_age}` : "Not set"}
           </p>
           {summary.learning_budget !== null && (
@@ -623,9 +623,9 @@ export default function CareerNorthStarPanel() {
 
   if (isLoading) {
     return (
-      <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
         <div className="flex items-center gap-3 text-sm font-bold text-[#6B7280]">
-          <Loader2 size={18} className="animate-spin text-[#E8197A]" />
+          <Loader2 size={18} className="animate-spin text-[#B08A44]" />
           Loading Career GPS...
         </div>
       </section>
@@ -639,7 +639,7 @@ export default function CareerNorthStarPanel() {
         <button
           type="button"
           onClick={loadProfile}
-          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white"
+          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white"
         >
           Retry
         </button>
@@ -667,30 +667,30 @@ export default function CareerNorthStarPanel() {
     <section
       id="career-north-star"
       aria-labelledby="career-north-star-title"
-      className="rounded-lg border border-[#BAF3FF] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
+      className="rounded-lg border border-[#CBDFD4] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]"
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Compass size={14} />
             Career GPS setup
           </p>
-          <h2 id="career-north-star-title" className="mt-3 text-2xl font-bold text-[#1A1033]">
+          <h2 id="career-north-star-title" className="mt-3 text-2xl font-bold text-[#1E2A44]">
             Set your Career North Star
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
             Save the goal, priorities, constraints, and financial targets that future Career GPS phases will use.
           </p>
         </div>
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Profile completion</p>
-          <p className="mt-1 text-2xl font-bold text-[#E8197A]">{completionPercent}%</p>
+          <p className="mt-1 text-2xl font-bold text-[#B08A44]">{completionPercent}%</p>
         </div>
       </div>
 
-      <div className="mt-5 h-2 rounded-full bg-[#F8F5FC]">
+      <div className="mt-5 h-2 rounded-full bg-[#F7F3EA]">
         <div
-          className="h-2 rounded-full bg-[#E8197A] transition-all"
+          className="h-2 rounded-full bg-[#B08A44] transition-all"
           style={{ width: `${Math.round(((activeStepIndex + 1) / steps.length) * 100)}%` }}
         />
       </div>
@@ -712,7 +712,7 @@ export default function CareerNorthStarPanel() {
         ))}
       </div>
 
-      <div className="mt-6 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 sm:p-5">
+      <div className="mt-6 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4 sm:p-5">
         {activeStep.id === "current_situation" && (
           <div className="grid gap-4 lg:grid-cols-3">
             {[
@@ -723,9 +723,9 @@ export default function CareerNorthStarPanel() {
               ["Skills", profile.employee.skills.length ? profile.employee.skills.join(", ") : "No skills saved"],
               ["Profile source", "Employee profile"],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+              <div key={label} className="rounded-lg border border-[#EAE3D3] bg-white p-4">
                 <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
-                <p className="mt-2 text-sm font-bold leading-6 text-[#1A1033]">{value}</p>
+                <p className="mt-2 text-sm font-bold leading-6 text-[#1E2A44]">{value}</p>
               </div>
             ))}
           </div>
@@ -734,7 +734,7 @@ export default function CareerNorthStarPanel() {
         {activeStep.id === "career_ambition" && (
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="block lg:col-span-2">
-              <span className="text-sm font-bold text-[#1A1033]">Main career goal</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Main career goal</span>
               <textarea
                 value={form.career_ambition}
                 onChange={(event) => updateForm("career_ambition", event.target.value)}
@@ -745,7 +745,7 @@ export default function CareerNorthStarPanel() {
               {fieldErrors.career_ambition && <p className="mt-1 text-xs font-bold text-[#DC2626]">{fieldErrors.career_ambition}</p>}
             </label>
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Target role</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Target role</span>
               <input
                 value={form.target_role}
                 onChange={(event) => updateForm("target_role", event.target.value)}
@@ -756,7 +756,7 @@ export default function CareerNorthStarPanel() {
               {fieldErrors.target_role && <p className="mt-1 text-xs font-bold text-[#DC2626]">{fieldErrors.target_role}</p>}
             </label>
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Target industry</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Target industry</span>
               <input
                 value={form.target_industry}
                 onChange={(event) => updateForm("target_industry", event.target.value)}
@@ -767,7 +767,7 @@ export default function CareerNorthStarPanel() {
               {fieldErrors.target_industry && <p className="mt-1 text-xs font-bold text-[#DC2626]">{fieldErrors.target_industry}</p>}
             </label>
             <label className="block lg:col-span-2">
-              <span className="text-sm font-bold text-[#1A1033]">Motivation</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Motivation</span>
               <textarea
                 value={form.motivation}
                 onChange={(event) => updateForm("motivation", event.target.value)}
@@ -789,10 +789,10 @@ export default function CareerNorthStarPanel() {
                 ["job_security_priority", "Job security", form.job_security_priority],
                 ["remote_work_priority", "Remote work", form.remote_work_priority],
               ].map(([key, label, value]) => (
-                <label key={key} className="rounded-lg border border-[#F0EBF8] bg-white p-4">
-                  <span className="flex items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+                <label key={key} className="rounded-lg border border-[#EAE3D3] bg-white p-4">
+                  <span className="flex items-center justify-between gap-3 text-sm font-bold text-[#1E2A44]">
                     {label}
-                    <span className="rounded-full bg-[#FFF0F8] px-2 py-1 text-xs text-[#E8197A]">{value}</span>
+                    <span className="rounded-full bg-[#F6F1E4] px-2 py-1 text-xs text-[#B08A44]">{value}</span>
                   </span>
                   <input
                     type="range"
@@ -802,7 +802,7 @@ export default function CareerNorthStarPanel() {
                     onChange={(event) =>
                       updateForm(key as keyof CareerNorthStarFormState, Number(event.target.value) as never)
                     }
-                    className="mt-4 w-full accent-[#E8197A]"
+                    className="mt-4 w-full accent-[#B08A44]"
                   />
                 </label>
               ))}
@@ -810,7 +810,7 @@ export default function CareerNorthStarPanel() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <label className="block">
-                <span className="text-sm font-bold text-[#1A1033]">Preferred locations</span>
+                <span className="text-sm font-bold text-[#1E2A44]">Preferred locations</span>
                 <input
                   value={form.preferred_locations_text}
                   onChange={(event) => updateForm("preferred_locations_text", event.target.value)}
@@ -820,7 +820,7 @@ export default function CareerNorthStarPanel() {
                 <span className="mt-1 block text-xs font-semibold text-[#9CA3AF]">Separate multiple locations with commas.</span>
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-[#1A1033]">Risk tolerance</span>
+                <span className="text-sm font-bold text-[#1E2A44]">Risk tolerance</span>
                 <select
                   value={form.risk_tolerance}
                   onChange={(event) => updateForm("risk_tolerance", event.target.value as CareerGpsRiskTolerance)}
@@ -834,7 +834,7 @@ export default function CareerNorthStarPanel() {
             </div>
 
             <div>
-              <p className="text-sm font-bold text-[#1A1033]">Top non-negotiable priorities</p>
+              <p className="text-sm font-bold text-[#1E2A44]">Top non-negotiable priorities</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {priorityOptions.map((option) => {
                   const selected = form.top_two_non_negotiable_priorities.includes(option.key);
@@ -845,8 +845,8 @@ export default function CareerNorthStarPanel() {
                       onClick={() => toggleArrayValue("top_two_non_negotiable_priorities", option.key)}
                       className={`rounded-full border px-3 py-2 text-sm font-bold ${
                         selected
-                          ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
-                          : "border-[#E2D9F3] bg-white text-[#6B7280]"
+                          ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
+                          : "border-[#DFD6BE] bg-white text-[#6B7280]"
                       }`}
                     >
                       {option.label}
@@ -860,7 +860,7 @@ export default function CareerNorthStarPanel() {
             </div>
 
             <div>
-              <p className="text-sm font-bold text-[#1A1033]">Preferred work styles</p>
+              <p className="text-sm font-bold text-[#1E2A44]">Preferred work styles</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {workStyleOptions.map((option) => {
                   const selected = form.preferred_work_styles.includes(option);
@@ -871,8 +871,8 @@ export default function CareerNorthStarPanel() {
                       onClick={() => toggleArrayValue("preferred_work_styles", option)}
                       className={`rounded-full border px-3 py-2 text-sm font-bold ${
                         selected
-                          ? "border-[#06B6D4] bg-[#E0F9FF] text-[#0891B2]"
-                          : "border-[#E2D9F3] bg-white text-[#6B7280]"
+                          ? "border-[#17694F] bg-[#E7F0E9] text-[#114F3B]"
+                          : "border-[#DFD6BE] bg-white text-[#6B7280]"
                       }`}
                     >
                       {option}
@@ -888,7 +888,7 @@ export default function CareerNorthStarPanel() {
           <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#1A1033]">Constraints</h3>
+                <h3 className="text-lg font-bold text-[#1E2A44]">Constraints</h3>
                 <p className="mt-1 text-sm leading-6 text-[#6B7280]">
                   Add hard or soft constraints that should shape future recommendations.
                 </p>
@@ -896,14 +896,14 @@ export default function CareerNorthStarPanel() {
               <button
                 type="button"
                 onClick={addConstraint}
-                className="inline-flex items-center justify-center rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white"
+                className="inline-flex items-center justify-center rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white"
               >
                 Add constraint
               </button>
             </div>
             {fieldErrors.constraints && <AlertMessage tone="error">{fieldErrors.constraints}</AlertMessage>}
             {form.constraints.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-[#DDD0F8] bg-white p-5 text-sm font-semibold text-[#6B7280]">
+              <div className="rounded-lg border border-dashed border-[#DFD6BE] bg-white p-5 text-sm font-semibold text-[#6B7280]">
                 No constraints added. You can continue without constraints.
               </div>
             ) : (
@@ -911,7 +911,7 @@ export default function CareerNorthStarPanel() {
                 {form.constraints.map((constraint) => (
                   <div
                     key={constraint.clientId}
-                    className="grid gap-3 rounded-lg border border-[#F0EBF8] bg-white p-4 lg:grid-cols-[160px_minmax(0,1fr)_160px_80px]"
+                    className="grid gap-3 rounded-lg border border-[#EAE3D3] bg-white p-4 lg:grid-cols-[160px_minmax(0,1fr)_160px_80px]"
                   >
                     <select
                       value={constraint.constraint_type}
@@ -938,14 +938,14 @@ export default function CareerNorthStarPanel() {
                         type="checkbox"
                         checked={constraint.is_blocking}
                         onChange={(event) => updateConstraint(constraint.clientId, { is_blocking: event.target.checked })}
-                        className="h-4 w-4 accent-[#E8197A]"
+                        className="h-4 w-4 accent-[#B08A44]"
                       />
                       Blocking
                     </label>
                     <button
                       type="button"
                       onClick={() => removeConstraint(constraint.clientId)}
-                      className="mt-2 rounded-lg border border-[#F0EBF8] px-3 py-2 text-sm font-bold text-[#DC2626] hover:bg-[#FFF5F5]"
+                      className="mt-2 rounded-lg border border-[#EAE3D3] px-3 py-2 text-sm font-bold text-[#DC2626] hover:bg-[#FFF5F5]"
                     >
                       Remove
                     </button>
@@ -959,7 +959,7 @@ export default function CareerNorthStarPanel() {
         {activeStep.id === "financial_targets" && (
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Target retirement age</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Target retirement age</span>
               <input
                 type="number"
                 min={45}
@@ -974,7 +974,7 @@ export default function CareerNorthStarPanel() {
               )}
             </label>
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Target timeline in months</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Target timeline in months</span>
               <input
                 type="number"
                 min={1}
@@ -989,7 +989,7 @@ export default function CareerNorthStarPanel() {
               )}
             </label>
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Learning budget</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Learning budget</span>
               <input
                 type="number"
                 min={0}
@@ -1002,7 +1002,7 @@ export default function CareerNorthStarPanel() {
               {fieldErrors.learning_budget && <p className="mt-1 text-xs font-bold text-[#DC2626]">{fieldErrors.learning_budget}</p>}
             </label>
             <label className="block">
-              <span className="text-sm font-bold text-[#1A1033]">Preferred company type</span>
+              <span className="text-sm font-bold text-[#1E2A44]">Preferred company type</span>
               <select
                 value={form.preferred_company_type}
                 onChange={(event) => updateForm("preferred_company_type", event.target.value)}
@@ -1017,21 +1017,21 @@ export default function CareerNorthStarPanel() {
               </select>
             </label>
             <div className="grid gap-3 sm:grid-cols-2 lg:col-span-2">
-              <label className="flex items-center gap-3 rounded-lg border border-[#F0EBF8] bg-white p-4 text-sm font-bold text-[#1A1033]">
+              <label className="flex items-center gap-3 rounded-lg border border-[#EAE3D3] bg-white p-4 text-sm font-bold text-[#1E2A44]">
                 <input
                   type="checkbox"
                   checked={form.willing_to_relocate}
                   onChange={(event) => updateForm("willing_to_relocate", event.target.checked)}
-                  className="h-4 w-4 accent-[#E8197A]"
+                  className="h-4 w-4 accent-[#B08A44]"
                 />
                 Willing to relocate
               </label>
-              <label className="flex items-center gap-3 rounded-lg border border-[#F0EBF8] bg-white p-4 text-sm font-bold text-[#1A1033]">
+              <label className="flex items-center gap-3 rounded-lg border border-[#EAE3D3] bg-white p-4 text-sm font-bold text-[#1E2A44]">
                 <input
                   type="checkbox"
                   checked={form.international_mobility}
                   onChange={(event) => updateForm("international_mobility", event.target.checked)}
-                  className="h-4 w-4 accent-[#E8197A]"
+                  className="h-4 w-4 accent-[#B08A44]"
                 />
                 Open to international mobility
               </label>
@@ -1041,33 +1041,33 @@ export default function CareerNorthStarPanel() {
 
         {activeStep.id === "review" && (
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Goal</p>
-              <p className="mt-2 text-base font-bold text-[#1A1033]">{form.career_ambition || "Not set"}</p>
+              <p className="mt-2 text-base font-bold text-[#1E2A44]">{form.career_ambition || "Not set"}</p>
               <p className="mt-2 text-sm font-semibold text-[#6B7280]">
                 {form.target_role || "No target role"} in {form.target_industry || "no target industry"}
               </p>
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Priorities</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {(form.top_two_non_negotiable_priorities.length
                   ? form.top_two_non_negotiable_priorities.map(formatPriorityLabel)
                   : ["No priorities selected"]
                 ).map((item) => (
-                  <span key={item} className="rounded-full bg-[#E0F9FF] px-3 py-1 text-xs font-bold text-[#0891B2]">
+                  <span key={item} className="rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold text-[#114F3B]">
                     {item}
                   </span>
                 ))}
               </div>
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Constraints</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#6B7280]">
                 {form.constraints.length ? form.constraints.map((constraint) => constraint.label).join(", ") : "None"}
               </p>
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Financial and retirement targets</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#6B7280]">
                 Retirement age: {form.target_retirement_age || "not set"}; timeline:{" "}
@@ -1089,7 +1089,7 @@ export default function CareerNorthStarPanel() {
             type="button"
             onClick={goBack}
             disabled={activeStepIndex === 0 || isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronLeft size={16} />
             Back
@@ -1104,7 +1104,7 @@ export default function CareerNorthStarPanel() {
                 setSuccessMessage(null);
               }}
               disabled={isSaving}
-              className="inline-flex items-center justify-center rounded-lg border border-[#F0EBF8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B7280] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-lg border border-[#EAE3D3] bg-white px-4 py-2.5 text-sm font-bold text-[#6B7280] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
             </button>
@@ -1114,7 +1114,7 @@ export default function CareerNorthStarPanel() {
           type="button"
           onClick={() => saveStepData(activeStep.id, activeStep.id === "review")}
           disabled={isSaving}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : activeStep.id === "review" ? <Save size={16} /> : <ChevronRight size={16} />}
           {activeStep.id === "review" ? "Save North Star" : "Save and continue"}

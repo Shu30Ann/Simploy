@@ -8,13 +8,13 @@ import Link from "next/link";
 
 export default function EmployeeSettingsPage() {
   return (
-    <main className="min-h-screen bg-[#FAF8FD] text-[#1A1033]">
+    <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
       <EmployeeTopNav initials="A" name="Alex" />
 
-      <section className="border-b border-[#E7DDF7] bg-white">
+      <section className="border-b border-[#EAE3D3] bg-white">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#F5F0FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#17694F]">
               <Settings size={14} />
               Employee settings
             </p>
@@ -26,13 +26,13 @@ export default function EmployeeSettingsPage() {
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Link
                 href={routes.employeeDashboard}
-                className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#DDD0F8] bg-white px-4 text-sm font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+                className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#DFD6BE] bg-white px-4 text-sm font-bold text-[#17694F] outline-none transition hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2"
               >
                 Back to dashboard
               </Link>
               <Link
                 href={routes.employeeCareerGps}
-                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1A1033] px-4 text-sm font-bold text-white outline-none transition hover:bg-[#2A1B4A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1E2A44] px-4 text-sm font-bold text-white outline-none transition hover:bg-[#16233C] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2"
               >
                 View Career GPS
               </Link>
@@ -47,14 +47,14 @@ export default function EmployeeSettingsPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="rounded-lg border border-[#E7DDF7] bg-[#FDFCFF] p-4 shadow-[0_4px_18px_rgba(26,16,51,0.04)]">
+                <div key={item.label} className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4 shadow-[0_4px_18px_rgba(26,16,51,0.04)]">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#6B46C1]">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#17694F]">
                       <Icon size={18} />
                     </span>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wide text-[#8A7AA8]">{item.label}</p>
-                      <p className="mt-1 text-sm font-bold text-[#1A1033]">{item.value}</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-[#8B7434]">{item.label}</p>
+                      <p className="mt-1 text-sm font-bold text-[#1E2A44]">{item.value}</p>
                     </div>
                   </div>
                 </div>
@@ -65,7 +65,7 @@ export default function EmployeeSettingsPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-[#E7DDF7] bg-white p-3 shadow-[0_6px_24px_rgba(26,16,51,0.05)] sm:p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-white p-3 shadow-[0_6px_24px_rgba(26,16,51,0.05)] sm:p-4">
           <CareerNorthStarPanel />
         </div>
       </section>

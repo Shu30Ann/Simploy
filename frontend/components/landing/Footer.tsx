@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandLogo } from "@/components/BrandLogo";
+
 const premiumEmployers = [
   "Maybank",
   "Shell",
@@ -95,14 +97,7 @@ export default function Footer() {
       {/* Link columns */}
       <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div>
-          <p className="flex items-center gap-2 mb-3">
-            <span className="font-serif text-lg font-black tracking-wide">
-              SIMPLOY
-            </span>
-            <span className="font-mono text-[10px] font-semibold bg-[#17694F]/40 text-[#7FBFA5] rounded-full px-2 py-0.5">
-              .ai
-            </span>
-          </p>
+          <BrandLogo withPlate className="mb-3" imageClassName="h-16 w-auto" />
           <p className="text-sm text-white/50 leading-relaxed">
             The authority in employability and career development. The largest
             collection of leading employers, in one place.

@@ -238,7 +238,7 @@ export default function SimulatorSidebar({ state, setState, isRunning, onRun, co
                               className="w-4 h-4 rounded flex items-center justify-center transition-all flex-shrink-0"
                               style={{
                                 background: checked ? "var(--pink)" : "white",
-                                border: `1px solid ${checked ? "var(--pink)" : "#D3D1C7"}`,
+                                border: `1px solid ${checked ? "var(--pink)" : "#DFD6C2"}`,
                               }}
                               onClick={() => togglePreset(key)}
                             >

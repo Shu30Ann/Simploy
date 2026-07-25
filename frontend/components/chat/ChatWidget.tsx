@@ -105,7 +105,7 @@ export function ChatWidget({
                   key={prompt}
                   type="button"
                   onClick={() => sendMessage(prompt)}
-                  className="rounded-full border border-[#DFD6BE] bg-white px-3 py-1.5 text-xs font-bold text-[#6B46C1] hover:border-[#B08A44] hover:text-[#B08A44]"
+                  className="rounded-full border border-[#DFD6BE] bg-white px-3 py-1.5 text-xs font-bold text-[#17694F] hover:border-[#B08A44] hover:text-[#B08A44]"
                 >
                   {prompt}
                 </button>

@@ -29,14 +29,14 @@ function Row({ r }: { r: MarketRow }) {
   const isGrowing = r.status === "Growing";
   return (
     <div className="flex items-center gap-3 py-2 border-b last:border-0"
-      style={{ borderColor: "#F5F3EE" }}>
+      style={{ borderColor: "#F7F3EA" }}>
       <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
         style={{ background: "var(--bg-page)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
         {r.code}
       </div>
       <span className="flex-1 text-sm" style={{ color: "var(--text-primary)" }}>{r.country}</span>
       <span className="text-sm font-semibold tabular-nums"
-        style={{ color: isGrowing ? "#10B981" : "#B08A44" }}>
+        style={{ color: isGrowing ? "#17694F" : "#B08A44" }}>
         {r.change}
       </span>
     </div>
@@ -92,7 +92,7 @@ export default function DemographicContextPanel() {
               {/* Growing */}
               <div className="flex items-center gap-2 mb-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: "var(--risk-growing-bg)", color: "#10B981" }}>
+                  style={{ background: "var(--risk-growing-bg)", color: "#17694F" }}>
                   GROWING
                 </span>
               </div>

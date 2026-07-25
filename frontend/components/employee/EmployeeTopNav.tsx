@@ -13,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { BrandLogo } from "@/components/BrandLogo";
 import { routes } from "@/lib/routes";
 
 type EmployeeNavKey = "dashboard" | "career-gps" | "marketplace" | "applications" | "career-buddy" | "settings";
@@ -79,17 +80,15 @@ export function EmployeeTopNav({ initials, name }: EmployeeTopNavProps) {
   const activeKey = activeKeyFor(pathname, hash);
 
   return (
-    <header className="border-b border-[#F0EBF8] bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+    <header className="border-b border-[#EAE3D3] bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:min-h-20 lg:justify-center lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/" className="text-xl font-bold text-[#E8197A]">
-              Simploy
-            </Link>
+            <BrandLogo imageClassName="h-14 w-auto" />
             <div className="flex shrink-0 items-center gap-3 lg:hidden">
               <Link
                 href="/"
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-3 text-sm font-semibold text-[#6B46C1] shadow-sm"
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-[#DFD6BE] bg-white px-3 text-sm font-semibold text-[#17694F] shadow-sm"
               >
                 <Building2 size={16} />
                 Portal
@@ -108,7 +107,7 @@ export function EmployeeTopNav({ initials, name }: EmployeeTopNavProps) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${
-                    active ? "bg-[#FFF0F8] text-[#E8197A]" : "hover:bg-[#F8F5FC] hover:text-[#1A1033]"
+                    active ? "bg-[#F6F1E4] text-[#B08A44]" : "hover:bg-[#F7F3EA] hover:text-[#1E2A44]"
                   }`}
                 >
                   <Icon size={16} />
@@ -121,7 +120,7 @@ export function EmployeeTopNav({ initials, name }: EmployeeTopNavProps) {
           <div className="hidden items-center gap-3 lg:flex">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-white px-4 py-2 text-sm font-semibold text-[#6B46C1] shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-semibold text-[#17694F] shadow-sm"
             >
               <Building2 size={16} />
               Switch Portal
@@ -141,8 +140,8 @@ export function EmployeeTopNav({ initials, name }: EmployeeTopNavProps) {
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 py-2 transition ${
                   active
-                    ? "border-[#FFD0E8] bg-[#FFF0F8] text-[#E8197A]"
-                    : "border-[#F0EBF8] bg-white hover:border-[#DDD0F8] hover:bg-[#F8F5FC]"
+                    ? "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]"
+                    : "border-[#EAE3D3] bg-white hover:border-[#DFD6BE] hover:bg-[#F7F3EA]"
                 }`}
               >
                 <Icon size={16} />

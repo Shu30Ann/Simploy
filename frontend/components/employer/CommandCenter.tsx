@@ -13,9 +13,8 @@ export function WorkforceCommandCenter({
   companyName?: string;
 }) {
   return (
-    <section aria-labelledby="command-center-title" className="relative overflow-hidden bg-[#F7F3EA] pb-14 pt-12 sm:pb-20 sm:pt-16">
-      <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#B08A44]/[0.06] blur-3xl" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section aria-labelledby="command-center-title" className="bg-[#F7F3EA] pb-14 pt-12 sm:pb-20 sm:pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)] lg:items-center">
           <div>
             <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-5 py-2 text-base font-bold text-[#B08A44]">

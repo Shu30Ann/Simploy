@@ -44,21 +44,21 @@ type ProgressStatus = "planned" | "in_progress" | "completed";
 const routeTone: Record<CareerGpsRouteType, { label: string; accent: string; bg: string; border: string }> = {
   recommended: {
     label: "Recommended Route",
-    accent: "text-[#E8197A]",
-    bg: "bg-[#FFF0F8]",
-    border: "border-[#FFD0E8]",
+    accent: "text-[#B08A44]",
+    bg: "bg-[#F6F1E4]",
+    border: "border-[#E3D8BC]",
   },
   accelerated: {
     label: "Accelerated Route",
-    accent: "text-[#0891B2]",
-    bg: "bg-[#E0F9FF]",
-    border: "border-[#BAF3FF]",
+    accent: "text-[#114F3B]",
+    bg: "bg-[#E7F0E9]",
+    border: "border-[#CBDFD4]",
   },
   balanced: {
     label: "Balanced Route",
-    accent: "text-[#6B46C1]",
-    bg: "bg-[#F5F0FF]",
-    border: "border-[#DDD0F8]",
+    accent: "text-[#17694F]",
+    bg: "bg-[#E7F0E9]",
+    border: "border-[#DFD6BE]",
   },
 };
 
@@ -179,8 +179,8 @@ function progressPercent(progress: Record<string, ProgressStatus>, route: Career
 function InfoAlert({ tone, children }: { tone: "error" | "success" | "info"; children: React.ReactNode }) {
   const styles = {
     error: "border-[#FECACA] bg-[#FFF5F5] text-[#DC2626]",
-    success: "border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]",
-    info: "border-[#BAF3FF] bg-[#F0FDFF] text-[#087C7E]",
+    success: "border-[#CBDFD4] bg-[#EFF5F0] text-[#17694F]",
+    info: "border-[#CBDFD4] bg-[#EFF5F0] text-[#17694F]",
   }[tone];
   const Icon = tone === "error" ? AlertCircle : tone === "success" ? CheckCircle2 : Sparkles;
   return (
@@ -196,10 +196,10 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
     <div>
       <div className="flex items-center justify-between gap-3 text-xs font-bold text-[#6B7280]">
         <span>{label}</span>
-        <span className="text-[#1A1033]">{Math.round(score)}%</span>
+        <span className="text-[#1E2A44]">{Math.round(score)}%</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-[#F0EBF8]">
-        <div className="h-2 rounded-full bg-[#E8197A]" style={{ width: `${Math.max(0, Math.min(100, score))}%` }} />
+      <div className="mt-2 h-2 rounded-full bg-[#EAE3D3]">
+        <div className="h-2 rounded-full bg-[#B08A44]" style={{ width: `${Math.max(0, Math.min(100, score))}%` }} />
       </div>
     </div>
   );
@@ -207,32 +207,32 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 
 function NorthStarSummary({ summary }: { summary: CareerGpsNorthStarSummary | null }) {
   return (
-    <section className="rounded-lg border border-[#BAF3FF] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#CBDFD4] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Compass size={14} />
             Career North Star
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">{summary?.target_role ?? "Career GPS roadmap"}</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">{summary?.target_role ?? "Career GPS roadmap"}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             {summary?.career_ambition ?? "Complete your Career North Star setup to personalize roadmap generation."}
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[420px]">
-          <div className="rounded-lg bg-[#FFF0F8] p-3">
+          <div className="rounded-lg bg-[#F6F1E4] p-3">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Industry</p>
-            <p className="mt-1 text-sm font-bold text-[#E8197A]">{summary?.target_industry ?? "Not set"}</p>
+            <p className="mt-1 text-sm font-bold text-[#B08A44]">{summary?.target_industry ?? "Not set"}</p>
           </div>
-          <div className="rounded-lg bg-[#F5F0FF] p-3">
+          <div className="rounded-lg bg-[#E7F0E9] p-3">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Timeline</p>
-            <p className="mt-1 text-sm font-bold text-[#6B46C1]">
+            <p className="mt-1 text-sm font-bold text-[#17694F]">
               {summary?.target_timeline_months ? `${summary.target_timeline_months} months` : "Flexible"}
             </p>
           </div>
-          <div className="rounded-lg bg-[#E0F9FF] p-3">
+          <div className="rounded-lg bg-[#E7F0E9] p-3">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Setup</p>
-            <p className="mt-1 text-sm font-bold text-[#0891B2]">
+            <p className="mt-1 text-sm font-bold text-[#114F3B]">
               {summary?.is_onboarding_complete ? "Complete" : "Needs setup"}
             </p>
           </div>
@@ -244,7 +244,7 @@ function NorthStarSummary({ summary }: { summary: CareerGpsNorthStarSummary | nu
 
 function NextBestActionCard({ roadmap }: { roadmap: CareerGpsRoadmap }) {
   return (
-    <section className="rounded-lg bg-[#1A1033] p-5 text-white shadow-[0_8px_48px_rgba(26,16,51,0.18)]">
+    <section className="rounded-lg bg-[#1E2A44] p-5 text-white shadow-[0_8px_48px_rgba(26,16,51,0.18)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white/70">
@@ -283,7 +283,7 @@ function RouteCard({
       type="button"
       onClick={onSelect}
       className={`min-h-[300px] rounded-lg border bg-white p-4 text-left shadow-[0_4px_24px_rgba(232,25,122,0.08)] transition ${
-        selected ? `${tone.border} ring-2 ring-[#E8197A]/20` : "border-[#F0EBF8] hover:border-[#DDD0F8]"
+        selected ? `${tone.border} ring-2 ring-[#B08A44]/20` : "border-[#EAE3D3] hover:border-[#DFD6BE]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -291,20 +291,20 @@ function RouteCard({
           <Route size={14} />
           {tone.label}
         </span>
-        <span className="rounded-full bg-[#F8F5FC] px-2 py-1 text-xs font-bold text-[#6B7280]">
+        <span className="rounded-full bg-[#F7F3EA] px-2 py-1 text-xs font-bold text-[#6B7280]">
           {scoreLabel(route.score)}
         </span>
       </div>
-      <h3 className="mt-4 text-lg font-bold text-[#1A1033]">{route.target_occupation.title}</h3>
+      <h3 className="mt-4 text-lg font-bold text-[#1E2A44]">{route.target_occupation.title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#6B7280]">{route.summary}</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg bg-[#FDFCFF] p-3">
+        <div className="rounded-lg bg-[#FFFFFF] p-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Estimated timeline</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{route.estimated_months} months</p>
+          <p className="mt-1 text-sm font-bold text-[#1E2A44]">{route.estimated_months} months</p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] p-3">
+        <div className="rounded-lg bg-[#FFFFFF] p-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Confidence</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{scoreLabel(route.score)}</p>
+          <p className="mt-1 text-sm font-bold text-[#1E2A44]">{scoreLabel(route.score)}</p>
         </div>
       </div>
       <div className="mt-4 space-y-3">
@@ -314,7 +314,7 @@ function RouteCard({
       </div>
       <div className="mt-4 grid gap-3 text-xs font-semibold text-[#6B7280]">
         <p>
-          <span className="font-bold text-[#059669]">Advantage:</span> {advantage?.label ?? "Overall fit"}{" "}
+          <span className="font-bold text-[#17694F]">Advantage:</span> {advantage?.label ?? "Overall fit"}{" "}
           {advantage ? `${Math.round(advantage.score)}%` : ""}
         </p>
         <p>
@@ -340,30 +340,30 @@ function MetroRoadmap({
   onSetStatus: (milestone: CareerGpsMilestone, status: ProgressStatus) => void;
 }) {
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
             <GitBranch size={14} />
             Visual roadmap
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">{route.title}</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">{route.title}</h2>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Progress</p>
-          <p className="mt-1 text-lg font-bold text-[#E8197A]">{progressPercent(progress, route)}%</p>
+          <p className="mt-1 text-lg font-bold text-[#B08A44]">{progressPercent(progress, route)}%</p>
         </div>
       </div>
 
       <div className="mt-6 overflow-x-auto pb-2">
         <div className="relative grid min-w-[760px] grid-cols-4 gap-4">
-          <div className="absolute left-[12%] right-[12%] top-9 h-1 rounded-full bg-[#E2D9F3]" />
-          <article className="relative rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06B6D4] text-white">
+          <div className="absolute left-[12%] right-[12%] top-9 h-1 rounded-full bg-[#DFD6BE]" />
+          <article className="relative rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#17694F] text-white">
               <Target size={18} />
             </div>
-            <p className="mt-4 text-xs font-bold uppercase text-[#0891B2]">Target role</p>
-            <h3 className="mt-1 text-sm font-bold text-[#1A1033]">{route.target_occupation.title}</h3>
+            <p className="mt-4 text-xs font-bold uppercase text-[#114F3B]">Target role</p>
+            <h3 className="mt-1 text-sm font-bold text-[#1E2A44]">{route.target_occupation.title}</h3>
             <p className="mt-2 text-xs font-semibold text-[#6B7280]">Stage: {route.target_occupation.seniority_level ?? "target"}</p>
             <p className="mt-1 text-xs font-semibold text-[#6B7280]">Readiness: {Math.round(route.score)}%</p>
           </article>
@@ -375,7 +375,7 @@ function MetroRoadmap({
               <article
                 key={milestone.sequence}
                 className={`relative rounded-lg border bg-white p-4 ${
-                  active ? "border-[#E8197A] ring-2 ring-[#E8197A]/20" : "border-[#F0EBF8]"
+                  active ? "border-[#B08A44] ring-2 ring-[#B08A44]/20" : "border-[#EAE3D3]"
                 }`}
               >
                 <button
@@ -385,17 +385,17 @@ function MetroRoadmap({
                 >
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                      status === "completed" ? "bg-[#10B981]" : status === "in_progress" ? "bg-[#E8197A]" : "bg-[#6B46C1]"
+                      status === "completed" ? "bg-[#17694F]" : status === "in_progress" ? "bg-[#B08A44]" : "bg-[#17694F]"
                     } text-white`}
                   >
                     {milestone.sequence}
                   </div>
                   <p className="mt-4 text-xs font-bold uppercase text-[#9CA3AF]">Milestone {milestone.sequence}</p>
-                  <h3 className="mt-1 min-h-10 text-sm font-bold text-[#1A1033]">{milestone.title}</h3>
+                  <h3 className="mt-1 min-h-10 text-sm font-bold text-[#1E2A44]">{milestone.title}</h3>
                   <p className="mt-2 text-xs font-semibold text-[#6B7280]">{milestone.duration_weeks ?? 4} weeks</p>
                   <p className="mt-1 text-xs font-semibold text-[#6B7280]">Readiness: {readinessFromRoute(route)}%</p>
                   <p className="mt-1 text-xs font-semibold text-[#6B7280]">Status: {statusLabel(status)}</p>
-                  <p className="mt-2 text-xs font-bold text-[#E8197A]">Gap: {missingRequirement(milestone, route)}</p>
+                  <p className="mt-2 text-xs font-bold text-[#B08A44]">Gap: {missingRequirement(milestone, route)}</p>
                 </button>
                 <div className="mt-4 grid gap-2">
                   {(["planned", "in_progress", "completed"] as ProgressStatus[]).map((item) => (
@@ -405,8 +405,8 @@ function MetroRoadmap({
                       onClick={() => onSetStatus(milestone, item)}
                       className={`rounded-lg border px-2 py-1.5 text-xs font-bold ${
                         status === item
-                          ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
-                          : "border-[#F0EBF8] bg-white text-[#6B7280]"
+                          ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
+                          : "border-[#EAE3D3] bg-white text-[#6B7280]"
                       }`}
                     >
                       {statusLabel(item)}
@@ -445,17 +445,17 @@ function MilestoneDetailPanel({
   };
 
   return (
-    <aside className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
-      <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+    <aside className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
         <Map size={14} />
         Milestone detail
       </p>
-      <h2 className="mt-3 text-xl font-bold text-[#1A1033]">{active?.title ?? route.target_occupation.title}</h2>
+      <h2 className="mt-3 text-xl font-bold text-[#1E2A44]">{active?.title ?? route.target_occupation.title}</h2>
       <div className="mt-4 grid gap-3">
         {detailLabels.map((label) => (
-          <div key={label} className="rounded-lg bg-[#FDFCFF] p-3">
+          <div key={label} className="rounded-lg bg-[#FFFFFF] p-3">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[#1A1033]">{detailMap[label as keyof typeof detailMap]}</p>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[#1E2A44]">{detailMap[label as keyof typeof detailMap]}</p>
           </div>
         ))}
       </div>
@@ -467,42 +467,42 @@ function SkillReadinessSummary({ route }: { route: CareerGpsRoute }) {
   const missing = route.skill_gaps;
   const readiness = readinessFromRoute(route);
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-[#F5F0FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#DFD6BE] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#17694F]">
             <Gauge size={14} />
             Skills and readiness
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">{readiness}% skill readiness</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">{readiness}% skill readiness</h2>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Missing skills</p>
-          <p className="mt-1 text-lg font-bold text-[#E8197A]">{missing.length}</p>
+          <p className="mt-1 text-lg font-bold text-[#B08A44]">{missing.length}</p>
         </div>
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-3 sm:grid-cols-2">
           {missing.length ? (
             missing.map((gap) => (
-              <article key={`${gap.skill_name}-${gap.priority}`} className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+              <article key={`${gap.skill_name}-${gap.priority}`} className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-bold text-[#1A1033]">{gap.skill_name}</p>
+                    <p className="font-bold text-[#1E2A44]">{gap.skill_name}</p>
                     <p className="mt-1 text-xs font-bold uppercase text-[#9CA3AF]">{gap.skill_type}</p>
                   </div>
-                  <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[#E8197A]">P{gap.priority}</span>
+                  <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[#B08A44]">P{gap.priority}</span>
                 </div>
                 <p className="mt-3 text-sm font-semibold text-[#6B7280]">Target level: {gap.proficiency_level}</p>
               </article>
             ))
           ) : (
-            <article className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-bold text-[#087C7E]">
+            <article className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4 text-sm font-bold text-[#17694F]">
               No major skill gap was identified for this route.
             </article>
           )}
         </div>
-        <div className="space-y-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+        <div className="space-y-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
           <ScoreBar label="Goal fit" score={metricValue(route, "goal_fit")} />
           <ScoreBar label="Skill fit" score={metricValue(route, "skill_fit")} />
           <ScoreBar label="Lifestyle fit" score={metricValue(route, "lifestyle_fit")} />
@@ -559,21 +559,21 @@ function WhatIfSimulator({
   const changedCount = preview?.comparison.changes.filter((change) => change.changed).length ?? 0;
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
             <SlidersHorizontal size={14} />
             What-if Career Simulator
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Preview a scenario before changing your roadmap</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Preview a scenario before changing your roadmap</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Scenario previews use the deterministic Career GPS engine with temporary preference changes. Applying a scenario saves it as the next roadmap version.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active version</p>
-          <p className="mt-1 text-lg font-bold text-[#1A1033]">Version {roadmap.version}</p>
+          <p className="mt-1 text-lg font-bold text-[#1E2A44]">Version {roadmap.version}</p>
         </div>
       </div>
 
@@ -585,7 +585,7 @@ function WhatIfSimulator({
               value={scenarioName}
               onChange={(event) => setScenarioName(event.target.value)}
               placeholder="Optional"
-              className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+              className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
             />
           </label>
 
@@ -598,13 +598,13 @@ function WhatIfSimulator({
                   type="button"
                   onClick={() => toggleAdjustment(option.code)}
                   className={`min-h-[118px] rounded-lg border p-3 text-left transition ${
-                    active ? "border-[#E8197A] bg-[#FFF0F8] ring-2 ring-[#E8197A]/15" : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8]"
+                    active ? "border-[#B08A44] bg-[#F6F1E4] ring-2 ring-[#B08A44]/15" : "border-[#EAE3D3] bg-[#FFFFFF] hover:border-[#DFD6BE]"
                   }`}
                 >
-                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#E8197A] bg-[#E8197A]" : "border-[#DDD0F8] bg-white"}`}>
+                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#B08A44] bg-[#B08A44]" : "border-[#DFD6BE] bg-white"}`}>
                     {active && <CheckCircle2 size={14} className="text-white" />}
                   </span>
-                  <p className="mt-3 text-sm font-bold text-[#1A1033]">{option.label}</p>
+                  <p className="mt-3 text-sm font-bold text-[#1E2A44]">{option.label}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">{option.description}</p>
                 </button>
               );
@@ -612,14 +612,14 @@ function WhatIfSimulator({
           </div>
 
           {(hasAdjustment("relocate_country") || hasAdjustment("change_industry") || hasAdjustment("retire_earlier")) && (
-            <div className="grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4 md:grid-cols-2 xl:grid-cols-4">
               {hasAdjustment("relocate_country") && (
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#9CA3AF]">Relocation country</span>
                   <input
                     value={targetCountry}
                     onChange={(event) => setTargetCountry(event.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                   />
                 </label>
               )}
@@ -629,7 +629,7 @@ function WhatIfSimulator({
                   <select
                     value={targetIndustry}
                     onChange={(event) => setTargetIndustry(event.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                   >
                     <option value="technology">Technology</option>
                     <option value="data">Data</option>
@@ -647,7 +647,7 @@ function WhatIfSimulator({
                       min={45}
                       max={80}
                       onChange={(event) => setTargetRetirementAge(event.target.value)}
-                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                      className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                     />
                   </label>
                   <label className="block">
@@ -658,7 +658,7 @@ function WhatIfSimulator({
                       min={1}
                       max={480}
                       onChange={(event) => setTargetTimelineMonths(event.target.value)}
-                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                      className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                     />
                   </label>
                 </>
@@ -667,12 +667,12 @@ function WhatIfSimulator({
           )}
         </div>
 
-        <aside className="space-y-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+        <aside className="space-y-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#6B7280]">
             <HelpCircle size={14} />
             Current recommended route
           </p>
-          <h3 className="text-lg font-bold text-[#1A1033]">{currentRecommended?.target_occupation.title ?? "No route"}</h3>
+          <h3 className="text-lg font-bold text-[#1E2A44]">{currentRecommended?.target_occupation.title ?? "No route"}</h3>
           <ScoreBar label="Route score" score={currentRecommended?.score ?? 0} />
           <ScoreBar label="Skill fit" score={currentRecommended ? metricValue(currentRecommended, "skill_fit") : 0} />
           <div className="flex flex-col gap-2 pt-2">
@@ -680,7 +680,7 @@ function WhatIfSimulator({
               type="button"
               onClick={() => onPreview(payload())}
               disabled={!adjustments.length || isPreviewing || isApplying}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isPreviewing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
               Preview scenario
@@ -689,7 +689,7 @@ function WhatIfSimulator({
               type="button"
               onClick={onClear}
               disabled={!preview || isPreviewing || isApplying}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Clear preview
             </button>
@@ -699,9 +699,9 @@ function WhatIfSimulator({
 
       {preview && (
         <div className="mt-5 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
-            <p className="text-xs font-bold uppercase text-[#0891B2]">Preview recommended route</p>
-            <h3 className="mt-2 text-xl font-bold text-[#1A1033]">{previewRecommended?.target_occupation.title ?? "No route"}</h3>
+          <aside className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4">
+            <p className="text-xs font-bold uppercase text-[#114F3B]">Preview recommended route</p>
+            <h3 className="mt-2 text-xl font-bold text-[#1E2A44]">{previewRecommended?.target_occupation.title ?? "No route"}</h3>
             <p className="mt-2 text-sm font-semibold leading-6 text-[#6B7280]">
               {preview.scenario.scenario_name} previews version {preview.comparison.preview_version}.
             </p>
@@ -709,14 +709,14 @@ function WhatIfSimulator({
               <ScoreBar label="Preview route score" score={previewRecommended?.score ?? 0} />
               <ScoreBar label="Preview roadmap fit" score={preview.preview_roadmap.fit_score} />
             </div>
-            <p className="mt-4 rounded-lg bg-white p-3 text-xs font-bold text-[#087C7E]">
+            <p className="mt-4 rounded-lg bg-white p-3 text-xs font-bold text-[#17694F]">
               {changedCount} of {preview.comparison.changes.length} comparison areas changed.
             </p>
             <button
               type="button"
               onClick={() => onApply(payload())}
               disabled={isApplying || isPreviewing}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isApplying ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
               Apply Scenario
@@ -728,29 +728,29 @@ function WhatIfSimulator({
               {preview.comparison.changes.map((change) => (
                 <article
                   key={change.category}
-                  className={`rounded-lg border p-4 ${change.changed ? "border-[#FFD0E8] bg-[#FFF0F8]" : "border-[#F0EBF8] bg-white"}`}
+                  className={`rounded-lg border p-4 ${change.changed ? "border-[#E3D8BC] bg-[#F6F1E4]" : "border-[#EAE3D3] bg-white"}`}
                 >
-                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>
+                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#B08A44]" : "text-[#9CA3AF]"}`}>
                     {change.changed ? "Changed" : "No change"}
                   </p>
-                  <h3 className="mt-2 text-sm font-bold text-[#1A1033]">{change.label}</h3>
+                  <h3 className="mt-2 text-sm font-bold text-[#1E2A44]">{change.label}</h3>
                   <div className="mt-3 grid gap-2 text-xs font-semibold leading-5 text-[#6B7280]">
                     <p>
-                      <span className="font-bold text-[#1A1033]">Current:</span> {change.before}
+                      <span className="font-bold text-[#1E2A44]">Current:</span> {change.before}
                     </p>
                     <p>
-                      <span className="font-bold text-[#1A1033]">Preview:</span> {change.after}
+                      <span className="font-bold text-[#1E2A44]">Preview:</span> {change.after}
                     </p>
                   </div>
                   <p className="mt-3 text-xs font-semibold leading-5 text-[#6B7280]">{change.explanation}</p>
                 </article>
               ))}
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Why the preview changed</p>
               <div className="mt-3 grid gap-2 md:grid-cols-2">
                 {preview.scenario.applied_overrides.map((override) => (
-                  <p key={override} className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
+                  <p key={override} className="rounded-lg bg-[#FFFFFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
                     {override}
                   </p>
                 ))}
@@ -858,21 +858,21 @@ function CareerBuddyPanel({
   };
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#DDD0F8] bg-[#F5F0FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#DFD6BE] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#17694F]">
             <Bot size={14} />
             Career Buddy
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Ask about this roadmap</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Ask about this roadmap</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Career Buddy uses your stored roadmap, selected route, skill gaps, milestones, and preferences. It does not replace deterministic Career GPS scoring.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Context route</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{selectedRoute.target_occupation.title}</p>
+          <p className="mt-1 text-sm font-bold text-[#1E2A44]">{selectedRoute.target_occupation.title}</p>
         </div>
       </div>
 
@@ -883,11 +883,11 @@ function CareerBuddyPanel({
       )}
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_310px]">
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF]">
+        <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF]">
           <div className="max-h-[430px] min-h-[280px] space-y-3 overflow-y-auto p-4">
             {isLoading ? (
               <div className="flex items-center gap-2 text-sm font-bold text-[#6B7280]">
-                <Loader2 size={16} className="animate-spin text-[#E8197A]" />
+                <Loader2 size={16} className="animate-spin text-[#B08A44]" />
                 Loading Career Buddy...
               </div>
             ) : messages.length ? (
@@ -899,8 +899,8 @@ function CareerBuddyPanel({
                   <div
                     className={`max-w-[86%] rounded-lg px-3 py-2 text-sm leading-6 ${
                       message.sender === "employee"
-                        ? "bg-[#E8197A] text-white"
-                        : "border border-[#F0EBF8] bg-white text-[#1A1033]"
+                        ? "bg-[#B08A44] text-white"
+                        : "border border-[#EAE3D3] bg-white text-[#1E2A44]"
                     }`}
                   >
                     <p>{message.content}</p>
@@ -914,14 +914,14 @@ function CareerBuddyPanel({
                 </div>
               ))
             ) : (
-              <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
+              <div className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4 text-sm font-semibold leading-6 text-[#17694F]">
                 Ask Career Buddy about the recommended route, 90-day plan, skill blockers, management constraints, relocation, or balanced options.
               </div>
             )}
             {isSending && (
               <div className="flex justify-start">
-                <p className="inline-flex items-center gap-2 rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
-                  <Loader2 size={15} className="animate-spin text-[#E8197A]" />
+                <p className="inline-flex items-center gap-2 rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
+                  <Loader2 size={15} className="animate-spin text-[#B08A44]" />
                   Career Buddy is thinking...
                 </p>
               </div>
@@ -932,18 +932,18 @@ function CareerBuddyPanel({
               event.preventDefault();
               sendCareerBuddyMessage(draft);
             }}
-            className="flex items-center gap-2 border-t border-[#F0EBF8] bg-white p-3"
+            className="flex items-center gap-2 border-t border-[#EAE3D3] bg-white p-3"
           >
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Ask about your route..."
-              className="min-h-11 flex-1 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+              className="min-h-11 flex-1 rounded-lg border border-[#DFD6BE] px-3 text-sm font-semibold text-[#1E2A44] outline-none placeholder:text-[#9CA3AF] focus:border-[#B08A44]"
             />
             <button
               type="submit"
               disabled={!draft.trim() || isSending}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#06B6D4] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#17694F] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Send message to Career Buddy"
             >
               {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
@@ -951,7 +951,7 @@ function CareerBuddyPanel({
           </form>
         </div>
 
-        <aside className="space-y-3 rounded-lg border border-[#F0EBF8] bg-white p-4">
+        <aside className="space-y-3 rounded-lg border border-[#EAE3D3] bg-white p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Quick questions</p>
           <div className="grid gap-2">
             {careerBuddyPrompts.map((prompt) => (
@@ -960,24 +960,24 @@ function CareerBuddyPanel({
                 type="button"
                 onClick={() => sendCareerBuddyMessage(prompt)}
                 disabled={isSending}
-                className="rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#6B46C1] hover:border-[#E8197A] hover:text-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-[#DFD6BE] bg-[#FFFFFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#17694F] hover:border-[#B08A44] hover:text-[#B08A44] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {prompt}
               </button>
             ))}
           </div>
-          <div className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+          <div className="rounded-lg bg-[#FFFFFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
             <p>
-              Provider: <span className="font-bold text-[#1A1033]">{provider ?? "template or configured backend AI"}</span>
+              Provider: <span className="font-bold text-[#1E2A44]">{provider ?? "template or configured backend AI"}</span>
             </p>
             {model && (
               <p className="mt-1">
-                Model: <span className="font-bold text-[#1A1033]">{model}</span>
+                Model: <span className="font-bold text-[#1E2A44]">{model}</span>
               </p>
             )}
             {remaining !== null && (
               <p className="mt-1">
-                Messages left this hour: <span className="font-bold text-[#1A1033]">{remaining}</span>
+                Messages left this hour: <span className="font-bold text-[#1E2A44]">{remaining}</span>
               </p>
             )}
           </div>
@@ -1122,9 +1122,9 @@ export default function CareerGpsRoadmapPanel() {
 
   if (isLoading) {
     return (
-      <section id="career-gps-roadmap" className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <section id="career-gps-roadmap" className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
         <div className="flex items-center gap-3 text-sm font-bold text-[#6B7280]">
-          <Loader2 size={18} className="animate-spin text-[#E8197A]" />
+          <Loader2 size={18} className="animate-spin text-[#B08A44]" />
           Loading Career GPS roadmap...
         </div>
       </section>
@@ -1139,11 +1139,11 @@ export default function CareerGpsRoadmapPanel() {
       <NorthStarSummary summary={profile?.north_star ?? null} />
 
       {!roadmap && (
-        <section className="rounded-lg border border-[#F0EBF8] bg-white p-6 text-center shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFF0F8] text-[#E8197A]">
+        <section className="rounded-lg border border-[#EAE3D3] bg-white p-6 text-center shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[#F6F1E4] text-[#B08A44]">
             <BarChart3 size={22} />
           </div>
-          <h2 className="mt-4 text-2xl font-bold text-[#1A1033]">Generate your Career GPS roadmap</h2>
+          <h2 className="mt-4 text-2xl font-bold text-[#1E2A44]">Generate your Career GPS roadmap</h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
             Career GPS will use your saved North Star, skills, lifestyle priorities, constraints, and illustrative occupation data.
           </p>
@@ -1151,7 +1151,7 @@ export default function CareerGpsRoadmapPanel() {
             type="button"
             onClick={generateRoadmap}
             disabled={isGenerating}
-            className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
             Generate roadmap
@@ -1161,7 +1161,7 @@ export default function CareerGpsRoadmapPanel() {
 
       {roadmap && selectedRoute && (
         <>
-          <div className="flex flex-col gap-3 rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)] sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Career GPS roadmap</p>
               <p className="mt-1 text-sm font-semibold text-[#6B7280]">
@@ -1172,7 +1172,7 @@ export default function CareerGpsRoadmapPanel() {
               type="button"
               onClick={generateRoadmap}
               disabled={isGenerating}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               Regenerate

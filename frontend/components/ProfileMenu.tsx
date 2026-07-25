@@ -71,7 +71,7 @@ export function ProfileMenu({ role, initials, name, label }: ProfileMenuProps) {
             href={settingsHref}
             role="menuitem"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#6B7280] transition hover:bg-[#F8F5FC] hover:text-[#B08A44]"
+            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#6B7280] transition hover:bg-[#F7F3EA] hover:text-[#B08A44]"
           >
             <Settings size={16} aria-hidden="true" />
             Settings
@@ -80,7 +80,7 @@ export function ProfileMenu({ role, initials, name, label }: ProfileMenuProps) {
             href={role === "employee" ? routes.employeeDashboard : routes.employerDashboard}
             role="menuitem"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#6B7280] transition hover:bg-[#F8F5FC] hover:text-[#B08A44]"
+            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#6B7280] transition hover:bg-[#F7F3EA] hover:text-[#B08A44]"
           >
             <UserRound size={16} aria-hidden="true" />
             Profile

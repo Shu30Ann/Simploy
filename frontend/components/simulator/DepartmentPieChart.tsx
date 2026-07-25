@@ -34,7 +34,7 @@ interface DeptData {
   recommendedAction:   "Hire" | "Upskill" | "Redeploy" | "Automate";
 }
 
-const DEPT_DATA: DeptData[] = ["#B08A44", "#56618C", "#17694F", "#F59E0B", "#10B981", "#C2410C"].map((color, index) => {
+const DEPT_DATA: DeptData[] = ["#B08A44", "#56618C", "#17694F", "#F59E0B", "#17694F", "#8B7434"].map((color, index) => {
   const dept = manufacturingDepartments[index];
   const deptRoles = manufacturingRoleGaps.filter((role) => role.department === dept.name);
   const largestShortage = deptRoles.reduce((min, role) => Math.min(min, role.gap), 0);

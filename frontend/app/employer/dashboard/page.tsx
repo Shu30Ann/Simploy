@@ -34,7 +34,7 @@ const topics = [
     tone: "purple",
   },
   {
-    title: "Workforce Planner",
+    title: "Action Engine",
     detail: "Turn simulation outputs into prioritized hiring, upskilling, mobility, and retention actions.",
     href: routes.employerActionEngine,
     icon: Zap,
@@ -50,7 +50,7 @@ export default function EmployerDashboardPage() {
     <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
       <WorkforceCommandCenter metrics={metricsFromDashboard(dashboard)} companyName={dashboard?.company_name} />
       {loadState === "loaded" && (
-        <div className="border-y border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-center text-sm font-bold text-[#087C7E]">
+        <div className="border-y border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-center text-sm font-bold text-[#17694F]">
           Dashboard loaded from database for {dashboard?.company_name}.
         </div>
       )}

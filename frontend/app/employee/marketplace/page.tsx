@@ -140,10 +140,10 @@ const metricOptions = [
 type MarketMetric = (typeof metricOptions)[number]["key"];
 
 const toneStyles: Record<string, string> = {
-  pink: "border-[#FFD0E8] bg-[#FFF0F8] text-[#E8197A]",
-  teal: "border-[#BAF3FF] bg-[#E0F9FF] text-[#087C7E]",
-  green: "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]",
-  purple: "border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]",
+  pink: "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]",
+  teal: "border-[#CBDFD4] bg-[#E7F0E9] text-[#17694F]",
+  green: "border-[#CBDFD4] bg-[#EFF5F0] text-[#17694F]",
+  purple: "border-[#DFD6BE] bg-[#E7F0E9] text-[#17694F]",
 };
 
 function initialsFromName(name: string) {
@@ -232,29 +232,29 @@ function AsiaMarketMap() {
   const marketByCountry = new Map(asiaMarkets.map((market) => [market.country, market]));
 
   const getCountryColor = (value: number) => {
-    if (value >= 85) return "#E8197A";
-    if (value >= 75) return "#087C7E";
-    if (value >= 65) return "#10B981";
+    if (value >= 85) return "#B08A44";
+    if (value >= 75) return "#17694F";
+    if (value >= 65) return "#17694F";
     if (value >= 55) return "#B08A44";
-    return "#E2D9F3";
+    return "#DFD6BE";
   };
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#087C7E]">
+          <p className="inline-flex items-center gap-2 rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#17694F]">
             <Globe2 size={14} />
             Asia market signals
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Where opportunities are growing</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Where opportunities are growing</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Regional signals are illustrative and help compare demand, skills, remote share, and future opportunity.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Top market</p>
-          <p className="mt-1 text-lg font-bold text-[#1A1033]">{rankedMarkets[0].country}</p>
+          <p className="mt-1 text-lg font-bold text-[#1E2A44]">{rankedMarkets[0].country}</p>
         </div>
       </div>
 
@@ -266,8 +266,8 @@ function AsiaMarketMap() {
             onClick={() => setSelectedMetric(item.key)}
             className={`rounded-full border px-3 py-2 text-xs font-bold transition ${
               selectedMetric === item.key
-                ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
-                : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#DDD0F8]"
+                ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
+                : "border-[#EAE3D3] bg-white text-[#6B7280] hover:border-[#DFD6BE]"
             }`}
           >
             {item.label}
@@ -276,7 +276,7 @@ function AsiaMarketMap() {
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_340px]">
-        <div className="relative min-h-[340px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-[#F7FBFF]">
+        <div className="relative min-h-[340px] overflow-hidden rounded-lg border border-[#EAE3D3] bg-[#F7F3EA]">
           <ComposableMap
             projection="geoMercator"
             projectionConfig={{ center: [95, 22], scale: 460 }}
@@ -306,19 +306,19 @@ function AsiaMarketMap() {
                       onBlur={() => setHoveredCountry(null)}
                       style={{
                         default: {
-                          fill: market ? getCountryColor(value) : "#E8F1F5",
-                          stroke: isActive ? "#1A1033" : "#FFFFFF",
+                          fill: market ? getCountryColor(value) : "#EFF5F0",
+                          stroke: isActive ? "#1E2A44" : "#FFFFFF",
                           strokeWidth: isActive ? 1.8 : 0.8,
                           outline: "none",
                         },
                         hover: {
-                          fill: market ? getCountryColor(value) : "#DCEAF0",
-                          stroke: "#1A1033",
+                          fill: market ? getCountryColor(value) : "#EAE3D3",
+                          stroke: "#1E2A44",
                           strokeWidth: 1.8,
                           outline: "none",
                           cursor: market ? "pointer" : "default",
                         },
-                        pressed: { fill: market ? getCountryColor(value) : "#DCEAF0", outline: "none" },
+                        pressed: { fill: market ? getCountryColor(value) : "#EAE3D3", outline: "none" },
                       }}
                     />
                   );
@@ -326,13 +326,13 @@ function AsiaMarketMap() {
               }
             </Geographies>
           </ComposableMap>
-          <div className={`absolute z-10 w-56 rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_16px_44px_rgba(26,16,51,0.16)] ${activeMarket.tooltipPosition}`}>
-            <p className="font-bold text-[#1A1033]">{activeMarket.country}</p>
+          <div className={`absolute z-10 w-56 rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_16px_44px_rgba(26,16,51,0.16)] ${activeMarket.tooltipPosition}`}>
+            <p className="font-bold text-[#1E2A44]">{activeMarket.country}</p>
             <p className="mt-1 text-xs font-semibold text-[#9CA3AF]">{activeMarket.city}</p>
             <div className="mt-3 grid gap-2 text-xs font-semibold text-[#6B7280]">
-              <div className="flex justify-between"><span>{metric.label}</span><span className="font-bold text-[#E8197A]">{activeMarket[selectedMetric]}{metric.suffix}</span></div>
+              <div className="flex justify-between"><span>{metric.label}</span><span className="font-bold text-[#B08A44]">{activeMarket[selectedMetric]}{metric.suffix}</span></div>
               <div className="flex justify-between"><span>Skill shortage</span><span className="font-bold text-[#B08A44]">{activeMarket.shortage}%</span></div>
-              <div className="flex justify-between"><span>Fit score</span><span className="font-bold text-[#087C7E]">{activeMarket.fitScore}%</span></div>
+              <div className="flex justify-between"><span>Fit score</span><span className="font-bold text-[#17694F]">{activeMarket.fitScore}%</span></div>
             </div>
           </div>
         </div>
@@ -348,22 +348,22 @@ function AsiaMarketMap() {
               onBlur={() => setHoveredCountry(null)}
               onClick={() => setSelectedCountry(market.country)}
               className={`w-full rounded-lg border p-4 text-left transition ${
-                selectedCountry === market.country ? "border-[#E8197A] bg-[#FFF8FC]" : "border-[#F0EBF8] bg-[#FDFCFF] hover:bg-white"
+                selectedCountry === market.country ? "border-[#B08A44] bg-[#F6F1E4]" : "border-[#EAE3D3] bg-[#FFFFFF] hover:bg-white"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-bold text-[#1A1033]">{market.country}</p>
+                  <p className="font-bold text-[#1E2A44]">{market.country}</p>
                   <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#9CA3AF]">
                     <MapPin size={13} />
                     {market.city}
                   </p>
                 </div>
-                <span className="text-lg font-black text-[#E8197A]">{market[selectedMetric]}{metric.suffix}</span>
+                <span className="text-lg font-black text-[#B08A44]">{market[selectedMetric]}{metric.suffix}</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {market.topSkills.map((skill) => (
-                  <span key={skill} className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[#6B46C1]">
+                  <span key={skill} className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[#17694F]">
                     {skill}
                   </span>
                 ))}
@@ -379,7 +379,7 @@ function AsiaMarketMap() {
 function OpportunityCard({ opportunity, onApply }: { opportunity: Opportunity; onApply: (opportunity: Opportunity) => void }) {
   const isInternal = opportunity.type === "Internal";
   return (
-    <article className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_28px_rgba(26,16,51,0.06)]">
+    <article className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_28px_rgba(26,16,51,0.06)]">
       <div className="flex items-start justify-between gap-3">
         <span className={`flex h-11 w-11 items-center justify-center rounded-lg border ${isInternal ? toneStyles.pink : toneStyles.teal}`}>
           {isInternal ? <Building2 size={20} /> : <ExternalLink size={20} />}
@@ -388,29 +388,29 @@ function OpportunityCard({ opportunity, onApply }: { opportunity: Opportunity; o
           {opportunity.applied ? "Applied" : isInternal ? "Internal gig" : "External role"}
         </Pill>
       </div>
-      <h3 className="mt-5 text-lg font-bold text-[#1A1033]">{opportunity.title}</h3>
+      <h3 className="mt-5 text-lg font-bold text-[#1E2A44]">{opportunity.title}</h3>
       <p className="mt-1 text-sm font-semibold text-[#6B7280]">{opportunity.company}</p>
       <p className="mt-2 text-xs font-bold uppercase text-[#9CA3AF]">
         {opportunity.location} / {opportunity.workStyle}
       </p>
-      <p className="mt-2 text-sm font-bold text-[#1A1033]">{opportunity.salary}</p>
+      <p className="mt-2 text-sm font-bold text-[#1E2A44]">{opportunity.salary}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {opportunity.tags.map((tag) => (
-          <span key={tag} className="rounded-full bg-[#F8F5FC] px-2.5 py-1 text-xs font-bold text-[#6B46C1]">
+          <span key={tag} className="rounded-full bg-[#F7F3EA] px-2.5 py-1 text-xs font-bold text-[#17694F]">
             {tag}
           </span>
         ))}
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#F0EBF8] pt-4">
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#EAE3D3] pt-4">
         <div>
-          <p className="text-sm font-black text-[#087C7E]">{opportunity.matchScore}% match</p>
+          <p className="text-sm font-black text-[#17694F]">{opportunity.matchScore}% match</p>
           <p className="mt-1 text-xs font-semibold text-[#9CA3AF]">{opportunity.urgency}</p>
         </div>
         <button
           type="button"
           onClick={() => onApply(opportunity)}
           disabled={opportunity.applied || isInternal}
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#1A1033] px-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#1E2A44] px-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-55"
         >
           {opportunity.applied ? "Applied" : isInternal ? "View details" : "Apply"}
           <ArrowUpRight size={15} />
@@ -471,13 +471,13 @@ export default function EmployeeMarketplacePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF8FD] text-[#1A1033]">
+    <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
       <EmployeeTopNav initials={initialsFromName(fullName)} name={fullName} />
 
       <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
               <Sparkles size={14} />
               Marketplace
             </p>
@@ -487,31 +487,31 @@ export default function EmployeeMarketplacePage() {
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-3">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Open roles</p>
-              <p className="mt-1 text-2xl font-black text-[#1A1033]">{opportunities.filter((item) => item.type === "External").length}</p>
+              <p className="mt-1 text-2xl font-black text-[#1E2A44]">{opportunities.filter((item) => item.type === "External").length}</p>
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-3">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Internal gigs</p>
-              <p className="mt-1 text-2xl font-black text-[#E8197A]">{opportunities.filter((item) => item.type === "Internal").length}</p>
+              <p className="mt-1 text-2xl font-black text-[#B08A44]">{opportunities.filter((item) => item.type === "Internal").length}</p>
             </div>
-            <div className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3">
+            <div className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-3">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Regions</p>
-              <p className="mt-1 text-2xl font-black text-[#087C7E]">{regionalTalentSignals.length}</p>
+              <p className="mt-1 text-2xl font-black text-[#17694F]">{regionalTalentSignals.length}</p>
             </div>
           </div>
         </div>
 
         <AsiaMarketMap />
 
-        <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
+        <section className="rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
           <div className="flex flex-col gap-3 lg:flex-row">
-            <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#FAF8FD] px-4 text-sm text-[#9CA3AF]">
+            <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg bg-[#F7F3EA] px-4 text-sm text-[#9CA3AF]">
               <Search size={18} />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="w-full bg-transparent text-[#1A1033] outline-none placeholder:text-[#9CA3AF]"
+                className="w-full bg-transparent text-[#1E2A44] outline-none placeholder:text-[#9CA3AF]"
                 placeholder="Search roles, companies, or skills..."
               />
             </label>
@@ -522,7 +522,7 @@ export default function EmployeeMarketplacePage() {
                   type="button"
                   onClick={() => setTypeFilter(filter)}
                   className={`rounded-lg px-4 py-3 text-sm font-bold transition ${
-                    typeFilter === filter ? "bg-[#E8197A] text-white" : "bg-[#F8F5FC] text-[#6B7280] hover:bg-[#FFF0F8]"
+                    typeFilter === filter ? "bg-[#B08A44] text-white" : "bg-[#F7F3EA] text-[#6B7280] hover:bg-[#F6F1E4]"
                   }`}
                 >
                   {filter}
@@ -531,7 +531,7 @@ export default function EmployeeMarketplacePage() {
               <select
                 value={workStyleFilter}
                 onChange={(event) => setWorkStyleFilter(event.target.value)}
-                className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-3 text-sm font-bold text-[#6B7280] outline-none"
+                className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-3 text-sm font-bold text-[#6B7280] outline-none"
                 aria-label="Filter by work style"
               >
                 {workStyles.map((style) => (
@@ -543,34 +543,34 @@ export default function EmployeeMarketplacePage() {
         </section>
 
         {message && (
-          <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] px-4 py-3 text-sm font-bold text-[#087C7E]">
+          <div className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#17694F]">
             {message}
           </div>
         )}
 
-        <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
+        <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_8px_32px_rgba(26,16,51,0.06)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full bg-[#F5F0FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#6B46C1]">
+              <p className="inline-flex items-center gap-2 rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#17694F]">
                 <BriefcaseBusiness size={14} />
                 Opportunities
               </p>
-              <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Matched jobs and gigs</h2>
+              <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Matched jobs and gigs</h2>
               <p className="mt-2 text-sm leading-6 text-[#6B7280]">
                 Showing {filtered.length} opportunities from marketplace and authenticated backend job data.
               </p>
             </div>
             {isLoading && (
               <p className="inline-flex items-center gap-2 text-sm font-bold text-[#6B7280]">
-                <Loader2 size={16} className="animate-spin text-[#E8197A]" />
+                <Loader2 size={16} className="animate-spin text-[#B08A44]" />
                 Loading backend roles
               </p>
             )}
           </div>
 
           {!filtered.length ? (
-            <div className="mt-5 rounded-lg border border-dashed border-[#DDD0F8] bg-[#FAF8FD] p-6 text-sm font-semibold leading-6 text-[#6B7280]">
-              <TriangleAlert size={18} className="mb-2 text-[#E8197A]" />
+            <div className="mt-5 rounded-lg border border-dashed border-[#DFD6BE] bg-[#F7F3EA] p-6 text-sm font-semibold leading-6 text-[#6B7280]">
+              <TriangleAlert size={18} className="mb-2 text-[#B08A44]" />
               No opportunities match the current filters.
             </div>
           ) : (

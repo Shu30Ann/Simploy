@@ -41,7 +41,7 @@ export default function ScenarioSlider({
         style={{
           // @ts-expect-error css custom property
           "--thumb-color": color,
-          background: `linear-gradient(to right, ${color} ${pct}%, #E8E6E0 ${pct}%)`,
+          background: `linear-gradient(to right, ${color} ${pct}%, #EAE3D3 ${pct}%)`,
         }}
       />
       {benchmark && (

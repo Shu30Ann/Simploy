@@ -25,8 +25,8 @@ import {
 const toneStyles: Record<string, string> = {
   pink: "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]",
   teal: "border-[#CBDFD4] bg-[#E7F0E9] text-[#114F3B]",
-  purple: "border-[#DFD6BE] bg-[#F1EDE0] text-[#6B46C1]",
-  orange: "border-[#FED7AA] bg-[#FFF7ED] text-[#C2410C]",
+  purple: "border-[#DFD6BE] bg-[#F1EDE0] text-[#17694F]",
+  orange: "border-[#E3D8BC] bg-[#F6F1E4] text-[#8B7434]",
 };
 
 function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: string }) {
@@ -38,9 +38,9 @@ function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: s
 }
 
 const velocitySignals = [
-  { label: "Engineering", benchmark: "14 days", value: 86, color: "bg-[#087C7E]" },
+  { label: "Engineering", benchmark: "14 days", value: 86, color: "bg-[#17694F]" },
   { label: "Sales", benchmark: "22 days", value: 58, color: "bg-[#B08A44]" },
-  { label: "Marketing", benchmark: "19 days", value: 72, color: "bg-[#6B46C1]" },
+  { label: "Marketing", benchmark: "19 days", value: 72, color: "bg-[#17694F]" },
 ];
 
 const marketSnapshot = [
@@ -110,7 +110,7 @@ export default function EmployerMarketInsightPage() {
                 <ArrowRight size={16} />
               </Link>
               <Link href={routes.employerActionEngine} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#B08A44] bg-white px-5 text-sm font-bold text-[#B08A44] hover:bg-[#F6F1E4]">
-                Open Workforce Planner
+                Open Action Engine
                 <ArrowUpRight size={16} />
               </Link>
             </div>
@@ -161,14 +161,14 @@ export default function EmployerMarketInsightPage() {
                 <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Hiring velocity</p>
                 <h2 className="mt-2 text-2xl font-bold text-[#1E2A44]">Role speed and cost signals</h2>
               </div>
-              <LineChart size={22} className="text-[#087C7E]" />
+              <LineChart size={22} className="text-[#17694F]" />
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-white p-4">
                 <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Time-to-hire</p>
                 <p className="mt-1 text-3xl font-bold text-[#1E2A44]">18 Days</p>
-                <p className="mt-1 text-xs font-bold text-[#087C7E]">2.4% faster</p>
+                <p className="mt-1 text-xs font-bold text-[#17694F]">2.4% faster</p>
               </div>
               <div className="rounded-lg bg-white p-4">
                 <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">Cost-per-hire</p>
@@ -184,7 +184,7 @@ export default function EmployerMarketInsightPage() {
                     <span>{signal.label}</span>
                     <span className="text-[#6B7280]">{signal.benchmark}</span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#E8E3EA]">
+                  <div className="h-3 rounded-full bg-[#EAE3D3]">
                     <div className={`h-3 rounded-full ${signal.color}`} style={{ width: `${signal.value}%` }} />
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export default function EmployerMarketInsightPage() {
                     <td className="border-b border-[#F1EDE0] py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {industry.topSkills.slice(0, 3).map((skill) => (
-                          <span key={skill} className="rounded-full bg-[#EFF5F0] px-2.5 py-1 text-xs font-bold text-[#087C7E]">
+                          <span key={skill} className="rounded-full bg-[#EFF5F0] px-2.5 py-1 text-xs font-bold text-[#17694F]">
                             {skill}
                           </span>
                         ))}
@@ -279,14 +279,14 @@ export default function EmployerMarketInsightPage() {
               <p className="text-xs font-bold uppercase tracking-wide text-white/50">Workforce forecast</p>
               <h2 className="mt-2 text-2xl font-bold">Demographic Clock</h2>
             </div>
-            <LineChart size={22} className="text-[#39BFE8]" />
+            <LineChart size={22} className="text-[#17694F]" />
           </div>
           <p className="mt-4 text-sm leading-6 text-white/75">
             Workforce availability forecast for aging Asian labor markets. Plan mobility and skills transfer before hiring demand peaks.
           </p>
           <div className="mt-5 rounded-lg bg-white/10 p-4">
             <p className="text-[10px] font-bold uppercase tracking-wide text-white/45">Projected decline</p>
-            <p className="mt-2 text-5xl font-bold text-[#39BFE8]">31%</p>
+            <p className="mt-2 text-5xl font-bold text-[#17694F]">31%</p>
             <p className="mt-2 text-sm font-semibold text-white/70">Working-age population by 2050</p>
           </div>
           <div className="mt-5 grid gap-3">

@@ -6,10 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
 import PasswordInput from "./PasswordInput";
 import FormError from "./FormError";
+import { BrandLogo } from "@/components/BrandLogo";
 import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes, type UserRole } from "@/lib/routes";
 
@@ -92,9 +92,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
     >
       {/* Header */}
       <div className="mb-6">
-        <Link href={routes.home} className="block w-fit text-xl font-bold mb-6 md:hidden" style={{ color: "var(--pink)" }}>
-          Simploy
-        </Link>
+        <BrandLogo className="mb-6 md:hidden" imageClassName="h-16 w-auto" />
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
           Sign in
         </h1>

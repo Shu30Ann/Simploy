@@ -164,7 +164,7 @@ export default function EmployerJobsPage() {
   return (
     <main className="min-h-screen bg-[#F7F3EA] text-[#1E2A44]">
       {loadState === "loaded" && (
-        <div className="border-b border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-center text-sm font-bold text-[#087C7E]">
+        <div className="border-b border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-center text-sm font-bold text-[#17694F]">
           Jobs loaded from database for {dashboard?.company_name}.
         </div>
       )}
@@ -197,7 +197,7 @@ export default function EmployerJobsPage() {
           </div>
 
           {postMessage && (
-            <div className="mb-6 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#087C7E]">
+            <div className="mb-6 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#17694F]">
               {postMessage}
             </div>
           )}
@@ -239,7 +239,7 @@ export default function EmployerJobsPage() {
                 <ArrowRight size={15} />
               </button>
               {draftMessage && (
-                <div className="mt-3 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#087C7E]">
+                <div className="mt-3 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#17694F]">
                   {draftMessage}
                 </div>
               )}

@@ -47,19 +47,19 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
           <tbody>
             {jobs.map((job) => (
               <tr key={job.title} className="align-middle">
-                <td className="border-b border-[#F8F5FC] px-1 py-4">
+                <td className="border-b border-[#F7F3EA] px-1 py-4">
                   <p className="font-bold">{job.title}</p>
                   <p className="mt-1 text-xs font-semibold text-[#9CA3AF]">
                     {job.department} - {job.workStyle}
                   </p>
                 </td>
-                <td className="border-b border-[#F8F5FC] px-4 py-4">
+                <td className="border-b border-[#F7F3EA] px-4 py-4">
                   <Pill tone={job.hiringStatus === "Hiring" ? "pink" : "purple"}>{job.hiringStatus}</Pill>
                 </td>
-                <td className="border-b border-[#F8F5FC] px-4 py-4 text-center text-sm font-bold">
+                <td className="border-b border-[#F7F3EA] px-4 py-4 text-center text-sm font-bold">
                   {job.appsReceived}
                 </td>
-                <td className="border-b border-[#F8F5FC] px-4 py-4">
+                <td className="border-b border-[#F7F3EA] px-4 py-4">
                   {job.matches.length > 0 ? (
                     <div className="flex items-center">
                       {job.matches.map((match) => (
@@ -75,14 +75,14 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
                     <span className="text-xs font-semibold italic text-[#9CA3AF]">Pending post</span>
                   )}
                 </td>
-                <td className="border-b border-[#F8F5FC] px-1 py-4 text-right">
+                <td className="border-b border-[#F7F3EA] px-1 py-4 text-right">
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedJob(job);
                       setActionMessage(null);
                     }}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#6B46C1] hover:bg-[#F1EDE0]"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#17694F] hover:bg-[#F1EDE0]"
                     aria-label={job.hiringStatus === "Draft" ? `Edit ${job.title}` : `Open actions for ${job.title}`}
                   >
                     {job.hiringStatus === "Draft" ? <FilePenLine size={18} /> : <EllipsisVertical size={18} />}
@@ -135,7 +135,7 @@ export function JobPostingTable({ jobs }: { jobs: EmployerJobView[] }) {
             </div>
 
             {actionMessage && (
-              <div className="mt-4 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#087C7E]">
+              <div className="mt-4 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-3 text-sm font-bold text-[#17694F]">
                 {actionMessage}
               </div>
             )}

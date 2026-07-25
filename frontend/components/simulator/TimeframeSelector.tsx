@@ -11,7 +11,7 @@ interface Props {
 
 export default function TimeframeSelector({ value, onChange }: Props) {
   return (
-    <div className="flex rounded-xl p-1 gap-0.5" style={{ background: "#F1EFE8" }}>
+    <div className="flex rounded-xl p-1 gap-0.5" style={{ background: "#F7F3EA" }}>
       {TIMEFRAMES.map(t => (
         <button
           key={t}

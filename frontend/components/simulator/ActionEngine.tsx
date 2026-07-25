@@ -28,8 +28,8 @@ const ACTIONS = [
   {
     id:        "mobility",
     icon:      ArrowLeftRight,
-    iconBg:    "#FAEEDA",
-    iconColor: "#BA7517",
+    iconBg:    "#F6F1E4",
+    iconColor: "#8B7434",
     title:     "Internal Mobility",
     detail:    manufacturingRecommendations[2].recommendation,
   },

@@ -128,32 +128,32 @@ const routeTone: Record<
   { accent: string; bg: string; border: string; ring: string; line: string }
 > = {
   recommended: {
-    accent: "text-[#E8197A]",
-    bg: "bg-[#FFF0F8]",
-    border: "border-[#FFD0E8]",
-    ring: "ring-[#E8197A]/20",
-    line: "bg-[#E8197A]",
+    accent: "text-[#B08A44]",
+    bg: "bg-[#F6F1E4]",
+    border: "border-[#E3D8BC]",
+    ring: "ring-[#B08A44]/20",
+    line: "bg-[#B08A44]",
   },
   accelerated: {
-    accent: "text-[#0891B2]",
-    bg: "bg-[#E0F9FF]",
-    border: "border-[#BAF3FF]",
-    ring: "ring-[#06B6D4]/20",
-    line: "bg-[#06B6D4]",
+    accent: "text-[#114F3B]",
+    bg: "bg-[#E7F0E9]",
+    border: "border-[#CBDFD4]",
+    ring: "ring-[#17694F]/20",
+    line: "bg-[#17694F]",
   },
   balanced: {
-    accent: "text-[#6B46C1]",
-    bg: "bg-[#F5F0FF]",
-    border: "border-[#DDD0F8]",
-    ring: "ring-[#6B46C1]/20",
-    line: "bg-[#6B46C1]",
+    accent: "text-[#17694F]",
+    bg: "bg-[#E7F0E9]",
+    border: "border-[#DFD6BE]",
+    ring: "ring-[#17694F]/20",
+    line: "bg-[#17694F]",
   },
 };
 
 const routeHexColor: Record<CareerGpsRouteType, string> = {
-  recommended: "#E8197A",
-  accelerated: "#06B6D4",
-  balanced: "#6B46C1",
+  recommended: "#B08A44",
+  accelerated: "#17694F",
+  balanced: "#17694F",
 };
 
 const journeyMapModes: Array<{ value: JourneyMapMode; label: string; description: string }> = [
@@ -1001,20 +1001,20 @@ function demoBuddyReply(question: string, activeRoute: CareerGpsRoute): string {
 }
 
 function progressStatusTone(status: CareerGpsProgressStatus | null | undefined) {
-  if (status === "completed") return "border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]";
-  if (status === "in_progress") return "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]";
-  if (status === "skipped") return "border-[#E2D9F3] bg-[#F8F5FC] text-[#6B7280]";
-  return "border-[#FFD0E8] bg-[#FFF0F8] text-[#E8197A]";
+  if (status === "completed") return "border-[#CBDFD4] bg-[#EFF5F0] text-[#114F3B]";
+  if (status === "in_progress") return "border-[#CBDFD4] bg-[#E7F0E9] text-[#114F3B]";
+  if (status === "skipped") return "border-[#DFD6BE] bg-[#F7F3EA] text-[#6B7280]";
+  return "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]";
 }
 
 function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gradient-to-r from-[#F1ECF8] via-[#FAF8FD] to-[#F1ECF8] ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-gradient-to-r from-[#F1EDE0] via-[#F7F3EA] to-[#F1EDE0] ${className}`} />;
 }
 
 function LoadingShell() {
   return (
     <div className="space-y-4" aria-label="Loading Career GPS">
-      <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.05)]">
+      <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.05)]">
         <SkeletonBlock className="h-5 w-36" />
         <SkeletonBlock className="mt-4 h-10 w-72 max-w-full" />
         <SkeletonBlock className="mt-3 h-4 w-full max-w-2xl" />
@@ -1057,14 +1057,14 @@ function EmptyPanel({
   description: string;
 }) {
   return (
-    <section className="rounded-lg border border-dashed border-[#DDD0F8] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.04)]">
+    <section className="rounded-lg border border-dashed border-[#DFD6BE] bg-white p-5 shadow-[0_4px_20px_rgba(26,16,51,0.04)]">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#F5F0FF] text-[#6B46C1]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#E7F0E9] text-[#17694F]">
           <Icon size={20} />
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{label}</p>
-          <h2 className="mt-1 text-lg font-bold leading-6 text-[#1A1033]">{title}</h2>
+          <h2 className="mt-1 text-lg font-bold leading-6 text-[#1E2A44]">{title}</h2>
           <p className="mt-2 text-sm leading-6 text-[#6B7280]">{description}</p>
         </div>
       </div>
@@ -1074,20 +1074,20 @@ function EmptyPanel({
 
 function DemoModeBanner() {
   return (
-    <section className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#E8197A]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#B08A44]">
             <ShieldCheck size={20} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#E8197A]">Safe demo mode</p>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[#1A1033]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#B08A44]">Safe demo mode</p>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[#1E2A44]">
               Showing one illustrative employee journey. Route switches, progress updates, what-if results, and Career Buddy replies stay local and do not overwrite real users.
             </p>
           </div>
         </div>
-        <span className="inline-flex w-fit rounded-full border border-[#FFD0E8] bg-white px-3 py-1 text-xs font-bold text-[#E8197A]">
+        <span className="inline-flex w-fit rounded-full border border-[#E3D8BC] bg-white px-3 py-1 text-xs font-bold text-[#B08A44]">
           illustrative_demo
         </span>
       </div>
@@ -1113,14 +1113,14 @@ function CareerGpsHeader({
   const readiness = roadmap ? Math.round(roadmap.fit_score) : setupReadiness(profile);
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white px-4 py-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white px-4 py-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#114F3B]">
             <Compass size={14} />
             {isDemoMode ? "Career GPS Demo" : "Career GPS"}
           </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1033] sm:text-3xl">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1E2A44] sm:text-3xl">
             {destination}
           </h1>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
@@ -1131,18 +1131,18 @@ function CareerGpsHeader({
         </div>
 
         <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[520px]">
-          <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-3 py-2">
+          <div className="rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-2">
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Stage</p>
-            <p className="mt-1 truncate text-sm font-bold text-[#E8197A]">{stage}</p>
+            <p className="mt-1 truncate text-sm font-bold text-[#B08A44]">{stage}</p>
           </div>
-          <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] px-3 py-2">
+          <div className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-3 py-2">
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Readiness</p>
-            <p className="mt-1 text-sm font-bold text-[#087C7E]">{readiness}% {roadmap ? "fit" : "setup"}</p>
+            <p className="mt-1 text-sm font-bold text-[#17694F]">{readiness}% {roadmap ? "fit" : "setup"}</p>
           </div>
           <div className="flex gap-2">
             <Link
               href={routes.employeeSettings}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-3 text-sm font-bold text-white outline-none transition hover:bg-[#2A1B4A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-3 text-sm font-bold text-white outline-none transition hover:bg-[#16233C] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2"
             >
               <Target size={16} />
               Goals
@@ -1151,7 +1151,7 @@ function CareerGpsHeader({
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-sm font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-3 text-sm font-bold text-[#17694F] outline-none transition hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isRefreshing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               Refresh
@@ -1179,43 +1179,43 @@ function NorthStarSummary({ profile }: { profile: CareerGpsProfile }) {
 
   return (
     <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)]">
-      <div className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <div className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
               <Flag size={14} />
               Career North Star
             </p>
-            <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">{summary.career_ambition ?? "Define your main goal"}</h2>
+            <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">{summary.career_ambition ?? "Define your main goal"}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
               This summary uses your saved Career GPS profile and existing employee data.
             </p>
           </div>
-          <Link href={routes.employeeSettings} className="text-sm font-bold text-[#0891B2]">
+          <Link href={routes.employeeSettings} className="text-sm font-bold text-[#114F3B]">
             Update summary
           </Link>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-lg bg-[#FDFCFF] p-4">
+          <div className="rounded-lg bg-[#FFFFFF] p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Target role</p>
-            <p className="mt-2 text-base font-bold text-[#1A1033]">{summary.target_role ?? profile.employee.target_role ?? "Not set"}</p>
+            <p className="mt-2 text-base font-bold text-[#1E2A44]">{summary.target_role ?? profile.employee.target_role ?? "Not set"}</p>
           </div>
-          <div className="rounded-lg bg-[#FDFCFF] p-4">
+          <div className="rounded-lg bg-[#FFFFFF] p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Top priorities</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {priorities.map((priority) => (
-                <span key={priority} className="rounded-full bg-[#E0F9FF] px-3 py-1 text-xs font-bold text-[#0891B2]">
+                <span key={priority} className="rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold text-[#114F3B]">
                   {priority}
                 </span>
               ))}
             </div>
           </div>
-          <div className="rounded-lg bg-[#FDFCFF] p-4">
+          <div className="rounded-lg bg-[#FFFFFF] p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Preferred career mode</p>
-            <p className="mt-2 text-base font-bold text-[#1A1033]">{mode}</p>
+            <p className="mt-2 text-base font-bold text-[#1E2A44]">{mode}</p>
           </div>
-          <div className="rounded-lg bg-[#FDFCFF] p-4 xl:col-span-2">
+          <div className="rounded-lg bg-[#FFFFFF] p-4 xl:col-span-2">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Important constraints</p>
             {constraints.length ? (
               <div className="mt-2 flex flex-wrap gap-2">
@@ -1223,7 +1223,7 @@ function NorthStarSummary({ profile }: { profile: CareerGpsProfile }) {
                   <span
                     key={`${constraint.constraint_type}-${constraint.label}`}
                     className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      constraint.is_blocking ? "bg-[#FFF0F8] text-[#E8197A]" : "bg-[#F5F0FF] text-[#6B46C1]"
+                      constraint.is_blocking ? "bg-[#F6F1E4] text-[#B08A44]" : "bg-[#E7F0E9] text-[#17694F]"
                     }`}
                   >
                     {constraint.label}
@@ -1234,21 +1234,21 @@ function NorthStarSummary({ profile }: { profile: CareerGpsProfile }) {
               <p className="mt-2 text-sm font-semibold text-[#6B7280]">No important constraints saved yet.</p>
             )}
           </div>
-          <div className="rounded-lg bg-[#FDFCFF] p-4">
+          <div className="rounded-lg bg-[#FFFFFF] p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Profile completion</p>
-            <p className="mt-2 text-base font-bold text-[#1A1033]">{readiness}% ready</p>
+            <p className="mt-2 text-base font-bold text-[#1E2A44]">{readiness}% ready</p>
           </div>
         </div>
       </div>
 
-      <aside className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-5">
+      <aside className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#0891B2]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[#114F3B]">
             <ShieldCheck size={19} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#0891B2]">Setup state</p>
-            <h3 className="mt-1 text-lg font-bold text-[#1A1033]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#114F3B]">Setup state</p>
+            <h3 className="mt-1 text-lg font-bold text-[#1E2A44]">
               {summary.is_onboarding_complete ? "North Star complete" : "North Star needs detail"}
             </h3>
             <p className="mt-2 text-sm leading-6 text-[#6B7280]">
@@ -1272,10 +1272,10 @@ function RiasecScoreBar({ code, score, maxScore }: { code: RiasecCode; score: nu
         <span>
           {code} - {profile.name}
         </span>
-        <span className="text-[#1A1033]">{score}</span>
+        <span className="text-[#1E2A44]">{score}</span>
       </div>
-      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#F0EBF8]">
-        <div className="h-full rounded-full bg-[#E8197A]" style={{ width: `${width}%` }} />
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#EAE3D3]">
+        <div className="h-full rounded-full bg-[#B08A44]" style={{ width: `${width}%` }} />
       </div>
     </div>
   );
@@ -1317,37 +1317,37 @@ function RiasecCareerFitSection({
   const pathPreview = activeRoute?.milestones.slice(0, 5) ?? [];
 
   return (
-    <section className="rounded-lg border border-[#D6F3EA] bg-[#F8FFFC] p-5 shadow-[0_4px_24px_rgba(8,124,126,0.08)]">
+    <section className="rounded-lg border border-[#E7F0E9] bg-[#EFF5F0] p-5 shadow-[0_4px_24px_rgba(8,124,126,0.08)]">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
         <div className="min-w-0 flex-1">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#A7F3D0] bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#047857]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Sparkles size={14} />
             RAISEC career fit
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">
             {riasecResult ? `${riasecResult.hollandCode} - ${riasecResult.label}` : "Connect your interests to the GPS route"}
           </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4B5563]">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5D6470]">
             {riasecRouteFitSummary(riasecResult, activeRoute)}
           </p>
 
           {riasecResult ? (
             <>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
-                <div className="rounded-lg border border-[#A7F3D0] bg-white p-4">
-                  <p className="text-xs font-bold uppercase text-[#047857]">Primary signal</p>
-                  <h3 className="mt-2 text-lg font-bold text-[#1A1033]">{primaryProfile?.name}</h3>
+                <div className="rounded-lg border border-[#CBDFD4] bg-white p-4">
+                  <p className="text-xs font-bold uppercase text-[#114F3B]">Primary signal</p>
+                  <h3 className="mt-2 text-lg font-bold text-[#1E2A44]">{primaryProfile?.name}</h3>
                   <p className="mt-1 text-sm font-semibold leading-6 text-[#6B7280]">{primaryProfile?.summary}</p>
                 </div>
-                <div className="rounded-lg border border-[#BAF3FF] bg-white p-4">
-                  <p className="text-xs font-bold uppercase text-[#087C7E]">Secondary signal</p>
-                  <h3 className="mt-2 text-lg font-bold text-[#1A1033]">{secondaryProfile?.name}</h3>
+                <div className="rounded-lg border border-[#CBDFD4] bg-white p-4">
+                  <p className="text-xs font-bold uppercase text-[#17694F]">Secondary signal</p>
+                  <h3 className="mt-2 text-lg font-bold text-[#1E2A44]">{secondaryProfile?.name}</h3>
                   <p className="mt-1 text-sm font-semibold leading-6 text-[#6B7280]">{secondaryProfile?.summary}</p>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-                <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+                <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
                   <p className="text-xs font-bold uppercase text-[#9CA3AF]">Score pattern</p>
                   <div className="mt-4 grid gap-3">
                     {riasecCodeOrder.map((code) => (
@@ -1357,24 +1357,24 @@ function RiasecCareerFitSection({
                 </div>
 
                 <div className="grid gap-4">
-                  <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+                  <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
                     <p className="text-xs font-bold uppercase text-[#9CA3AF]">Suitable work themes</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {themes.map((theme) => (
-                        <span key={theme} className="rounded-full bg-[#ECFDF5] px-3 py-1.5 text-xs font-bold text-[#047857]">
+                        <span key={theme} className="rounded-full bg-[#EFF5F0] px-3 py-1.5 text-xs font-bold text-[#114F3B]">
                           {theme}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+                  <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
                     <p className="text-xs font-bold uppercase text-[#9CA3AF]">Career path lens</p>
                     {pathPreview.length ? (
                       <ol className="mt-3 grid gap-2">
                         {pathPreview.map((milestone) => (
-                          <li key={milestone.sequence} className="flex gap-3 text-sm font-semibold leading-5 text-[#1A1033]">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#E0F9FF] text-xs font-black text-[#087C7E]">
+                          <li key={milestone.sequence} className="flex gap-3 text-sm font-semibold leading-5 text-[#1E2A44]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#E7F0E9] text-xs font-black text-[#17694F]">
                               {milestone.sequence}
                             </span>
                             <span>
@@ -1396,7 +1396,7 @@ function RiasecCareerFitSection({
               </div>
             </>
           ) : (
-            <div className="mt-5 rounded-lg border border-dashed border-[#A7F3D0] bg-white p-4 text-sm font-semibold leading-6 text-[#4B5563]">
+            <div className="mt-5 rounded-lg border border-dashed border-[#CBDFD4] bg-white p-4 text-sm font-semibold leading-6 text-[#5D6470]">
               Your route can still work without this result, but the report will be stronger after the quick interest check.
             </div>
           )}
@@ -1445,7 +1445,7 @@ function NextBestAction({
 
   if (isLoading) {
     return (
-      <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+      <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
         <SkeletonBlock className="h-6 w-44" />
         <SkeletonBlock className="mt-4 h-8 w-full max-w-xl" />
         <div className="mt-5 grid gap-3 md:grid-cols-4">
@@ -1473,16 +1473,16 @@ function NextBestAction({
   const disabled = isUpdating;
 
   return (
-    <section className="overflow-hidden rounded-lg border border-[#BAF3FF] bg-white shadow-[0_8px_48px_rgba(6,182,212,0.12)]">
+    <section className="overflow-hidden rounded-lg border border-[#CBDFD4] bg-white shadow-[0_8px_48px_rgba(6,182,212,0.12)]">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="p-5 lg:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
                 <Flag size={14} />
                 Your Next Best Action
               </p>
-              <h2 className="mt-3 text-2xl font-bold leading-tight text-[#1A1033]">{action.action_title}</h2>
+              <h2 className="mt-3 text-2xl font-bold leading-tight text-[#1E2A44]">{action.action_title}</h2>
             </div>
             <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-bold ${progressStatusTone(action.status)}`}>
               {progressStatusLabel(action.status)}
@@ -1505,13 +1505,13 @@ function NextBestAction({
             <ActionMetric icon={Gauge} label="Skill gained" value={action.recommended_skill_gained} />
           </div>
 
-          <div className="mt-5 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+          <div className="mt-5 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Expected impact</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{action.expected_impact}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#1E2A44]">{action.expected_impact}</p>
           </div>
         </div>
 
-        <aside className="border-t border-[#F0EBF8] bg-[#F0FDFF] p-5 lg:border-l lg:border-t-0 lg:p-6">
+        <aside className="border-t border-[#EAE3D3] bg-[#EFF5F0] p-5 lg:border-l lg:border-t-0 lg:p-6">
           <div className="rounded-lg bg-white p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Route context</p>
             <p className="mt-1 text-sm font-bold" style={{ color: routeColor }}>
@@ -1519,7 +1519,7 @@ function NextBestAction({
             </p>
             <p className="mt-3 text-xs font-semibold leading-5 text-[#6B7280]">{action.selection_reason}</p>
             {action.is_alternative && (
-              <p className="mt-3 inline-flex rounded-full bg-[#F5F0FF] px-3 py-1 text-xs font-bold text-[#6B46C1]">
+              <p className="mt-3 inline-flex rounded-full bg-[#E7F0E9] px-3 py-1 text-xs font-bold text-[#17694F]">
                 Alternative option
               </p>
             )}
@@ -1530,7 +1530,7 @@ function NextBestAction({
               type="button"
               onClick={() => onUpdateStatus(action, "in_progress")}
               disabled={disabled || action.status === "in_progress"}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isUpdating ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
               Start
@@ -1539,7 +1539,7 @@ function NextBestAction({
               type="button"
               onClick={() => onUpdateStatus(action, "completed")}
               disabled={disabled}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-4 py-2.5 text-sm font-bold text-[#047857] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-4 py-2.5 text-sm font-bold text-[#114F3B] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <CheckCircle2 size={16} />
               Mark complete
@@ -1548,7 +1548,7 @@ function NextBestAction({
               type="button"
               onClick={() => onUpdateStatus(action, "skipped")}
               disabled={disabled}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <SkipForward size={16} />
               Skip
@@ -1557,7 +1557,7 @@ function NextBestAction({
               type="button"
               onClick={onRequestAlternative}
               disabled={disabled}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-4 py-2.5 text-sm font-bold text-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] px-4 py-2.5 text-sm font-bold text-[#B08A44] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw size={16} />
               Request alternative
@@ -1579,12 +1579,12 @@ function ActionMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border border-[#F0EBF8] bg-white p-3">
+    <div className="rounded-lg border border-[#EAE3D3] bg-white p-3">
       <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
         <Icon size={14} />
         {label}
       </div>
-      <p className="mt-2 text-sm font-bold leading-5 text-[#1A1033]">{value}</p>
+      <p className="mt-2 text-sm font-bold leading-5 text-[#1E2A44]">{value}</p>
     </div>
   );
 }
@@ -1594,10 +1594,10 @@ function MetricBar({ label, value }: { label: string; value: number }) {
     <div>
       <div className="flex items-center justify-between gap-3 text-xs font-bold text-[#6B7280]">
         <span>{label}</span>
-        <span className="text-[#1A1033]">{value}%</span>
+        <span className="text-[#1E2A44]">{value}%</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-[#F0EBF8]">
-        <div className="h-2 rounded-full bg-[#E8197A]" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+      <div className="mt-2 h-2 rounded-full bg-[#EAE3D3]">
+        <div className="h-2 rounded-full bg-[#B08A44]" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
       </div>
     </div>
   );
@@ -1607,7 +1607,7 @@ function RouteSelectorMetric({ label, value }: { label: string; value: ReactNode
   return (
     <div className="rounded-md bg-white/80 px-2 py-1.5">
       <p className="text-[10px] font-bold uppercase text-[#9CA3AF]">{label}</p>
-      <div className="mt-0.5 line-clamp-2 text-xs font-bold leading-4 text-[#1A1033]">{value}</div>
+      <div className="mt-0.5 line-clamp-2 text-xs font-bold leading-4 text-[#1E2A44]">{value}</div>
     </div>
   );
 }
@@ -1644,7 +1644,7 @@ function RouteComparisonMatrix({
   ];
 
   return (
-    <div className="mt-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+    <div className="mt-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Route comparison</p>
@@ -1652,14 +1652,14 @@ function RouteComparisonMatrix({
             Differences are shown against the Recommended Route baseline and use stored route data only.
           </p>
         </div>
-        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-[#6B46C1]">
+        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-[#17694F]">
           Active: {routeLabels[activeRoute.route_type]}
         </span>
       </div>
 
       <div className="mt-3 overflow-x-auto">
-        <div className="min-w-[720px] overflow-hidden rounded-lg border border-[#F0EBF8] bg-white">
-          <div className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#F0EBF8] bg-[#F8F5FC] text-xs font-bold uppercase text-[#9CA3AF]">
+        <div className="min-w-[720px] overflow-hidden rounded-lg border border-[#EAE3D3] bg-white">
+          <div className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#EAE3D3] bg-[#F7F3EA] text-xs font-bold uppercase text-[#9CA3AF]">
             <div className="px-3 py-2">Signal</div>
             {routeOptions.map((route) => (
               <div
@@ -1671,13 +1671,13 @@ function RouteComparisonMatrix({
             ))}
           </div>
           {rows.map((row) => (
-            <div key={row.label} className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#F0EBF8] last:border-b-0">
+            <div key={row.label} className="grid grid-cols-[130px_repeat(3,minmax(0,1fr))] border-b border-[#EAE3D3] last:border-b-0">
               <div className="px-3 py-2 text-xs font-bold uppercase text-[#9CA3AF]">{row.label}</div>
               {routeOptions.map((route) => (
                 <div
                   key={`${row.label}-${route.route_type}`}
                   className={`px-3 py-2 text-xs font-semibold leading-5 ${
-                    route.route_type === activeRoute.route_type ? "bg-[#FFF8FC] text-[#1A1033]" : "text-[#6B7280]"
+                    route.route_type === activeRoute.route_type ? "bg-[#F6F1E4] text-[#1E2A44]" : "text-[#6B7280]"
                   }`}
                 >
                   {row.value(route)}
@@ -1729,15 +1729,15 @@ function RouteSelectorShell({
   }
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_4px_20px_rgba(26,16,51,0.06)]">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E0F9FF] text-[#0891B2]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E7F0E9] text-[#114F3B]">
             <Route size={18} />
           </span>
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">Route selector</p>
-            <h2 className="truncate text-lg font-bold text-[#1A1033]">{activeRoute.title}</h2>
+            <h2 className="truncate text-lg font-bold text-[#1E2A44]">{activeRoute.title}</h2>
           </div>
         </div>
 
@@ -1754,20 +1754,20 @@ function RouteSelectorShell({
                 onClick={() => onSelectRoute(route.route_type)}
                 disabled={isSavingSelectedRoute}
                 aria-pressed={selected}
-                className={`min-h-[184px] rounded-lg border px-3 py-3 text-left outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70 ${
+                className={`min-h-[184px] rounded-lg border px-3 py-3 text-left outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70 ${
                   selected
                     ? `${tone.border} ${tone.bg} ring-2 ${tone.ring} shadow-[0_8px_24px_rgba(26,16,51,0.07)]`
-                    : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8] hover:shadow-[0_8px_24px_rgba(26,16,51,0.06)]"
+                    : "border-[#EAE3D3] bg-[#FFFFFF] hover:border-[#DFD6BE] hover:shadow-[0_8px_24px_rgba(26,16,51,0.06)]"
                 }`}
               >
                 <span className={`flex items-center justify-between gap-2 text-xs font-bold ${selected ? tone.accent : "text-[#6B7280]"}`}>
                   {routeLabels[route.route_type]}
-                  {selected && <CheckCircle2 size={15} className="shrink-0 text-[#10B981]" />}
+                  {selected && <CheckCircle2 size={15} className="shrink-0 text-[#17694F]" />}
                 </span>
-                <span className="mt-1 block line-clamp-2 text-sm font-bold leading-5 text-[#1A1033]">
+                <span className="mt-1 block line-clamp-2 text-sm font-bold leading-5 text-[#1E2A44]">
                   {route.target_occupation.title}
                 </span>
-                <span className="mt-1 block line-clamp-2 text-xs font-semibold leading-5 text-[#8A7AA8]">
+                <span className="mt-1 block line-clamp-2 text-xs font-semibold leading-5 text-[#8B7434]">
                   Branch: {routeBranchDecision(route)}
                 </span>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1886,18 +1886,18 @@ function isDecisionNode(node: JourneyNode) {
 
 function DetailBlock({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-lg bg-[#FDFCFF] p-3">
+    <div className="rounded-lg bg-[#FFFFFF] p-3">
       <p className="text-xs font-bold uppercase text-[#9CA3AF]">{label}</p>
-      <div className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{value}</div>
+      <div className="mt-1 text-sm font-bold leading-5 text-[#1E2A44]">{value}</div>
     </div>
   );
 }
 
 function DetailMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+    <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-3 py-2">
       <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">{label}</p>
-      <p className="mt-1 truncate text-sm font-black text-[#1A1033]">{value}</p>
+      <p className="mt-1 truncate text-sm font-black text-[#1E2A44]">{value}</p>
     </div>
   );
 }
@@ -1918,7 +1918,7 @@ function ChipList({ items, emptyLabel }: { items: string[]; emptyLabel: string }
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span key={item} className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#6B46C1]">
+        <span key={item} className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#17694F]">
           {item}
         </span>
       ))}
@@ -1971,25 +1971,25 @@ function ActionProgressEditor({
         reduceMotion
           ? { opacity: 1 }
           : progress?.status === "completed"
-            ? { scale: [1, 1.015, 1], borderColor: ["#F0EBF8", "#10B981", "#F0EBF8"] }
+            ? { scale: [1, 1.015, 1], borderColor: ["#EAE3D3", "#17694F", "#EAE3D3"] }
             : { scale: 1 }
       }
       transition={{ duration: 0.36, ease: "easeOut" }}
-      className="rounded-lg border border-[#F0EBF8] bg-white p-3"
+      className="rounded-lg border border-[#EAE3D3] bg-white p-3"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">{action.action_type}</p>
-          <h4 className="mt-1 text-sm font-bold leading-5 text-[#1A1033]">{action.title}</h4>
+          <h4 className="mt-1 text-sm font-bold leading-5 text-[#1E2A44]">{action.title}</h4>
           {action.description && <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">{action.description}</p>}
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-[#F5F0FF] px-2.5 py-1 text-xs font-bold text-[#6B46C1]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#E7F0E9] px-2.5 py-1 text-xs font-bold text-[#17694F]">
           {progress?.status === "completed" && (
             <motion.span
               initial={reduceMotion ? false : { scale: 0, rotate: -18 }}
               animate={reduceMotion ? { scale: 1 } : { scale: [0, 1.2, 1], rotate: [-18, 8, 0] }}
               transition={{ duration: 0.28, ease: "easeOut" }}
-              className="flex text-[#10B981]"
+              className="flex text-[#17694F]"
             >
               <CheckCircle2 size={13} />
             </motion.span>
@@ -2005,13 +2005,13 @@ function ActionProgressEditor({
           rows={2}
           maxLength={600}
           placeholder="Short progress note"
-          className="w-full rounded-lg border border-[#E2D9F3] px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
+          className="w-full rounded-lg border border-[#DFD6BE] px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none placeholder:text-[#9CA3AF] focus:border-[#B08A44] focus:ring-2 focus:ring-[#B08A44]/15"
         />
         <input
           value={evidenceUrl}
           onChange={(event) => setEvidenceUrl(event.target.value)}
           placeholder="Evidence URL or internal proof link"
-          className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
+          className="min-h-10 rounded-lg border border-[#DFD6BE] px-3 text-sm font-semibold text-[#1E2A44] outline-none placeholder:text-[#9CA3AF] focus:border-[#B08A44] focus:ring-2 focus:ring-[#B08A44]/15"
         />
         <label className="grid gap-1 text-xs font-bold uppercase text-[#9CA3AF]">
           Completion date
@@ -2019,7 +2019,7 @@ function ActionProgressEditor({
             type="date"
             value={completedAt}
             onChange={(event) => setCompletedAt(event.target.value)}
-            className="min-h-10 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold normal-case text-[#1A1033] outline-none focus:border-[#E8197A] focus:ring-2 focus:ring-[#E8197A]/15"
+            className="min-h-10 rounded-lg border border-[#DFD6BE] px-3 text-sm font-semibold normal-case text-[#1E2A44] outline-none focus:border-[#B08A44] focus:ring-2 focus:ring-[#B08A44]/15"
           />
         </label>
       </div>
@@ -2030,7 +2030,7 @@ function ActionProgressEditor({
             type="button"
             onClick={() => save("in_progress")}
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#E8197A] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#CC146A] focus-visible:ring-2 focus-visible:ring-[#1A1033] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#B08A44] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#97742F] focus-visible:ring-2 focus-visible:ring-[#1E2A44] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
           >
             <Play size={13} />
             Start action
@@ -2042,10 +2042,10 @@ function ActionProgressEditor({
             type="button"
             onClick={() => save(statusValue)}
             disabled={isSaving}
-            className={`rounded-lg border px-2 py-2 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
+            className={`rounded-lg border px-2 py-2 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
               progress?.status === statusValue
-                ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
-                : "border-[#DDD0F8] bg-white text-[#6B46C1] hover:border-[#E8197A]"
+                ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
+                : "border-[#DFD6BE] bg-white text-[#17694F] hover:border-[#B08A44]"
             }`}
           >
             {statusValue === "in_progress" ? "Mark in progress" : "Mark complete"}
@@ -2055,7 +2055,7 @@ function ActionProgressEditor({
           type="button"
           onClick={() => save(progress?.status ?? "not_started")}
           disabled={isSaving}
-          className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#1A1033] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#2A1B4A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#1E2A44] px-2 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#16233C] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
           Save
@@ -2143,19 +2143,19 @@ function JourneyDetailPanel({
       animate={reduceMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
       exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 18 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
-      className="mx-auto max-w-6xl rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_6px_24px_rgba(26,16,51,0.07)] sm:p-5"
+      className="mx-auto max-w-6xl rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_6px_24px_rgba(26,16,51,0.07)] sm:p-5"
       aria-label="Selected milestone detail"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Map size={14} />
             Milestone details
           </p>
-          <h3 className="mt-3 text-xl font-bold leading-7 text-[#1A1033]">{node.title}</h3>
+          <h3 className="mt-3 text-xl font-bold leading-7 text-[#1E2A44]">{node.title}</h3>
           {isDetailLoading && (
             <p className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[#6B7280]">
-              <Loader2 size={13} className="animate-spin text-[#E8197A]" />
+              <Loader2 size={13} className="animate-spin text-[#B08A44]" />
               Loading detail...
             </p>
           )}
@@ -2166,14 +2166,14 @@ function JourneyDetailPanel({
             initial={reduceMotion ? false : { opacity: 0.7, scale: 0.96 }}
             animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
             transition={{ duration: 0.18 }}
-            className="rounded-lg bg-[#FDFCFF] px-3 py-2 text-xs font-bold text-[#6B46C1]"
+            className="rounded-lg bg-[#FFFFFF] px-3 py-2 text-xs font-bold text-[#17694F]"
           >
             {milestone ? progressStatusLabel(milestoneProgress?.status) : statusLabel(node.status)}
           </motion.span>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#F0EBF8] bg-white text-[#6B7280] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#EAE3D3] bg-white text-[#6B7280] outline-none transition hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2"
             aria-label="Close milestone detail panel"
           >
             <X size={16} />
@@ -2190,7 +2190,7 @@ function JourneyDetailPanel({
       <div className="mt-3 grid gap-2 sm:grid-cols-3">
         <Link
           href={routes.employeeCareerBuddy}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#FFD0E8] bg-[#FFF0F8] px-3 text-xs font-bold text-[#E8197A] outline-none transition hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] px-3 text-xs font-bold text-[#B08A44] outline-none transition hover:border-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2"
         >
           <Bot size={15} />
           Ask Buddy
@@ -2198,7 +2198,7 @@ function JourneyDetailPanel({
         <button
           type="button"
           onClick={() => setActionMessage(`Focus saved for ${node.title}. Demo mode would pin this station to your weekly plan.`)}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#BAF3FF] bg-[#E0F9FF] px-3 text-xs font-bold text-[#087C7E] outline-none transition hover:border-[#06B6D4] focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-2"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#CBDFD4] bg-[#E7F0E9] px-3 text-xs font-bold text-[#17694F] outline-none transition hover:border-[#17694F] focus-visible:ring-2 focus-visible:ring-[#17694F] focus-visible:ring-offset-2"
         >
           <Save size={15} />
           Save Focus
@@ -2206,7 +2206,7 @@ function JourneyDetailPanel({
         <button
           type="button"
           onClick={() => setActionMessage(`${routeLabels[route.route_type]} comparison opened for ${node.title}. Demo proof uses stored route scores and milestones.`)}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#6B46C1] focus-visible:ring-2 focus-visible:ring-[#6B46C1] focus-visible:ring-offset-2"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-[#E7F0E9] px-3 text-xs font-bold text-[#17694F] outline-none transition hover:border-[#17694F] focus-visible:ring-2 focus-visible:ring-[#17694F] focus-visible:ring-offset-2"
         >
           <SlidersHorizontal size={15} />
           Compare
@@ -2221,14 +2221,14 @@ function JourneyDetailPanel({
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="mt-3 flex items-start justify-between gap-3 rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2 text-xs font-bold leading-5 text-[#047857]"
+            className="mt-3 flex items-start justify-between gap-3 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-3 py-2 text-xs font-bold leading-5 text-[#114F3B]"
             role="status"
           >
             <span>{actionMessage}</span>
             <button
               type="button"
               onClick={() => setActionMessage(null)}
-              className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#047857] outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-[#047857]"
+              className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#114F3B] outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-[#114F3B]"
               aria-label="Dismiss action confirmation"
             >
               <X size={13} />
@@ -2242,7 +2242,7 @@ function JourneyDetailPanel({
           type="button"
           onClick={onPrevious}
           disabled={!canPrevious}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-3 text-xs font-bold text-[#17694F] outline-none transition hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft size={15} />
           Previous
@@ -2251,7 +2251,7 @@ function JourneyDetailPanel({
           type="button"
           onClick={onNext}
           disabled={!canNext}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-3 text-xs font-bold text-[#6B46C1] outline-none transition hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-3 text-xs font-bold text-[#17694F] outline-none transition hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
           <ChevronRight size={15} />
@@ -2291,8 +2291,8 @@ function JourneyDetailPanel({
         <DetailBlock label="Existing skills" value={<ChipList items={existingSkills} emptyLabel="No existing skills stored on profile." />} />
       </div>
 
-      <details className="group mt-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+      <details className="group mt-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1E2A44]">
           More context
           <ChevronDown size={16} className="transition group-open:rotate-180" />
         </summary>
@@ -2333,33 +2333,33 @@ function JourneyDetailPanel({
       </details>
 
       {milestone ? (
-        <details className="group mt-4 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-3">
+        <details className="group mt-4 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-3">
           <summary className="flex cursor-pointer list-none flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#087C7E]">
+              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#17694F]">
                 <ListChecks size={14} />
                 Update actions
               </p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[#087C7E]">
+              <p className="mt-1 text-xs font-semibold leading-5 text-[#17694F]">
                 {milestone.actions.length} saved actions. Expand when you want to add notes, evidence, or progress.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-[#087C7E]">
+            <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-[#17694F]">
               Show progress controls
               <ChevronDown size={15} className="transition group-open:rotate-180" />
             </span>
           </summary>
 
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs font-semibold leading-5 text-[#087C7E]">
+            <p className="text-xs font-semibold leading-5 text-[#17694F]">
               Complete all actions before marking the milestone complete.
             </p>
             <button
               type="button"
               onClick={() => saveMilestone("completed")}
               disabled={!canCompleteMilestone || isSavingProgress}
-              className={`relative inline-flex min-h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#10B981] px-3 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#059669] focus-visible:ring-2 focus-visible:ring-[#047857] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                milestoneProgress?.status === "completed" ? "ring-2 ring-[#A7F3D0]" : ""
+              className={`relative inline-flex min-h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#17694F] px-3 py-2 text-xs font-bold text-white outline-none transition hover:bg-[#17694F] focus-visible:ring-2 focus-visible:ring-[#114F3B] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                milestoneProgress?.status === "completed" ? "ring-2 ring-[#CBDFD4]" : ""
               }`}
             >
               {milestoneProgress?.status === "completed" && (
@@ -2391,8 +2391,8 @@ function JourneyDetailPanel({
           </div>
         </details>
       ) : (
-        <div className="mt-4 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3 text-sm font-semibold leading-6 text-[#6B7280]">
-          <FileText size={16} className="mb-2 text-[#6B46C1]" />
+        <div className="mt-4 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3 text-sm font-semibold leading-6 text-[#6B7280]">
+          <FileText size={16} className="mb-2 text-[#17694F]" />
           Select a milestone station to update action progress and evidence.
         </div>
       )}
@@ -2506,7 +2506,7 @@ function CareerPath({
       >
         <defs>
           <linearGradient id="career-gps-active-gradient" x1="0%" x2="100%" y1="0%" y2="0%">
-            <stop offset="0%" stopColor="#06B6D4" />
+            <stop offset="0%" stopColor="#17694F" />
             <stop offset="52%" stopColor={routeColor} />
             <stop offset="100%" stopColor="#B08A44" />
           </linearGradient>
@@ -2524,7 +2524,7 @@ function CareerPath({
           </filter>
         </defs>
 
-        <path d={fullPath} fill="none" stroke="#E7EEF5" strokeLinecap="round" strokeWidth="34" />
+        <path d={fullPath} fill="none" stroke="#EAE3D3" strokeLinecap="round" strokeWidth="34" />
         <motion.path
           d={fullPath}
           fill="none"
@@ -2582,14 +2582,14 @@ function CareerPath({
           initial={reduceMotion ? false : { opacity: 0, y: index % 2 === 0 ? -8 : 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: "easeOut", delay: 0.55 + index * 0.08 }}
-          className={`absolute z-10 w-[190px] -translate-x-1/2 rounded-lg border bg-white/95 px-3 py-2 text-left shadow-[0_10px_26px_rgba(26,16,51,0.10)] backdrop-blur outline-none transition hover:-translate-y-1 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${routeTone[branch.route.route_type].border}`}
+          className={`absolute z-10 w-[190px] -translate-x-1/2 rounded-lg border bg-white/95 px-3 py-2 text-left shadow-[0_10px_26px_rgba(26,16,51,0.10)] backdrop-blur outline-none transition hover:-translate-y-1 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 ${routeTone[branch.route.route_type].border}`}
           style={{ left: branch.labelX, top: branch.labelY }}
         >
           <span className={`inline-flex items-center gap-1 text-[10px] font-black uppercase ${routeTone[branch.route.route_type].accent}`}>
             <GitBranch size={12} />
             Optional route
           </span>
-          <span className="mt-1 block text-xs font-black leading-4 text-[#1A1033]">{routeLabels[branch.route.route_type]}</span>
+          <span className="mt-1 block text-xs font-black leading-4 text-[#1E2A44]">{routeLabels[branch.route.route_type]}</span>
           <span className="mt-1 block text-[11px] font-bold leading-4 text-[#6B7280]">
             {branch.route.estimated_months} mo / {Math.round(branch.route.score)}% fit
           </span>
@@ -2612,16 +2612,16 @@ function CareerAvatar({
     <div className="relative flex h-16 w-16 items-center justify-center">
       {!reduceMotion && (
         <motion.span
-          className="absolute inset-0 rounded-full border border-[#E8197A]/50"
+          className="absolute inset-0 rounded-full border border-[#B08A44]/50"
           animate={{ scale: [1, 1.35, 1], opacity: [0.55, 0, 0.55] }}
           transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut" }}
           aria-hidden="true"
         />
       )}
-      <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-[#FFF8FC] text-2xl font-black text-[#1A1033] shadow-[0_14px_32px_rgba(232,25,122,0.26)]">
+      <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-[#F6F1E4] text-2xl font-black text-[#1E2A44] shadow-[0_14px_32px_rgba(232,25,122,0.26)]">
         <span className="leading-none">{label}</span>
         {sublabel && (
-          <span className="absolute -bottom-2 rounded-full border border-[#FFD0E8] bg-white px-2 py-0.5 text-[10px] font-black leading-none text-[#E8197A]">
+          <span className="absolute -bottom-2 rounded-full border border-[#E3D8BC] bg-white px-2 py-0.5 text-[10px] font-black leading-none text-[#B08A44]">
             {sublabel}
           </span>
         )}
@@ -2704,16 +2704,16 @@ function CareerMilestone({
       <span
         className={`relative flex items-center justify-center rounded-full border bg-white shadow-[0_14px_32px_rgba(26,16,51,0.13)] transition ${
           isDestination
-            ? "h-20 w-20 border-[#1A1033] bg-[#1A1033] text-white"
+            ? "h-20 w-20 border-[#1E2A44] bg-[#1E2A44] text-white"
             : active
-              ? "h-20 w-20 border-[#E8197A] bg-[#FFF0F8] text-[#E8197A] ring-8 ring-[#E8197A]/15"
+              ? "h-20 w-20 border-[#B08A44] bg-[#F6F1E4] text-[#B08A44] ring-8 ring-[#B08A44]/15"
               : completed
-                ? "h-14 w-14 border-[#10B981] bg-[#10B981] text-white"
+                ? "h-14 w-14 border-[#17694F] bg-[#17694F] text-white"
                 : next
-                  ? "h-14 w-14 border-[#06B6D4] bg-white text-[#087C7E] ring-4 ring-[#06B6D4]/15"
+                  ? "h-14 w-14 border-[#17694F] bg-white text-[#17694F] ring-4 ring-[#17694F]/15"
                   : isStart
-                    ? "h-14 w-14 border-[#BAF3FF] bg-[#E0F9FF] text-[#087C7E]"
-                    : "h-14 w-14 border-[#DDD0F8] bg-white text-[#6B46C1]"
+                    ? "h-14 w-14 border-[#CBDFD4] bg-[#E7F0E9] text-[#17694F]"
+                    : "h-14 w-14 border-[#DFD6BE] bg-white text-[#17694F]"
         } ${selected ? "ring-4 ring-[#B08A44]/25" : ""}`}
       >
         {active ? (
@@ -2732,7 +2732,7 @@ function CareerMilestone({
         )}
         {next && !reduceMotion && (
           <motion.span
-            className="absolute -inset-2 rounded-full border border-[#06B6D4]/45"
+            className="absolute -inset-2 rounded-full border border-[#17694F]/45"
             animate={{ scale: [1, 1.16, 1], opacity: [0.8, 0.25, 0.8] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden="true"
@@ -2742,17 +2742,17 @@ function CareerMilestone({
 
       <span
         className={`rounded-lg border bg-white/95 px-3 py-2 text-center shadow-sm backdrop-blur ${
-          selected ? "border-[#B08A44]" : "border-[#F0EBF8]"
+          selected ? "border-[#B08A44]" : "border-[#EAE3D3]"
         }`}
       >
         <span className="block text-[10px] font-black uppercase text-[#9CA3AF]">
           {active ? "Current" : next ? "Next available" : node.status === "destination" ? "Final target" : statusLabel(node.status)}
         </span>
-        <span className="mt-0.5 line-clamp-2 block text-xs font-black leading-4 text-[#1A1033]">{nodeLabel}</span>
+        <span className="mt-0.5 line-clamp-2 block text-xs font-black leading-4 text-[#1E2A44]">{nodeLabel}</span>
         {(meta.changedFromRecommended || meta.sharedCompleted) && (
           <span className="mt-1 flex justify-center gap-1">
-            {meta.changedFromRecommended && <span className="rounded-full bg-[#FFF0F8] px-2 py-0.5 text-[9px] font-black uppercase text-[#E8197A]">Changed</span>}
-            {meta.sharedCompleted && <span className="rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[9px] font-black uppercase text-[#047857]">Shared</span>}
+            {meta.changedFromRecommended && <span className="rounded-full bg-[#F6F1E4] px-2 py-0.5 text-[9px] font-black uppercase text-[#B08A44]">Changed</span>}
+            {meta.sharedCompleted && <span className="rounded-full bg-[#EFF5F0] px-2 py-0.5 text-[9px] font-black uppercase text-[#114F3B]">Shared</span>}
           </span>
         )}
       </span>
@@ -2762,17 +2762,17 @@ function CareerMilestone({
 
 function CareerGPSLegend() {
   const items = [
-    { label: "Completed", className: "border-[#10B981] bg-[#10B981]", icon: <CheckCircle2 size={10} className="text-white" /> },
-    { label: "Current", className: "border-[#E8197A] bg-[#FFF0F8] ring-2 ring-[#E8197A]/25" },
-    { label: "Next", className: "border-[#06B6D4] bg-white ring-2 ring-[#06B6D4]/20" },
-    { label: "Locked", className: "border-[#D7D0E7] bg-[#F2EEF8] opacity-60" },
-    { label: "Destination", className: "border-[#1A1033] bg-[#1A1033]" },
+    { label: "Completed", className: "border-[#17694F] bg-[#17694F]", icon: <CheckCircle2 size={10} className="text-white" /> },
+    { label: "Current", className: "border-[#B08A44] bg-[#F6F1E4] ring-2 ring-[#B08A44]/25" },
+    { label: "Next", className: "border-[#17694F] bg-white ring-2 ring-[#17694F]/20" },
+    { label: "Locked", className: "border-[#DFD6BE] bg-[#F1EDE0] opacity-60" },
+    { label: "Destination", className: "border-[#1E2A44] bg-[#1E2A44]" },
   ];
 
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span key={item.label} className="inline-flex items-center gap-2 rounded-full border border-[#F0EBF8] bg-white px-3 py-1 text-xs font-bold text-[#6B7280]">
+        <span key={item.label} className="inline-flex items-center gap-2 rounded-full border border-[#EAE3D3] bg-white px-3 py-1 text-xs font-bold text-[#6B7280]">
           <span className={`flex h-4 w-4 items-center justify-center rounded-full border ${item.className}`}>{item.icon}</span>
           {item.label}
         </span>
@@ -2825,20 +2825,20 @@ function CareerGPSMap({
   const avatarSublabel = riasecResult?.hollandCode ?? null;
 
   return (
-    <section className="mt-4 rounded-lg border border-[#DDEAF0] bg-white p-4 shadow-[0_8px_30px_rgba(26,16,51,0.07)]">
+    <section className="mt-4 rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_8px_30px_rgba(26,16,51,0.07)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#526071]">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#5D6470]">
             <Route size={14} />
             Animated career route
           </p>
-          <h3 className="mt-2 text-xl font-bold text-[#1A1033]">Career GPS journey map</h3>
-          <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-[#526071]">
+          <h3 className="mt-2 text-xl font-bold text-[#1E2A44]">Career GPS journey map</h3>
+          <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-[#5D6470]">
             {mapModeSummary} Click a stop to open milestone details.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <span className="inline-flex rounded-full border border-[#BAF3FF] bg-[#F0FDFF] px-3 py-1 text-xs font-bold text-[#087C7E]">
+          <span className="inline-flex rounded-full border border-[#CBDFD4] bg-[#EFF5F0] px-3 py-1 text-xs font-bold text-[#17694F]">
             {journeyMapModes.find((mode) => mode.value === mapMode)?.label} lens
           </span>
           <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${routeTone[activeRoute.route_type].border} ${routeTone[activeRoute.route_type].bg} ${routeTone[activeRoute.route_type].accent}`}>
@@ -2847,9 +2847,9 @@ function CareerGPSMap({
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-lg border border-[#E7EEF5] bg-[#F8FBFD] pb-2" tabIndex={0} aria-label="Scrollable animated Career GPS map">
+      <div className="mt-4 overflow-x-auto rounded-lg border border-[#EAE3D3] bg-[#F7F3EA] pb-2" tabIndex={0} aria-label="Scrollable animated Career GPS map">
         <div className="relative" style={{ width, height }}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(6,182,212,0.13),transparent_24%),radial-gradient(circle_at_72%_16%,rgba(176,138,68,0.13),transparent_25%),linear-gradient(180deg,#FFFFFF_0%,#F8FBFD_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(6,182,212,0.13),transparent_24%),radial-gradient(circle_at_72%_16%,rgba(176,138,68,0.13),transparent_25%),linear-gradient(180deg,#FFFFFF_0%,#F7F3EA_100%)]" />
           <CareerPath
             points={points}
             width={width}
@@ -2877,9 +2877,9 @@ function CareerGPSMap({
             />
           ))}
 
-          <div className="pointer-events-none absolute left-6 top-5 rounded-lg border border-white/80 bg-white/90 px-3 py-2 text-xs font-bold leading-5 text-[#526071] shadow-sm backdrop-blur">
+          <div className="pointer-events-none absolute left-6 top-5 rounded-lg border border-white/80 bg-white/90 px-3 py-2 text-xs font-bold leading-5 text-[#5D6470] shadow-sm backdrop-blur">
             <span className="block text-[10px] uppercase text-[#9CA3AF]">Route progress</span>
-            <span className="text-[#1A1033]" style={{ color: routeColor }}>
+            <span className="text-[#1E2A44]" style={{ color: routeColor }}>
               {Math.max(0, activeIndex)} of {Math.max(0, points.length - 1)} stops reached
             </span>
           </div>
@@ -2907,7 +2907,7 @@ function MilestoneDetailsDrawer({ isOpen, onClose, ...panelProps }: MilestoneDet
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex justify-end bg-[#1A1033]/28 p-3 backdrop-blur-sm sm:p-5"
+          className="fixed inset-0 z-50 flex justify-end bg-[#1E2A44]/28 p-3 backdrop-blur-sm sm:p-5"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
@@ -3052,7 +3052,7 @@ function CareerJourneyMap({
     };
   }, [roadmap, activeRoute, selectedNode?.id, selectedNode?.milestone, isDetailOpen, isDemoMode, progressByKey]);
 
-  const routeColor = activeRoute ? routeHexColor[activeRoute.route_type] : "#E8197A";
+  const routeColor = activeRoute ? routeHexColor[activeRoute.route_type] : "#B08A44";
   const activeIndex = activeNode ? Math.max(0, nodes.findIndex((node) => node.id === activeNode.id)) : -1;
   const nextNode = activeIndex >= 0 ? nodes.find((node, index) => index > activeIndex && node.status !== "locked") ?? null : null;
   const baselineRoute = roadmap?.routes.find((route) => route.route_type === "recommended") ?? roadmap?.routes[0] ?? null;
@@ -3112,17 +3112,17 @@ function CareerJourneyMap({
 
   return (
     <section
-      className="rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_8px_36px_rgba(232,25,122,0.09)] sm:p-5"
+      className="rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_8px_36px_rgba(232,25,122,0.09)] sm:p-5"
       aria-labelledby="career-gps-map-heading"
       aria-describedby="career-gps-map-summary"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
             <Map size={14} />
             Main journey map
           </p>
-          <h2 id="career-gps-map-heading" className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#1A1033] sm:text-3xl">
+          <h2 id="career-gps-map-heading" className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#1E2A44] sm:text-3xl">
             {activeRoute.title}
           </h2>
           <p id="career-gps-map-summary" className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
@@ -3133,22 +3133,22 @@ function CareerJourneyMap({
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center sm:min-w-[340px]">
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
-            <p className="text-lg font-bold text-[#1A1033]">{routeSummary.percent}%</p>
+          <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-3 py-2">
+            <p className="text-lg font-bold text-[#1E2A44]">{routeSummary.percent}%</p>
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Progress</p>
           </div>
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
-            <p className="text-lg font-bold text-[#1A1033]">{routeSummary.inProgress}</p>
+          <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-3 py-2">
+            <p className="text-lg font-bold text-[#1E2A44]">{routeSummary.inProgress}</p>
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Active</p>
           </div>
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2">
+          <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-3 py-2">
             <p className="text-lg font-bold" style={{ color: routeColor }}>{activeRoute.milestones.length}</p>
             <p className="text-[11px] font-bold uppercase text-[#9CA3AF]">Stops</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+      <div className="mt-4 grid gap-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex flex-wrap gap-2" aria-label="Career GPS map mode">
           {journeyMapModes.map((mode) => (
             <button
@@ -3157,10 +3157,10 @@ function CareerJourneyMap({
               onClick={() => setMapMode(mode.value)}
               aria-pressed={mapMode === mode.value}
               title={mode.description}
-              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 ${
                 mapMode === mode.value
-                  ? "border-[#E8197A] bg-[#FFF0F8] text-[#E8197A]"
-                  : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#DDD0F8] hover:text-[#1A1033]"
+                  ? "border-[#B08A44] bg-[#F6F1E4] text-[#B08A44]"
+                  : "border-[#EAE3D3] bg-white text-[#6B7280] hover:border-[#DFD6BE] hover:text-[#1E2A44]"
               }`}
             >
               {mode.value === "roadmap" ? <Route size={14} /> : mode.value === "skills" ? <Target size={14} /> : <GitBranch size={14} />}
@@ -3175,10 +3175,10 @@ function CareerJourneyMap({
               type="button"
               onClick={() => handleMapFocus(focus.value)}
               aria-pressed={mapFocus === focus.value}
-              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#E8197A] focus-visible:ring-offset-2 ${
+              className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#B08A44] focus-visible:ring-offset-2 ${
                 mapFocus === focus.value
-                  ? "border-[#06B6D4] bg-[#E0F9FF] text-[#087C7E]"
-                  : "border-[#F0EBF8] bg-white text-[#6B7280] hover:border-[#BAF3FF] hover:text-[#087C7E]"
+                  ? "border-[#17694F] bg-[#E7F0E9] text-[#17694F]"
+                  : "border-[#EAE3D3] bg-white text-[#6B7280] hover:border-[#CBDFD4] hover:text-[#17694F]"
               }`}
             >
               {focus.value === "overview" ? <Map size={14} /> : focus.value === "current" ? <MapPin size={14} /> : <Flag size={14} />}
@@ -3189,24 +3189,24 @@ function CareerJourneyMap({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3">
+        <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3">
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
             <GitBranch size={14} />
             Active branch decision
           </p>
-          <p className="mt-2 text-sm font-bold leading-5 text-[#1A1033]">{routeBranchDecision(activeRoute)}</p>
+          <p className="mt-2 text-sm font-bold leading-5 text-[#1E2A44]">{routeBranchDecision(activeRoute)}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">
             Future route differences are marked against the Recommended Route baseline.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2">
-            <p className="text-[11px] font-bold uppercase text-[#047857]">Shared completed stops</p>
-            <p className="mt-1 text-sm font-black text-[#1A1033]">{sharedCompletedNodes.length}</p>
+          <div className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#114F3B]">Shared completed stops</p>
+            <p className="mt-1 text-sm font-black text-[#1E2A44]">{sharedCompletedNodes.length}</p>
           </div>
-          <div className="rounded-lg border border-[#FFD0E8] bg-[#FFF8FC] px-3 py-2">
-            <p className="text-[11px] font-bold uppercase text-[#E8197A]">Changed future stops</p>
-            <p className="mt-1 text-sm font-black text-[#1A1033]">{changedFutureNodes.length}</p>
+          <div className="rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-2">
+            <p className="text-[11px] font-bold uppercase text-[#B08A44]">Changed future stops</p>
+            <p className="mt-1 text-sm font-black text-[#1E2A44]">{changedFutureNodes.length}</p>
           </div>
         </div>
       </div>
@@ -3362,14 +3362,14 @@ function ReadinessRing({
 }) {
   const reduceMotion = useReducedMotion() ?? false;
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
-  const color = tone === "teal" ? "#06B6D4" : tone === "purple" ? "#6B46C1" : "#E8197A";
+  const color = tone === "teal" ? "#17694F" : tone === "purple" ? "#17694F" : "#B08A44";
   const circumference = 2 * Math.PI * 36;
   const offset = circumference - (clamped / 100) * circumference;
   return (
-    <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+    <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
       <div className="flex items-center gap-4">
         <svg width="88" height="88" viewBox="0 0 88 88" role="img" aria-label={`${label}: ${clamped}%`}>
-          <circle cx="44" cy="44" r="36" fill="none" stroke="#F0EBF8" strokeWidth="8" />
+          <circle cx="44" cy="44" r="36" fill="none" stroke="#EAE3D3" strokeWidth="8" />
           <motion.circle
             cx="44"
             cy="44"
@@ -3384,7 +3384,7 @@ function ReadinessRing({
             transition={{ duration: 0.42, ease: "easeOut" }}
             transform="rotate(-90 44 44)"
           />
-          <text x="44" y="48" textAnchor="middle" className="fill-[#1A1033] text-xl font-black">
+          <text x="44" y="48" textAnchor="middle" className="fill-[#1E2A44] text-xl font-black">
             {clamped}%
           </text>
         </svg>
@@ -3402,10 +3402,10 @@ function ReadinessRing({
 function SkillChip({ item }: { item: SkillReadinessItem }) {
   const tone =
     item.status === "achieved"
-      ? "border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]"
+      ? "border-[#CBDFD4] bg-[#EFF5F0] text-[#114F3B]"
       : item.status === "in_progress"
-        ? "border-[#BAF3FF] bg-[#E0F9FF] text-[#0891B2]"
-        : "border-[#FFD0E8] bg-[#FFF8FC] text-[#E8197A]";
+        ? "border-[#CBDFD4] bg-[#E7F0E9] text-[#114F3B]"
+        : "border-[#E3D8BC] bg-[#F6F1E4] text-[#B08A44]";
   return (
     <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${tone}`}>
       {item.name}
@@ -3459,21 +3459,21 @@ function SkillsReadinessSection({
     : "No mandatory certification is stored for this route.";
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#BAF3FF] bg-[#E0F9FF] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0891B2]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#CBDFD4] bg-[#E7F0E9] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#114F3B]">
             <Gauge size={14} />
             Skills and readiness
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Why you are ready for the next stop</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Why you are ready for the next stop</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Readiness uses your saved employee skills, stored route skill gaps, milestone focus skills, and persisted evidence.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Next milestone</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">{milestone?.title ?? activeRoute.target_occupation.title}</p>
+          <p className="mt-1 text-sm font-bold text-[#1E2A44]">{milestone?.title ?? activeRoute.target_occupation.title}</p>
         </div>
       </div>
 
@@ -3483,27 +3483,27 @@ function SkillsReadinessSection({
           <ReadinessRing label="Next milestone readiness" value={milestoneReadiness} tone="teal" />
         </div>
 
-        <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+        <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
                 <TrendingUp size={14} />
                 Progress trend
               </p>
-              <p className="mt-2 text-lg font-bold text-[#1A1033]">
+              <p className="mt-2 text-lg font-bold text-[#1E2A44]">
                 {progress.completed} of {progress.total || activeRoute.milestones.length} stored actions complete
               </p>
               <p className="mt-1 text-sm font-semibold leading-5 text-[#6B7280]">
                 {progress.inProgress} in progress / {progress.evidence} with evidence links
               </p>
             </div>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#6B46C1]">
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#17694F]">
               {routeLabels[activeRoute.route_type]}
             </span>
           </div>
           <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
             <motion.div
-              className="h-full rounded-full bg-[#10B981]"
+              className="h-full rounded-full bg-[#17694F]"
               initial={reduceMotion ? false : { width: 0 }}
               animate={{ width: `${progress.percent}%` }}
               transition={{ duration: 0.38, ease: "easeOut" }}
@@ -3537,19 +3537,19 @@ function SkillsReadinessSection({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] p-4">
-          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#6B46C1]">
+        <div className="rounded-lg border border-[#DFD6BE] bg-[#FFFFFF] p-4">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#17694F]">
             <Award size={14} />
             Optional certification recommendation
           </p>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{certificationText}</p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#1E2A44]">{certificationText}</p>
           <p className="mt-2 text-xs font-semibold leading-5 text-[#9CA3AF]">
             No certification requirement is invented here; this uses the stored milestone learning action when available.
           </p>
         </div>
 
-        <details className="group rounded-lg border border-[#F0EBF8] bg-white p-4">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+        <details className="group rounded-lg border border-[#EAE3D3] bg-white p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1E2A44]">
             Evidence linked to skills
             <ChevronDown size={16} className="transition group-open:rotate-180" />
           </summary>
@@ -3561,7 +3561,7 @@ function SkillsReadinessSection({
                   href={item.evidenceUrl ?? "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex flex-col gap-1 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-3 text-sm font-semibold text-[#1A1033] hover:border-[#BAF3FF]"
+                  className="flex flex-col gap-1 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-3 text-sm font-semibold text-[#1E2A44] hover:border-[#CBDFD4]"
                 >
                   <span>{item.skill}</span>
                   <span className="text-xs text-[#6B7280]">
@@ -3578,8 +3578,8 @@ function SkillsReadinessSection({
         </details>
       </div>
 
-      <details className="group mt-4 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+      <details className="group mt-4 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1E2A44]">
           How readiness is calculated
           <ChevronDown size={16} className="transition group-open:rotate-180" />
         </summary>
@@ -3608,7 +3608,7 @@ function SkillGroup({
   emptyText: string;
 }) {
   return (
-    <div className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+    <div className="rounded-lg border border-[#EAE3D3] bg-white p-4">
       <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-[#9CA3AF]">
         <Icon size={14} />
         {title}
@@ -3702,26 +3702,26 @@ function WhatIfCareerSimulator({
   const previewSkillSummary = previewRoute?.skill_gaps.slice(0, 4).map((gap) => gap.skill_name).join(", ") || "No major gaps";
 
   return (
-    <section className="rounded-lg border border-[#F0EBF8] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section className="rounded-lg border border-[#EAE3D3] bg-white p-5 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD0E8] bg-[#FFF0F8] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#E8197A]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#E3D8BC] bg-[#F6F1E4] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#B08A44]">
             <SlidersHorizontal size={14} />
             What-if Career Simulator
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-[#1A1033]">Preview a priority shift before applying it</h2>
+          <h2 className="mt-3 text-2xl font-bold text-[#1E2A44]">Preview a priority shift before applying it</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
             Preview uses the deterministic Career GPS engine with temporary profile changes. It does not overwrite your active roadmap until you apply it.
           </p>
         </div>
-        <div className="rounded-lg bg-[#FDFCFF] px-4 py-3">
+        <div className="rounded-lg bg-[#FFFFFF] px-4 py-3">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Active version</p>
-          <p className="mt-1 text-sm font-bold text-[#1A1033]">Version {roadmap.version}</p>
+          <p className="mt-1 text-sm font-bold text-[#1E2A44]">Version {roadmap.version}</p>
         </div>
       </div>
 
       {(error || message) && (
-        <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-bold ${error ? "border-[#FECACA] bg-[#FFF5F5] text-[#DC2626]" : "border-[#BAF3FF] bg-[#F0FDFF] text-[#087C7E]"}`}>
+        <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-bold ${error ? "border-[#FECACA] bg-[#FFF5F5] text-[#DC2626]" : "border-[#CBDFD4] bg-[#EFF5F0] text-[#17694F]"}`}>
           {error ?? message}
         </div>
       )}
@@ -3734,7 +3734,7 @@ function WhatIfCareerSimulator({
               value={scenarioName}
               onChange={(event) => setScenarioName(event.target.value)}
               placeholder="Optional name for this preview"
-              className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+              className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
             />
           </label>
 
@@ -3746,15 +3746,15 @@ function WhatIfCareerSimulator({
                   key={option.code}
                   type="button"
                   onClick={() => toggleAdjustment(option.code)}
-                  className={`min-h-[118px] rounded-lg border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8197A] ${
-                    active ? "border-[#E8197A] bg-[#FFF0F8] ring-2 ring-[#E8197A]/15" : "border-[#F0EBF8] bg-[#FDFCFF] hover:border-[#DDD0F8]"
+                  className={`min-h-[118px] rounded-lg border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B08A44] ${
+                    active ? "border-[#B08A44] bg-[#F6F1E4] ring-2 ring-[#B08A44]/15" : "border-[#EAE3D3] bg-[#FFFFFF] hover:border-[#DFD6BE]"
                   }`}
                   aria-pressed={active}
                 >
-                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#E8197A] bg-[#E8197A]" : "border-[#DDD0F8] bg-white"}`}>
+                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded border ${active ? "border-[#B08A44] bg-[#B08A44]" : "border-[#DFD6BE] bg-white"}`}>
                     {active && <CheckCircle2 size={14} className="text-white" />}
                   </span>
-                  <span className="mt-3 block text-sm font-bold text-[#1A1033]">{option.label}</span>
+                  <span className="mt-3 block text-sm font-bold text-[#1E2A44]">{option.label}</span>
                   <span className="mt-1 block text-xs font-semibold leading-5 text-[#6B7280]">{option.description}</span>
                 </button>
               );
@@ -3762,14 +3762,14 @@ function WhatIfCareerSimulator({
           </div>
 
           {(hasAdjustment("relocate_country") || hasAdjustment("change_industry") || hasAdjustment("retire_earlier")) && (
-            <div className="grid gap-3 rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4 md:grid-cols-2 xl:grid-cols-4">
               {hasAdjustment("relocate_country") && (
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#9CA3AF]">Target country</span>
                   <input
                     value={targetCountry}
                     onChange={(event) => setTargetCountry(event.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                   />
                 </label>
               )}
@@ -3779,7 +3779,7 @@ function WhatIfCareerSimulator({
                   <select
                     value={targetIndustry}
                     onChange={(event) => setTargetIndustry(event.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                    className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                   >
                     <option value="technology">Technology</option>
                     <option value="data">Data</option>
@@ -3797,7 +3797,7 @@ function WhatIfCareerSimulator({
                       min={45}
                       max={80}
                       onChange={(event) => setTargetRetirementAge(event.target.value)}
-                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                      className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                     />
                   </label>
                   <label className="block">
@@ -3808,7 +3808,7 @@ function WhatIfCareerSimulator({
                       min={1}
                       max={480}
                       onChange={(event) => setTargetTimelineMonths(event.target.value)}
-                      className="mt-2 w-full rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-semibold text-[#1A1033] outline-none focus:border-[#E8197A]"
+                      className="mt-2 w-full rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-semibold text-[#1E2A44] outline-none focus:border-[#B08A44]"
                     />
                   </label>
                 </>
@@ -3817,9 +3817,9 @@ function WhatIfCareerSimulator({
           )}
         </div>
 
-        <aside className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] p-4">
+        <aside className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] p-4">
           <p className="text-xs font-bold uppercase text-[#9CA3AF]">Current route</p>
-          <h3 className="mt-2 text-lg font-bold text-[#1A1033]">{activeRoute.title}</h3>
+          <h3 className="mt-2 text-lg font-bold text-[#1E2A44]">{activeRoute.title}</h3>
           <p className="mt-1 text-sm font-semibold text-[#6B7280]">{activeRoute.target_occupation.title}</p>
           <div className="mt-4 space-y-3">
             <MetricBar label="Route readiness" value={Math.round(activeRoute.score)} />
@@ -3830,7 +3830,7 @@ function WhatIfCareerSimulator({
               type="button"
               onClick={() => onPreview(payload())}
               disabled={!adjustments.length || isPreviewing || isApplying}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#B08A44] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isPreviewing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
               Preview Scenario
@@ -3839,7 +3839,7 @@ function WhatIfCareerSimulator({
               type="button"
               onClick={onDiscard}
               disabled={!preview || isPreviewing || isApplying}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] outline-none hover:border-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Discard Preview
             </button>
@@ -3848,11 +3848,11 @@ function WhatIfCareerSimulator({
       </div>
 
       {preview && previewRoute && (
-        <div className="mt-5 rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4">
+        <div className="mt-5 rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase text-[#0891B2]">Preview route</p>
-              <h3 className="mt-2 text-xl font-bold text-[#1A1033]">{previewRoute.title}</h3>
+              <p className="text-xs font-bold uppercase text-[#114F3B]">Preview route</p>
+              <h3 className="mt-2 text-xl font-bold text-[#1E2A44]">{previewRoute.title}</h3>
               <p className="mt-1 text-sm font-semibold text-[#6B7280]">
                 {preview.scenario.scenario_name} previews version {preview.comparison.preview_version}; active roadmap remains version {preview.comparison.current_version}.
               </p>
@@ -3862,7 +3862,7 @@ function WhatIfCareerSimulator({
                 type="button"
                 onClick={() => onApply(payload())}
                 disabled={isApplying || isPreviewing}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#1A1033] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 py-2.5 text-sm font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#1E2A44] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isApplying ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                 Apply This Scenario
@@ -3871,7 +3871,7 @@ function WhatIfCareerSimulator({
                 type="button"
                 onClick={onDiscard}
                 disabled={isApplying || isPreviewing}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#DDD0F8] bg-white px-4 py-2.5 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#DFD6BE] bg-white px-4 py-2.5 text-sm font-bold text-[#17694F] outline-none hover:border-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Discard Preview
               </button>
@@ -3890,39 +3890,39 @@ function WhatIfCareerSimulator({
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Changed skill priorities</p>
               <div className="mt-3 grid gap-2 text-sm font-semibold leading-6 text-[#6B7280] md:grid-cols-2">
                 <p>
-                  <span className="font-bold text-[#1A1033]">Current:</span> {skillsChange?.before ?? currentSkillSummary}
+                  <span className="font-bold text-[#1E2A44]">Current:</span> {skillsChange?.before ?? currentSkillSummary}
                 </p>
                 <p>
-                  <span className="font-bold text-[#1A1033]">Preview:</span> {skillsChange?.after ?? previewSkillSummary}
+                  <span className="font-bold text-[#1E2A44]">Preview:</span> {skillsChange?.after ?? previewSkillSummary}
                 </p>
               </div>
             </div>
             <div className="rounded-lg bg-white p-4">
               <p className="text-xs font-bold uppercase text-[#9CA3AF]">Main reason for change</p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#1A1033]">{mainReason}</p>
-              <p className="mt-3 text-xs font-bold text-[#0891B2]">
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#1E2A44]">{mainReason}</p>
+              <p className="mt-3 text-xs font-bold text-[#114F3B]">
                 {changedCount} of {preview.comparison.changes.length} route signals changed.
               </p>
             </div>
           </div>
 
           <details className="group mt-4 rounded-lg bg-white p-4">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1A1033]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#1E2A44]">
               Scenario overrides and full comparison
               <ChevronDown size={16} className="transition group-open:rotate-180" />
             </summary>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
               {preview.scenario.applied_overrides.map((override) => (
-                <p key={override} className="rounded-lg bg-[#FDFCFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
+                <p key={override} className="rounded-lg bg-[#FFFFFF] p-3 text-xs font-bold leading-5 text-[#6B7280]">
                   {override}
                 </p>
               ))}
               {preview.comparison.changes.map((change) => (
-                <div key={change.category} className="rounded-lg border border-[#F0EBF8] p-3">
-                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>
+                <div key={change.category} className="rounded-lg border border-[#EAE3D3] p-3">
+                  <p className={`text-xs font-bold uppercase ${change.changed ? "text-[#B08A44]" : "text-[#9CA3AF]"}`}>
                     {change.changed ? "Changed" : "No change"}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-[#1A1033]">{change.label}</p>
+                  <p className="mt-1 text-sm font-bold text-[#1E2A44]">{change.label}</p>
                   <p className="mt-2 text-xs font-semibold leading-5 text-[#6B7280]">{change.explanation}</p>
                 </div>
               ))}
@@ -3946,14 +3946,14 @@ function ComparisonTile({
   changed: boolean;
 }) {
   return (
-    <div className={`rounded-lg border p-4 ${changed ? "border-[#FFD0E8] bg-[#FFF8FC]" : "border-[#F0EBF8] bg-white"}`}>
-      <p className={`text-xs font-bold uppercase ${changed ? "text-[#E8197A]" : "text-[#9CA3AF]"}`}>{label}</p>
+    <div className={`rounded-lg border p-4 ${changed ? "border-[#E3D8BC] bg-[#F6F1E4]" : "border-[#EAE3D3] bg-white"}`}>
+      <p className={`text-xs font-bold uppercase ${changed ? "text-[#B08A44]" : "text-[#9CA3AF]"}`}>{label}</p>
       <div className="mt-3 grid gap-2 text-xs font-semibold leading-5 text-[#6B7280]">
         <p>
-          <span className="font-bold text-[#1A1033]">Current:</span> {before}
+          <span className="font-bold text-[#1E2A44]">Current:</span> {before}
         </p>
         <p>
-          <span className="font-bold text-[#1A1033]">Preview:</span> {after}
+          <span className="font-bold text-[#1E2A44]">Preview:</span> {after}
         </p>
       </div>
     </div>
@@ -4129,10 +4129,10 @@ export function CareerBuddyPanel({
   const latestAssistant = [...messages].reverse().find((message) => message.sender === "assistant");
 
   return (
-    <section id="career-buddy" className="scroll-mt-24 rounded-lg border border-[#F0EBF8] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
+    <section id="career-buddy" className="scroll-mt-24 rounded-lg border border-[#EAE3D3] bg-white p-4 shadow-[0_4px_24px_rgba(232,25,122,0.08)]">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#DDD0F8] bg-[#F5F0FF] text-[#6B46C1]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#DFD6BE] bg-[#E7F0E9] text-[#17694F]">
             {assistantAvatar ? (
               <span className="text-xl" aria-hidden="true">
                 {assistantAvatar}
@@ -4142,8 +4142,8 @@ export function CareerBuddyPanel({
             )}
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#6B46C1]">Career Buddy</p>
-            <h2 className="mt-1 text-lg font-bold text-[#1A1033]">Ask about this roadmap</h2>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#17694F]">Career Buddy</p>
+            <h2 className="mt-1 text-lg font-bold text-[#1E2A44]">Ask about this roadmap</h2>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-[#6B7280]">
               {isDemoMode
                 ? "Demo replies are generated locally from the illustrative route and do not call Gemini or save a conversation."
@@ -4154,7 +4154,7 @@ export function CareerBuddyPanel({
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DDD0F8] bg-[#FDFCFF] px-4 py-2 text-sm font-bold text-[#6B46C1] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A]"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-[#FFFFFF] px-4 py-2 text-sm font-bold text-[#17694F] outline-none hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44]"
           aria-expanded={isOpen}
         >
           {isOpen ? "Hide Buddy" : "Open Buddy"}
@@ -4169,7 +4169,7 @@ export function CareerBuddyPanel({
             type="button"
             onClick={() => sendCareerBuddyMessage(prompt)}
             disabled={isSending}
-            className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#1A1033] outline-none hover:border-[#E8197A] hover:text-[#E8197A] focus-visible:ring-2 focus-visible:ring-[#E8197A] disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF] px-3 py-2 text-left text-xs font-bold leading-5 text-[#1E2A44] outline-none hover:border-[#B08A44] hover:text-[#B08A44] focus-visible:ring-2 focus-visible:ring-[#B08A44] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {prompt}
           </button>
@@ -4184,11 +4184,11 @@ export function CareerBuddyPanel({
 
       {isOpen && (
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="rounded-lg border border-[#F0EBF8] bg-[#FDFCFF]">
+          <div className="rounded-lg border border-[#EAE3D3] bg-[#FFFFFF]">
             <div className="max-h-[320px] min-h-[180px] space-y-3 overflow-y-auto p-4">
               {isLoading ? (
                 <div className="flex items-center gap-2 text-sm font-bold text-[#6B7280]">
-                  <Loader2 size={16} className="animate-spin text-[#E8197A]" />
+                  <Loader2 size={16} className="animate-spin text-[#B08A44]" />
                   Loading Career Buddy...
                 </div>
               ) : messages.length ? (
@@ -4200,8 +4200,8 @@ export function CareerBuddyPanel({
                     <div
                       className={`max-w-[88%] rounded-lg px-3 py-2 text-sm leading-6 ${
                         message.sender === "employee"
-                          ? "bg-[#E8197A] text-white"
-                          : "border border-[#F0EBF8] bg-white text-[#1A1033]"
+                          ? "bg-[#B08A44] text-white"
+                          : "border border-[#EAE3D3] bg-white text-[#1E2A44]"
                       }`}
                     >
                       <p>{message.content}</p>
@@ -4215,15 +4215,15 @@ export function CareerBuddyPanel({
                   </div>
                 ))
               ) : (
-                <div className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
+                <div className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4 text-sm font-semibold leading-6 text-[#17694F]">
                   {isDemoMode
                     ? "Choose a suggested question or ask your own. Demo answers stay local to this browser session."
                     : "Choose a suggested question or ask your own. Career Buddy will use only stored Career GPS context."}
                 </div>
               )}
               {isSending && (
-                <p className="inline-flex items-center gap-2 rounded-lg border border-[#F0EBF8] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
-                  <Loader2 size={15} className="animate-spin text-[#E8197A]" />
+                <p className="inline-flex items-center gap-2 rounded-lg border border-[#EAE3D3] bg-white px-3 py-2 text-sm font-bold text-[#6B7280]">
+                  <Loader2 size={15} className="animate-spin text-[#B08A44]" />
                   Career Buddy is thinking...
                 </p>
               )}
@@ -4233,18 +4233,18 @@ export function CareerBuddyPanel({
                 event.preventDefault();
                 sendCareerBuddyMessage(draft);
               }}
-              className="flex items-center gap-2 border-t border-[#F0EBF8] bg-white p-3"
+              className="flex items-center gap-2 border-t border-[#EAE3D3] bg-white p-3"
             >
               <input
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder="Ask about your route..."
-                className="min-h-11 flex-1 rounded-lg border border-[#E2D9F3] px-3 text-sm font-semibold text-[#1A1033] outline-none placeholder:text-[#9CA3AF] focus:border-[#E8197A]"
+                className="min-h-11 flex-1 rounded-lg border border-[#DFD6BE] px-3 text-sm font-semibold text-[#1E2A44] outline-none placeholder:text-[#9CA3AF] focus:border-[#B08A44]"
               />
               <button
                 type="submit"
                 disabled={!draft.trim() || isSending}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#06B6D4] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#17694F] text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label="Send message to Career Buddy"
               >
                 {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
@@ -4252,29 +4252,29 @@ export function CareerBuddyPanel({
             </form>
           </div>
 
-          <aside className="rounded-lg border border-[#F0EBF8] bg-white p-4">
+          <aside className="rounded-lg border border-[#EAE3D3] bg-white p-4">
             <p className="text-xs font-bold uppercase text-[#9CA3AF]">Context</p>
-            <p className="mt-2 text-sm font-bold text-[#1A1033]">{activeRoute.title}</p>
+            <p className="mt-2 text-sm font-bold text-[#1E2A44]">{activeRoute.title}</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-[#6B7280]">
               {activeRoute.target_occupation.title} - version {roadmap.version}
             </p>
-            <div className="mt-4 rounded-lg bg-[#FDFCFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+            <div className="mt-4 rounded-lg bg-[#FFFFFF] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
               <p>
-                Provider: <span className="font-bold text-[#1A1033]">{providerLabel}</span>
+                Provider: <span className="font-bold text-[#1E2A44]">{providerLabel}</span>
               </p>
               {model && (
                 <p className="mt-1">
-                  Model: <span className="font-bold text-[#1A1033]">{model}</span>
+                  Model: <span className="font-bold text-[#1E2A44]">{model}</span>
                 </p>
               )}
               {remaining !== null && (
                 <p className="mt-1">
-                  Messages left this hour: <span className="font-bold text-[#1A1033]">{remaining}</span>
+                  Messages left this hour: <span className="font-bold text-[#1E2A44]">{remaining}</span>
                 </p>
               )}
             </div>
             {latestAssistant && (
-              <p className="mt-3 rounded-lg bg-[#FFF0F8] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
+              <p className="mt-3 rounded-lg bg-[#F6F1E4] p-3 text-xs font-semibold leading-5 text-[#6B7280]">
                 {isDemoMode
                   ? "Latest answer is part of the local demo conversation and is not saved to production data."
                   : "Latest answer is saved in your Career Buddy conversation and can be reloaded after refresh."}
@@ -4289,16 +4289,16 @@ export function CareerBuddyPanel({
 
 function CareerBuddyHandoff({ activeRoute }: { activeRoute: CareerGpsRoute | null }) {
   return (
-    <section className="rounded-lg border border-[#E0F2FE] bg-[#F0FDFF] p-4 shadow-[0_4px_24px_rgba(8,124,126,0.08)]">
+    <section className="rounded-lg border border-[#E7F0E9] bg-[#EFF5F0] p-4 shadow-[0_4px_24px_rgba(8,124,126,0.08)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-[#087C7E] shadow-sm">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-[#17694F] shadow-sm">
             <Bot size={20} />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#087C7E]">Career Buddy</p>
-            <h2 className="mt-1 text-lg font-bold text-[#1A1033]">Need an explanation for this route?</h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#4B5563]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#17694F]">Career Buddy</p>
+            <h2 className="mt-1 text-lg font-bold text-[#1E2A44]">Need an explanation for this route?</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#5D6470]">
               Career GPS stays focused on the map. Open Career Buddy when you want coaching, explanations, or help
               deciding what to do next{activeRoute ? ` for ${activeRoute.title}` : ""}.
             </p>
@@ -4306,7 +4306,7 @@ function CareerBuddyHandoff({ activeRoute }: { activeRoute: CareerGpsRoute | nul
         </div>
         <Link
           href={routes.employeeCareerBuddy}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#087C7E] px-4 text-sm font-bold text-white shadow-sm"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#17694F] px-4 text-sm font-bold text-white shadow-sm"
         >
           Open Career Buddy
           <ArrowRight size={16} />
@@ -4318,43 +4318,39 @@ function CareerBuddyHandoff({ activeRoute }: { activeRoute: CareerGpsRoute | nul
 
 const reportPrintDocumentStyles = `
   @page { margin: 14mm; size: A4; }
-  body { margin: 0; background: #ffffff; color: #111827; font-family: Arial, sans-serif; line-height: 1.45; }
-  #career-gps-pdf-report { display: block; width: 100%; background: #ffffff; color: #111827; }
+  body { margin: 0; background: #FFFFFF; color: #1E2A44; font-family: Arial, sans-serif; line-height: 1.45; }
+  #career-gps-pdf-report { display: block; width: 100%; background: #FFFFFF; color: #1E2A44; }
   #career-gps-pdf-report article { max-width: 760px; margin: 0 auto; }
   #career-gps-pdf-report header {
-    border: 1px solid #e5e7eb;
-    border-top: 7px solid #e8197a;
+    border: 1px solid #EAE3D3;
+    border-top: 7px solid #B08A44;
     border-radius: 14px;
     padding: 18px;
     margin-bottom: 14px;
-    background: #fdfcff;
+    background: #FFFFFF;
   }
   #career-gps-pdf-report .report-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-  #career-gps-pdf-report .report-logo-mark {
-    display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center;
-    border-radius: 10px; background: #1a1033; color: #ffffff; font-size: 22px; font-weight: 900;
-  }
-  #career-gps-pdf-report .report-logo-text {
-    margin: 0; color: #1a1033; font-size: 16px; font-weight: 900; letter-spacing: 0.08em;
+  #career-gps-pdf-report .report-logo-img {
+    display: block; width: 86px; height: auto;
   }
   #career-gps-pdf-report .report-kicker {
-    margin: 0 0 6px; color: #e8197a; font-size: 11px; font-weight: 800;
+    margin: 0 0 6px; color: #B08A44; font-size: 11px; font-weight: 800;
     letter-spacing: 0.08em; text-transform: uppercase;
   }
   #career-gps-pdf-report .report-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
   #career-gps-pdf-report .report-date-card {
-    min-width: 116px; border-radius: 10px; background: #ffffff; border: 1px solid #e5e7eb; padding: 10px; text-align: right;
+    min-width: 116px; border-radius: 10px; background: #FFFFFF; border: 1px solid #EAE3D3; padding: 10px; text-align: right;
   }
   #career-gps-pdf-report .report-date-card span {
     display: block; color: #6b7280; font-size: 10px; font-weight: 800; text-transform: uppercase;
   }
-  #career-gps-pdf-report .report-date-card strong { display: block; color: #1a1033; font-size: 12px; margin-top: 4px; }
+  #career-gps-pdf-report .report-date-card strong { display: block; color: #1E2A44; font-size: 12px; margin-top: 4px; }
   #career-gps-pdf-report h1 { margin: 0; font-size: 28px; line-height: 1.15; }
   #career-gps-pdf-report .report-section {
-    border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; margin-top: 10px; break-inside: avoid;
+    border: 1px solid #EAE3D3; border-radius: 12px; padding: 12px 14px; margin-top: 10px; break-inside: avoid;
   }
-  #career-gps-pdf-report .report-summary { background: #fff8fc; border-color: #ffd0e8; }
-  #career-gps-pdf-report h2 { margin: 0 0 8px; color: #1a1033; font-size: 16px; line-height: 1.25; }
+  #career-gps-pdf-report .report-summary { background: #F6F1E4; border-color: #E3D8BC; }
+  #career-gps-pdf-report h2 { margin: 0 0 8px; color: #1E2A44; font-size: 16px; line-height: 1.25; }
   #career-gps-pdf-report p, #career-gps-pdf-report li { font-size: 12px; }
   #career-gps-pdf-report ul, #career-gps-pdf-report ol { margin: 8px 0 0; padding-left: 18px; }
   #career-gps-pdf-report li { margin-bottom: 7px; }
@@ -4365,24 +4361,24 @@ const reportPrintDocumentStyles = `
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px;
   }
   #career-gps-pdf-report .report-card {
-    display: block; margin: 0; border-radius: 10px; border: 1px solid #e5e7eb; background: #ffffff; padding: 9px;
+    display: block; margin: 0; border-radius: 10px; border: 1px solid #EAE3D3; background: #FFFFFF; padding: 9px;
   }
   #career-gps-pdf-report .report-card span {
     display: block; color: #6b7280; font-size: 10px; font-weight: 800; text-transform: uppercase;
   }
-  #career-gps-pdf-report .report-card strong { display: block; margin-top: 3px; color: #1a1033; font-size: 12px; }
+  #career-gps-pdf-report .report-card strong { display: block; margin-top: 3px; color: #1E2A44; font-size: 12px; }
   #career-gps-pdf-report .report-chip-list {
     display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0;
   }
   #career-gps-pdf-report .report-chip-list li {
-    border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; margin: 0; padding: 5px 8px;
+    border-radius: 999px; background: #EFF5F0; color: #114F3B; font-size: 11px; font-weight: 700; margin: 0; padding: 5px 8px;
   }
   #career-gps-pdf-report .report-milestone-list { list-style: none; margin: 8px 0 0; padding: 0; }
   #career-gps-pdf-report .report-milestone-list li {
-    border-left: 3px solid #e8197a; margin: 0 0 8px; padding: 0 0 2px 9px;
+    border-left: 3px solid #B08A44; margin: 0 0 8px; padding: 0 0 2px 9px;
   }
   #career-gps-pdf-report footer {
-    border-top: 1px solid #d1d5db; margin-top: 18px; padding-top: 10px; color: #4b5563;
+    border-top: 1px solid #DFD6C2; margin-top: 18px; padding-top: 10px; color: #5D6470;
   }
 `;
 
@@ -4436,16 +4432,16 @@ function CareerGpsReportExport({
   };
 
   return (
-    <section className="rounded-lg border border-[#1A1033] bg-white p-5 shadow-[0_10px_36px_rgba(26,16,51,0.12)]">
+    <section className="rounded-lg border border-[#1E2A44] bg-white p-5 shadow-[0_10px_36px_rgba(26,16,51,0.12)]">
       <div className="career-gps-no-print flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#1A1033] text-white">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#1E2A44] text-white">
             <FileText size={20} />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#1A1033]">Career report</p>
-            <h2 className="mt-1 text-xl font-bold text-[#1A1033]">Export PDF report</h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#4B5563]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#1E2A44]">Career report</p>
+            <h2 className="mt-1 text-xl font-bold text-[#1E2A44]">Export PDF report</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-[#5D6470]">
               Creates a printable report with your RAISEC result, suitable work themes, selected route, skill gaps,
               career path, milestones, and progress.
             </p>
@@ -4454,7 +4450,7 @@ function CareerGpsReportExport({
         <button
           type="button"
           onClick={exportReport}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#E8197A] px-4 text-sm font-bold text-white shadow-sm outline-none transition hover:bg-[#CC146A] focus-visible:ring-2 focus-visible:ring-[#1A1033] focus-visible:ring-offset-2"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#B08A44] px-4 text-sm font-bold text-white shadow-sm outline-none transition hover:bg-[#97742F] focus-visible:ring-2 focus-visible:ring-[#1E2A44] focus-visible:ring-offset-2"
         >
           <FileText size={16} />
           Export PDF Report
@@ -4465,9 +4461,9 @@ function CareerGpsReportExport({
         <article>
           <header>
             <div className="report-brand">
-              <span className="report-logo-mark">S</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="report-logo-img" src="/brand/simploy-logo.png" alt="Simploy" />
               <div>
-                <p className="report-logo-text">SIMPLOY</p>
                 <p className="report-kicker">Career GPS Report</p>
               </div>
             </div>
@@ -4632,7 +4628,7 @@ function CareerGpsReportExport({
           }
 
           body {
-            background: #ffffff !important;
+            background: #FFFFFF !important;
           }
 
           body * {
@@ -4649,8 +4645,8 @@ function CareerGpsReportExport({
             position: absolute;
             inset: 0 auto auto 0;
             width: 100%;
-            background: #ffffff;
-            color: #111827;
+            background: #FFFFFF;
+            color: #1E2A44;
             font-family: Arial, sans-serif;
             line-height: 1.45;
           }
@@ -4661,12 +4657,12 @@ function CareerGpsReportExport({
           }
 
           #career-gps-pdf-report header {
-            border: 1px solid #e5e7eb;
-            border-top: 7px solid #e8197a;
+            border: 1px solid #EAE3D3;
+            border-top: 7px solid #B08A44;
             border-radius: 14px;
             padding: 18px;
             margin-bottom: 14px;
-            background: #fdfcff;
+            background: #FFFFFF;
           }
 
           #career-gps-pdf-report .report-brand {
@@ -4676,30 +4672,15 @@ function CareerGpsReportExport({
             margin-bottom: 18px;
           }
 
-          #career-gps-pdf-report .report-logo-mark {
-            display: inline-flex;
-            width: 38px;
-            height: 38px;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: #1a1033;
-            color: #ffffff;
-            font-size: 22px;
-            font-weight: 900;
-          }
-
-          #career-gps-pdf-report .report-logo-text {
-            margin: 0;
-            color: #1a1033;
-            font-size: 16px;
-            font-weight: 900;
-            letter-spacing: 0.08em;
+          #career-gps-pdf-report .report-logo-img {
+            display: block;
+            width: 86px;
+            height: auto;
           }
 
           #career-gps-pdf-report .report-kicker {
             margin: 0 0 6px;
-            color: #e8197a;
+            color: #B08A44;
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.08em;
@@ -4716,8 +4697,8 @@ function CareerGpsReportExport({
           #career-gps-pdf-report .report-date-card {
             min-width: 116px;
             border-radius: 10px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: #FFFFFF;
+            border: 1px solid #EAE3D3;
             padding: 10px;
             text-align: right;
           }
@@ -4732,7 +4713,7 @@ function CareerGpsReportExport({
 
           #career-gps-pdf-report .report-date-card strong {
             display: block;
-            color: #1a1033;
+            color: #1E2A44;
             font-size: 12px;
             margin-top: 4px;
           }
@@ -4744,7 +4725,7 @@ function CareerGpsReportExport({
           }
 
           #career-gps-pdf-report .report-section {
-            border: 1px solid #e5e7eb;
+            border: 1px solid #EAE3D3;
             border-radius: 12px;
             padding: 12px 14px;
             margin-top: 10px;
@@ -4752,13 +4733,13 @@ function CareerGpsReportExport({
           }
 
           #career-gps-pdf-report .report-summary {
-            background: #fff8fc;
-            border-color: #ffd0e8;
+            background: #F6F1E4;
+            border-color: #E3D8BC;
           }
 
           #career-gps-pdf-report h2 {
             margin: 0 0 8px;
-            color: #1a1033;
+            color: #1E2A44;
             font-size: 16px;
             line-height: 1.25;
           }
@@ -4796,8 +4777,8 @@ function CareerGpsReportExport({
             display: block;
             margin: 0;
             border-radius: 10px;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
+            border: 1px solid #EAE3D3;
+            background: #FFFFFF;
             padding: 9px;
           }
 
@@ -4812,7 +4793,7 @@ function CareerGpsReportExport({
           #career-gps-pdf-report .report-card strong {
             display: block;
             margin-top: 3px;
-            color: #1a1033;
+            color: #1E2A44;
             font-size: 12px;
           }
 
@@ -4827,8 +4808,8 @@ function CareerGpsReportExport({
 
           #career-gps-pdf-report .report-chip-list li {
             border-radius: 999px;
-            background: #ecfdf5;
-            color: #047857;
+            background: #EFF5F0;
+            color: #114F3B;
             font-size: 11px;
             font-weight: 700;
             margin: 0;
@@ -4842,16 +4823,16 @@ function CareerGpsReportExport({
           }
 
           #career-gps-pdf-report .report-milestone-list li {
-            border-left: 3px solid #e8197a;
+            border-left: 3px solid #B08A44;
             margin: 0 0 8px;
             padding: 0 0 2px 9px;
           }
 
           #career-gps-pdf-report footer {
-            border-top: 1px solid #d1d5db;
+            border-top: 1px solid #DFD6C2;
             margin-top: 18px;
             padding-top: 10px;
-            color: #4b5563;
+            color: #5D6470;
           }
 
           .career-gps-no-print {
@@ -5278,7 +5259,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
   };
 
   return (
-    <main className="min-h-screen bg-[#FDFCFF] text-[#1A1033]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#1E2A44]">
       <EmployeeTopNav initials={profileInitials} name={profileName} />
 
       <section className="mx-auto max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-8">
@@ -5289,7 +5270,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
             <AlertMessage>{error}</AlertMessage>
             <Link
               href={routes.login}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1A1033] px-4 py-2.5 text-sm font-bold text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E2A44] px-4 py-2.5 text-sm font-bold text-white"
             >
               Go to login
               <ArrowRight size={16} />
@@ -5357,7 +5338,7 @@ export default function CareerGpsPageShell({ demoMode = false }: { demoMode?: bo
               onDiscard={handleDiscardScenario}
             />
             <CareerBuddyHandoff activeRoute={activeRoute} />
-            <section className="rounded-lg border border-[#BAF3FF] bg-[#F0FDFF] p-4 text-sm font-semibold leading-6 text-[#087C7E]">
+            <section className="rounded-lg border border-[#CBDFD4] bg-[#EFF5F0] p-4 text-sm font-semibold leading-6 text-[#17694F]">
               <div className="flex items-start gap-2">
                 <Sparkles size={17} className="mt-0.5 shrink-0" />
                 <p>

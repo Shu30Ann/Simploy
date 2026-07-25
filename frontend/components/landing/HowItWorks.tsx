@@ -106,7 +106,7 @@ export default function HowItWorks() {
               {card.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full px-3 py-1 text-xs bg-[#F6F1E4] text-[#5D6470] border border-[#E3DCC9]"
+                  className="rounded-full px-3 py-1 text-xs bg-[#F6F1E4] text-[#5D6470] border border-[#EAE3D3]"
                 >
                   {tag}
                 </span>
@@ -117,7 +117,7 @@ export default function HowItWorks() {
       </motion.div>
 
       {/* Flow connector */}
-      <div className="mt-12 flex items-center justify-center flex-wrap gap-2 font-mono text-xs text-[#9A947F] px-6">
+      <div className="mt-12 flex items-center justify-center flex-wrap gap-2 font-mono text-xs text-[#8B7434] px-6">
         {flowItems.map((item, i) =>
           item === "→" ? (
             <span key={i} className="text-[#B08A44]">

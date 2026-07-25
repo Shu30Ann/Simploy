@@ -82,7 +82,7 @@ export default function RiasecAssessment({
 
           <div className="flex shrink-0 flex-col gap-2 sm:min-w-[180px]">
             {activeResult && (
-              <div className="rounded-lg border border-[#E3D8BC] bg-[#FFF8FC] px-4 py-3 text-center">
+              <div className="rounded-lg border border-[#E3D8BC] bg-[#F6F1E4] px-4 py-3 text-center">
                 <p className="text-4xl leading-none">{activeResult.animal}</p>
                 <p className="mt-2 text-sm font-bold text-[#1E2A44]">{activeResult.animalName}</p>
                 <p className="text-xs font-bold text-[#B08A44]">
@@ -116,7 +116,7 @@ export default function RiasecAssessment({
           <button
             type="button"
             onClick={handleSkip}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#F7F3EA] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
           >
             Skip the test
           </button>
@@ -144,7 +144,7 @@ export default function RiasecAssessment({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE3D3] text-[#6B7280] hover:bg-[#F8F5FC]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE3D3] text-[#6B7280] hover:bg-[#F7F3EA]"
                 aria-label="Close career interest test"
               >
                 <X size={17} />
@@ -224,7 +224,7 @@ export default function RiasecAssessment({
                 <button
                   type="button"
                   onClick={() => setAnswers({})}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-bold text-[#6B46C1]"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#DFD6BE] bg-white px-4 py-2 text-sm font-bold text-[#17694F]"
                 >
                   <RotateCcw size={15} />
                   Reset answers
@@ -234,7 +234,7 @@ export default function RiasecAssessment({
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="inline-flex items-center justify-center rounded-lg bg-[#F8F5FC] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
+                      className="inline-flex items-center justify-center rounded-lg bg-[#F7F3EA] px-4 py-2 text-sm font-bold text-[#6B7280] hover:text-[#B08A44]"
                     >
                       Skip the test
                     </button>

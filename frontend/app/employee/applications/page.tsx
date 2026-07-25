@@ -45,7 +45,7 @@ function applicationFromBackend(application: BackendApplication): ApplicationVie
 const toneStyles: Record<string, string> = {
   pink: "bg-[#F6F1E4] text-[#B08A44] border-[#E3D8BC]",
   teal: "bg-[#E7F0E9] text-[#114F3B] border-[#CBDFD4]",
-  green: "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]",
+  green: "bg-[#EFF5F0] text-[#17694F] border-[#CBDFD4]",
 };
 
 function Pill({ children, tone = "pink" }: { children: React.ReactNode; tone?: string }) {
@@ -122,7 +122,7 @@ export default function EmployeeApplicationsPage() {
                 type="button"
                 onClick={() => setActiveFilter(filter)}
                 className={`rounded-lg px-4 py-3 text-sm font-semibold transition ${
-                  activeFilter === filter ? "bg-[#17694F] text-white" : "bg-[#F8F5FC] text-[#6B7280] hover:bg-[#EFF5F0]"
+                  activeFilter === filter ? "bg-[#17694F] text-white" : "bg-[#F7F3EA] text-[#6B7280] hover:bg-[#EFF5F0]"
                 }`}
               >
                 {filter}
@@ -141,7 +141,7 @@ export default function EmployeeApplicationsPage() {
         >
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 id="applications-title" className="flex items-center gap-2 text-xl font-bold">
-              <Send size={20} className="text-[#6B46C1]" />
+              <Send size={20} className="text-[#17694F]" />
               Submitted Job Opportunities
             </h2>
             <div className="relative">
