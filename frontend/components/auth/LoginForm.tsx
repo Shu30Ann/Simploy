@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import GoogleAuthButton, { isGoogleAuthEnabled } from "./GoogleAuthButton";
@@ -13,13 +11,16 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { postJson, storeAuthSession, type AuthResponse } from "@/lib/api";
 import { authRouteWithRole, dashboardRouteFor, routes, type UserRole } from "@/lib/routes";
 
-const schema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  email: string;
+  password: string;
+};
 type LoginPayload = FormData & { role: UserRole };
+
+const defaultLoginEmailByRole: Record<UserRole, string> = {
+  employee: "abc@gmail.com",
+  employer: "xyz@gmail.com",
+};
 
 const inputBase =
   "w-full px-4 py-3 rounded-xl border text-sm transition-all duration-150 focus:outline-none focus:ring-2";
@@ -53,7 +54,12 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   useEffect(() => {
     if (validInitialRole) {
@@ -68,10 +74,14 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
     }
   }, [validInitialRole]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async () => {
     setSubmitError(null);
     try {
-      const payload: LoginPayload = { ...data, role };
+      const payload: LoginPayload = {
+        email: defaultLoginEmailByRole[role],
+        password: "",
+        role,
+      };
       const session = await postJson<AuthResponse, LoginPayload>("/auth/login", payload);
       if (session.user.role !== role) {
         setSubmitError(`This account is registered as ${session.user.role}. Switch portal and try again.`);
@@ -129,7 +139,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
         </>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         {submitError && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             {submitError}
@@ -147,7 +157,7 @@ export default function LoginForm({ initialRole }: LoginFormProps) {
           </label>
           <input
             id="email"
-            type="email"
+            type="text"
             placeholder="you@company.com"
             className={inputBase}
             style={{

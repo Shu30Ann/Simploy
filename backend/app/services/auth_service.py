@@ -10,6 +10,10 @@ from backend.app.schemas.auth import AuthResponse, LoginRequest, SignupRequest, 
 
 
 VALID_ROLES = {"employee", "employer", "admin"}
+DEMO_LOGIN_EMAILS = {
+    "employee": "abc@gmail.com",
+    "employer": "xyz@gmail.com",
+}
 
 
 class AuthService:
@@ -43,12 +47,38 @@ class AuthService:
         return self._auth_response(user)
 
     def login(self, payload: LoginRequest) -> AuthResponse:
+        normalized_email = payload.email.strip().lower()
+        if (
+            payload.role in DEMO_LOGIN_EMAILS
+            and normalized_email == DEMO_LOGIN_EMAILS[payload.role]
+        ):
+            return self._demo_login(normalized_email, payload.role)
+
         if settings.supabase_enabled:
             return self._supabase_login(payload)
 
-        user = self.users.get_by_email(payload.email)
+        user = self.users.get_by_email(normalized_email)
         if user is None or not verify_password(payload.password, user["password_hash"]):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        return self._auth_response(user)
+
+    def _demo_login(self, email: str, role: str) -> AuthResponse:
+        user = self.users.get_by_email(email)
+        if user is None:
+            user = self.users.create(email, hash_password("hackathon-demo-login"), role)
+        elif user["role"] != role:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Demo email is already registered as {user['role']}",
+            )
+
+        self._ensure_profile(
+            user,
+            {
+                "full_name": "ABC Demo Employee",
+                "company_name": "XYZ Demo Employer",
+            },
+        )
         return self._auth_response(user)
 
     def _auth_response(self, user: dict) -> AuthResponse:
