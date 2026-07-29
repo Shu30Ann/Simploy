@@ -3,7 +3,7 @@
 import { Database, Sliders, AlertTriangle, Zap, ArrowRight } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import FadeUp from "@/components/ui/FadeUp";
-import Link from "next/link";
+import DemoLoginButton from "@/components/auth/DemoLoginButton";
 
 const features = [
   {
@@ -190,11 +190,12 @@ export default function ForEmployers() {
             ))}
           </div>
 
-          <Link href="/signup?role=employer">
-            <button className="text-sm text-[#B08A44] font-medium hover:underline flex items-center gap-1 mt-6">
-              Start Simulating <ArrowRight size={14} />
-            </button>
-          </Link>
+          <DemoLoginButton
+            role="employer"
+            className="text-sm text-[#B08A44] font-medium hover:underline flex items-center gap-1 mt-6 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            Start Simulating <ArrowRight size={14} />
+          </DemoLoginButton>
         </FadeUp>
       </div>
     </section>

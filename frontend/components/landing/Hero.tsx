@@ -2,7 +2,7 @@
 
 import { Sparkles } from "lucide-react";
 import FadeUp from "@/components/ui/FadeUp";
-import Link from "next/link";
+import DemoLoginButton from "@/components/auth/DemoLoginButton";
 
 export default function Hero() {
   return (
@@ -46,16 +46,18 @@ export default function Hero() {
         {/* CTAs */}
         <FadeUp delay={0.15}>
           <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
-            <Link href="/signup?role=employee">
-              <button className="border border-white/70 text-white hover:bg-white/10 rounded-full font-semibold transition-colors px-7 py-3 text-sm backdrop-blur-sm">
-                I&apos;m an Employee
-              </button>
-            </Link>
-            <Link href="/signup?role=employer">
-              <button className="bg-[#F7F3EA] hover:bg-white text-[#1E2A44] rounded-full font-semibold transition-colors px-7 py-3 text-sm">
-                I&apos;m an Employer
-              </button>
-            </Link>
+            <DemoLoginButton
+              role="employee"
+              className="border border-white/70 text-white hover:bg-white/10 rounded-full font-semibold transition-colors px-7 py-3 text-sm backdrop-blur-sm disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              I&apos;m an Employee
+            </DemoLoginButton>
+            <DemoLoginButton
+              role="employer"
+              className="bg-[#F7F3EA] hover:bg-white text-[#1E2A44] rounded-full font-semibold transition-colors px-7 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              I&apos;m an Employer
+            </DemoLoginButton>
           </div>
         </FadeUp>
 
