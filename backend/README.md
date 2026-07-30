@@ -14,6 +14,7 @@ The local default database is SQLite at `backend/simploy.db`. Set `SIMPLOY_DATAB
 
 ## Main endpoints
 
+- `GET /health`
 - `POST /auth/signup`
 - `POST /auth/login`
 - `GET /auth/me`

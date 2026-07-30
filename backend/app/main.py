@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
             init_db()
 
     @app.get("/", tags=["health"])
+    @app.get("/health", tags=["health"])
     def health() -> dict:
         return {"status": "ok", "service": settings.app_name, "version": settings.app_version}
 
