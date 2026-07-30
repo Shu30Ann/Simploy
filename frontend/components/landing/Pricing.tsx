@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-import DemoLoginButton from "@/components/auth/DemoLoginButton";
-import type { UserRole } from "@/lib/routes";
 
 const plans = [
   {
@@ -24,8 +22,7 @@ const plans = [
     ],
     cta: "Get Started Free",
     ctaVariant: "outline" as const,
-    ctaHref: "#",
-    demoRole: "employee" as UserRole,
+    ctaHref: "/signup?role=employee",
     featured: false,
   },
   {
@@ -43,8 +40,7 @@ const plans = [
     ],
     cta: "Start Free Trial",
     ctaVariant: "primary" as const,
-    ctaHref: "#",
-    demoRole: "employer" as UserRole,
+    ctaHref: "/signup?role=employer",
     featured: true,
   },
   {
@@ -64,7 +60,6 @@ const plans = [
     cta: "Contact Sales",
     ctaVariant: "outline" as const,
     ctaHref: "mailto:sales@simploy.io",
-    demoRole: null,
     featured: false,
   },
 ];
@@ -151,24 +146,11 @@ export default function Pricing() {
                 ))}
               </div>
 
-              {plan.demoRole ? (
-                <DemoLoginButton
-                  role={plan.demoRole}
-                  className={`w-full mt-8 rounded-full px-7 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
-                    plan.ctaVariant === "primary"
-                      ? "bg-[#1E2A44] hover:bg-[#16233C] text-white"
-                      : "border border-[#1E2A44]/25 text-[#1E2A44] hover:bg-[#1E2A44]/5 bg-transparent"
-                  }`}
-                >
+              <Link href={plan.ctaHref}>
+                <Button variant={plan.ctaVariant} className="w-full mt-8">
                   {plan.cta}
-                </DemoLoginButton>
-              ) : (
-                <Link href={plan.ctaHref}>
-                  <Button variant={plan.ctaVariant} className="w-full mt-8">
-                    {plan.cta}
-                  </Button>
-                </Link>
-              )}
+                </Button>
+              </Link>
             </motion.div>
           ))}
         </motion.div>

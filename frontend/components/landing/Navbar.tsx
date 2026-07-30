@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
-import DemoLoginButton from "@/components/auth/DemoLoginButton";
 
 const navLinks = [
   { label: "Solutions", href: "#solutions" },
@@ -44,19 +44,20 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
-            <DemoLoginButton
-              role="employee"
-              className="hidden rounded-full border border-[#B08A44] px-4 py-2.5 text-sm font-semibold text-[#8B7434] transition-colors hover:bg-[#F6F1E4] disabled:cursor-not-allowed disabled:opacity-70 md:inline-flex"
+          <div className="ml-auto flex items-center gap-5">
+            <Link
+              href="/login"
+              className="hidden text-sm font-medium text-[#8B7434] transition-colors hover:text-[#1E2A44] md:block"
             >
-              Employee
-            </DemoLoginButton>
-            <DemoLoginButton
-              role="employer"
-              className="hidden rounded-full bg-[#1E2A44] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#16233C] disabled:cursor-not-allowed disabled:opacity-70 md:inline-flex"
+              Sign in
+            </Link>
+            <span className="hidden h-6 w-px bg-[#EAE3D3] md:block" aria-hidden />
+            <Link
+              href="/signup"
+              className="hidden items-center gap-2 rounded-full bg-[#1E2A44] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#16233C] md:inline-flex"
             >
-              Employer
-            </DemoLoginButton>
+              Get started <ArrowRight size={15} />
+            </Link>
             <button
               className="p-1 text-[#5D6470] md:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -81,18 +82,13 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <DemoLoginButton
-            role="employee"
-            className="inline-flex items-center justify-center rounded-xl border border-[#B08A44] px-5 py-2.5 text-sm font-semibold text-[#8B7434]"
+          <Link
+            href="/signup"
+            onClick={() => setMobileOpen(false)}
+            className="inline-flex items-center justify-center gap-2 bg-[#1E2A44] text-white text-sm font-semibold rounded-xl px-5 py-2.5"
           >
-            Enter as Employee
-          </DemoLoginButton>
-          <DemoLoginButton
-            role="employer"
-            className="inline-flex items-center justify-center rounded-xl bg-[#1E2A44] px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            Enter as Employer
-          </DemoLoginButton>
+            Get started <ArrowRight size={15} />
+          </Link>
         </div>
       )}
     </>

@@ -1,8 +1,6 @@
 "use client";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import DemoLoginButton from "@/components/auth/DemoLoginButton";
-import type { UserRole } from "@/lib/routes";
 
 const premiumEmployers = [
   "Maybank",
@@ -39,19 +37,13 @@ const cols = [
     links: [
       { label: "About us", href: "/#about" },
       { label: "Solutions", href: "/#solutions" },
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Privacy", href: "/login" },
+      { label: "Terms", href: "/signup" },
     ],
   },
 ];
 
 export default function Footer() {
-  function demoRoleForHref(href: string): UserRole | null {
-    if (href.startsWith("/employee")) return "employee";
-    if (href.startsWith("/employer")) return "employer";
-    return null;
-  }
-
   return (
     <footer className="bg-[#1B2542] text-white">
       {/* Premium employers strip */}
@@ -118,24 +110,13 @@ export default function Footer() {
               {col.heading}
             </p>
             {col.links.map((link) => (
-              demoRoleForHref(link.href) ? (
-                <DemoLoginButton
-                  key={link.label}
-                  role={demoRoleForHref(link.href) as UserRole}
-                  redirectTo={link.href}
-                  className="block mb-2.5 text-left text-sm text-white/55 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {link.label}
-                </DemoLoginButton>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm text-white/55 hover:text-white transition-colors block mb-2.5"
-                >
-                  {link.label}
-                </a>
-              )
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm text-white/55 hover:text-white transition-colors block mb-2.5"
+              >
+                {link.label}
+              </a>
             ))}
           </div>
         ))}

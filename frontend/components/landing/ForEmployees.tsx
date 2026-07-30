@@ -3,7 +3,7 @@
 import { Sparkles, TrendingUp, Building2, Network, ArrowRight } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import FadeUp from "@/components/ui/FadeUp";
-import DemoLoginButton from "@/components/auth/DemoLoginButton";
+import Link from "next/link";
 
 const features = [
   {
@@ -62,12 +62,11 @@ export default function ForEmployees() {
             ))}
           </div>
 
-          <DemoLoginButton
-            role="employee"
-            className="text-sm text-[#B08A44] font-medium hover:underline flex items-center gap-1 mt-6 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            Find Your Next Role <ArrowRight size={14} />
-          </DemoLoginButton>
+          <Link href="/signup?role=employee">
+            <button className="text-sm text-[#B08A44] font-medium hover:underline flex items-center gap-1 mt-6">
+              Find Your Next Role <ArrowRight size={14} />
+            </button>
+          </Link>
         </FadeUp>
 
         {/* Right — employee mockup */}
